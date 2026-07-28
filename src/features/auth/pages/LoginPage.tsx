@@ -35,8 +35,8 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background overflow-hidden">
-      <div className="w-full max-w-[400px]">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] overflow-hidden relative z-0">
+      <div className="w-full max-w-[420px]">
         
         {/* Logo Container */}
         <div 
@@ -66,11 +66,12 @@ export function LoginPage() {
           }`}
         >
           <Card>
-            <div className="text-center mb-6">
-              <p className="text-text-secondary">Sign in to your account</p>
+            <div className="text-center mb-8">
+              <h2 className="text-[22px] font-bold text-text-primary tracking-tight mb-1">Welcome Back</h2>
+              <p className="text-[14px] text-text-secondary">Please sign in to continue</p>
             </div>
             
-            <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <form onSubmit={handleLogin} className="flex flex-col gap-5">
               <Input
                 label="Name / Email"
                 type="text"

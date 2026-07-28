@@ -1,20 +1,11 @@
 import React from 'react';
-import { AuthProvider, useAuth } from './app/providers/AuthProvider';
-import { LoginPage } from './features/auth/pages/LoginPage';
-import { DashboardPage } from './features/dashboard/pages/DashboardPage';
-
-function AppContent() {
-  const { isAuthenticated, loading } = useAuth();
-  
-  if (loading) return null;
-  
-  return isAuthenticated ? <DashboardPage /> : <LoginPage />;
-}
+import { AuthProvider } from './app/providers/AuthProvider';
+import { AppRouter } from './app/router';
 
 function App() {
   return (
     <AuthProvider>
-      <AppContent />
+      <AppRouter />
     </AuthProvider>
   );
 }
