@@ -4,6 +4,7 @@ import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
 import { SettingsPage } from '../../features/settings/pages/SettingsPage';
 import { ProfilePage } from '../../features/profile/pages/ProfilePage';
+import { LoadedTrucksPage } from '../../features/trucks/pages/LoadedTrucksPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
@@ -19,6 +20,7 @@ export function AppRouter() {
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

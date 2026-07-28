@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
+import { useNavigate } from 'react-router-dom';
 
 // Icons
 const TruckIcon = ({ className }: { className?: string }) => (
@@ -34,6 +35,7 @@ const ChartIcon = () => (
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
@@ -63,7 +65,10 @@ export function DashboardPage() {
         {user?.role === 'security' && (
           <div className="flex flex-col gap-4">
 
-            <button className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-row items-center gap-4 group cursor-pointer outline-none focus:ring-2 focus:ring-primary w-full text-left active:scale-[0.98] transition-transform duration-150">
+            <button 
+              onClick={() => navigate('/trucks/loaded')}
+              className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-row items-center gap-4 group cursor-pointer outline-none focus:ring-2 focus:ring-primary w-full text-left active:scale-[0.98] transition-transform duration-150"
+            >
               <div className="w-12 h-12 flex-shrink-0 bg-primary/10 rounded-full flex items-center justify-center text-primary group-hover:bg-primary/15 transition-colors">
                 <TruckIcon className="w-6 h-6" />
               </div>

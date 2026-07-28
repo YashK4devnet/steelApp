@@ -1,0 +1,27 @@
+# Project Changelog
+
+This document logs the major architectural, feature, and design changes implemented during the development of the RNE Mobile application.
+
+## Phase 1: Foundation & Authentication
+- **Routing Setup**: Implemented React Router in `src/app/router/index.tsx` with a structure separating public and protected routes.
+- **Authentication**: Built `AuthProvider.tsx` to handle mock login states and manage current user roles (`security`, `manager`, `admin`).
+- **Route Guards**: Added `ProtectedRoute.tsx` and `PublicRoute.tsx` to automatically redirect users based on auth status.
+- **Base Components**: Created reusable UI components including `Button`, `Input`, and `Card`.
+
+## Phase 2: Feature Development
+- **Login Page**: Created `LoginPage.tsx` with form handling, error states, and a smooth initial application loading animation for the RNE logo.
+- **Dashboard Implementation**: Built `DashboardPage.tsx` tailored to the `security` role (showing "Trucks to warehouse" and "Trucks from warehouse" actions) and a placeholder for the `manager` role.
+- **Bottom Navigation**: Introduced `BottomNav.tsx` alongside a `MainLayout.tsx` wrapper to allow seamless tab switching across protected pages.
+- **Sub-pages**: Created `ProfilePage.tsx` (containing the user's details and the Logout button) and a placeholder `SettingsPage.tsx`.
+
+## Phase 3: Premium UI/UX Overhaul
+- **Aesthetic Shift**: Transitioned the entire application from a heavy glassmorphism style to a lightweight, premium, flat design (inspired by Linear, Stripe, and Apple HIG) based on constraints in `DASHBOARD_DESIGN.md`.
+- **Global Styling**:
+  - Implemented a unified background gradient (`#EEF3FA` to `#FFFFFF`).
+  - Standardized an 8pt spacing system across all layouts.
+  - Replaced heavy blurs and bright gradients with clean white surfaces, ultra-soft drop shadows (`0 8px 24px rgba(15,23,42,0.05)`), and thin slate borders.
+- **Animations & Interaction**:
+  - Implemented a custom pure-CSS sliding pill animation in the bottom navigation for native-feeling tab switches.
+  - Linked router location keys in `MainLayout.tsx` to trigger lightweight fade-in-up animations on every page transition.
+  - Added performant `active:scale-[0.98]` interactions to clickable cards.
+- **Documentation**: Completely rewrote `.agents/DESIGN_INSTRUCTIONS.md` to lock in the new premium flat aesthetic and prevent future feature sprawl or design inconsistencies.
