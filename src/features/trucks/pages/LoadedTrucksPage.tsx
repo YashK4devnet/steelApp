@@ -167,7 +167,7 @@ export function LoadedTrucksPage() {
                       : 'bg-primary text-white shadow-[0_4px_12px_rgba(10,46,99,0.15)] hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)]'
                   }`}
                   disabled={truck.is_reported}
-                  onClick={() => alert(`Reporting truck ${truck.truck_number_plate}...`)}
+                  onClick={() => navigate(`/trucks/report/${truck.id}`)}
                 >
                   {truck.is_reported ? 'Reported' : 'Report Arrival'}
                 </button>

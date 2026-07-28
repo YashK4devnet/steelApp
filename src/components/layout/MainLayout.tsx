@@ -4,13 +4,14 @@ import { BottomNav } from './BottomNav';
 
 export function MainLayout() {
   const location = useLocation();
+  const isReportingRoute = location.pathname.includes('/trucks/report');
 
   return (
     <>
       <div key={location.pathname}>
         <Outlet />
       </div>
-      <BottomNav />
+      {!isReportingRoute && <BottomNav />}
     </>
   );
 }
