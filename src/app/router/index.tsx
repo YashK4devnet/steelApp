@@ -1,5 +1,6 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
 import { SettingsPage } from '../../features/settings/pages/SettingsPage';
@@ -10,9 +11,30 @@ import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
 
+function AndroidBackButtonHandler() {
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const listener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      if (canGoBack) {
+        navigate(-1);
+      } else {
+        CapacitorApp.exitApp();
+      }
+    });
+
+    return () => {
+      listener.then(handle => handle.remove());
+    };
+  }, [navigate]);
+
+  return null;
+}
+
 export function AppRouter() {
   return (
     <BrowserRouter>
+      <AndroidBackButtonHandler />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
