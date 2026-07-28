@@ -25,3 +25,14 @@ This document logs the major architectural, feature, and design changes implemen
   - Linked router location keys in `MainLayout.tsx` to trigger lightweight fade-in-up animations on every page transition.
   - Added performant `active:scale-[0.98]` interactions to clickable cards.
 - **Documentation**: Completely rewrote `.agents/DESIGN_INSTRUCTIONS.md` to lock in the new premium flat aesthetic and prevent future feature sprawl or design inconsistencies.
+
+## Phase 4: Truck Reporting Integration
+- **Reporting Workflow**: Added `ReportTruckPage.tsx` to handle the final step of the truck arrival process as defined by the backend API (`/booking/trucks/report`).
+- **Capacitor Integrations**:
+  - **Camera (`@capacitor/camera`)**: Built `ImageUpload.tsx` to allow security personnel to natively snap photos of the truck and documents using the device camera.
+  - **App Lifecycle (`@capacitor/app`)**: Implemented a global `AndroidBackButtonHandler` in the React Router to ensure the hardware back button behaves correctly (popping the web history stack natively).
+- **UI Enhancements**:
+  - Dynamically hid the bottom navigation bar on the reporting page for maximum screen real estate.
+  - Implemented a fixed "Submit" button at the bottom of the reporting form.
+  - Handled auto-scrolling to the top of the page when navigating between screens.
+  - Added an editable `datetime-local` input preloaded with the exact arrival time.
