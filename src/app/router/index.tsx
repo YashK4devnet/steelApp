@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { App as CapacitorApp } from '@capacitor/app';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
-import { SettingsPage } from '../../features/settings/pages/SettingsPage';
 import { ProfilePage } from '../../features/profile/pages/ProfilePage';
 import { LoadedTrucksPage } from '../../features/trucks/pages/LoadedTrucksPage';
 import { ReportTruckPage } from '../../features/trucks/pages/ReportTruckPage';
@@ -45,7 +44,6 @@ export function AppRouter() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
             <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
-            <Route path="/settings" element={<SettingsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

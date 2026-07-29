@@ -31,13 +31,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return new Promise<void>((resolve, reject) => {
       setTimeout(() => {
         if (email === 'security' && password === 'security') {
-          const mockUser: User = { id: '1', name: 'Security Guard', email: 'security', role: 'security' };
+          const mockUser: User = { 
+            id: 23, 
+            name: 'Security User', 
+            login: 'security.user@example.com',
+            email: 'security.user@example.com', 
+            phone: '+91 12345 67890',
+            company_id: 1,
+            company_name: 'My Company',
+            is_admin: false,
+            is_security: true,
+            employee_id: 15,
+            employee_address_id: 45,
+            employee_address_name: 'Main Warehouse',
+            role: 'security' 
+          };
           setUser(mockUser);
           setToken('mock-token');
           localStorage.setItem('mockUser', JSON.stringify(mockUser));
           resolve();
         } else if (email === 'manager' && password === 'manager') {
-          const mockUser: User = { id: '2', name: 'Manager', email: 'manager', role: 'manager' };
+          const mockUser: User = { 
+            id: '2', 
+            name: 'Manager', 
+            email: 'manager@example.com', 
+            role: 'manager' 
+          };
           setUser(mockUser);
           setToken('mock-token');
           localStorage.setItem('mockUser', JSON.stringify(mockUser));
