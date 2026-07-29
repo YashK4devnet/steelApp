@@ -18,7 +18,7 @@ export function ProfilePage() {
           </div>
           <h1 className="text-[28px] font-bold text-text-primary tracking-tight mb-1">{user?.name}</h1>
           <p className="text-text-secondary text-[15px] font-medium capitalize">
-            {user?.is_admin ? 'Administrator' : user?.is_security ? 'Security Guard' : 'User'} • #{user?.employee_id || 'N/A'}
+            {user?.role || 'User'} • #{user?.employee_id || 'N/A'}
           </p>
         </div>
 

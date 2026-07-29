@@ -11,5 +11,5 @@ export interface User {
   employee_id?: number;
   employee_address_id?: number;
   employee_address_name?: string;
-  role: 'security' | 'manager' | 'admin';
+  role?: string;
 }
