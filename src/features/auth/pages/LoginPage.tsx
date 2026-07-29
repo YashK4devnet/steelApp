@@ -29,7 +29,7 @@ export function LoginPage() {
     try {
       await login(email, password);
     } catch (err) {
-      setError('Invalid credentials. Try security/security or manager/manager');
+      setError('Invalid credentials. Please try again.');
       setIsLoading(false);
     }
   };

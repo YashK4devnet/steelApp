@@ -19,6 +19,7 @@ export function DashboardPage() {
             <h2 className="text-[32px] font-bold text-text-primary tracking-tight leading-tight">
               {user?.name} 👋
             </h2>
+            <p className="text-sm font-medium text-primary mb-1">{user?.login}</p>
             <p className="text-sm text-text-secondary mt-1">
               What would you like to do today?
             </p>
@@ -30,8 +31,8 @@ export function DashboardPage() {
         </div>
 
         {/* Role Content */}
-        {user?.role === 'security' && <SecurityDashboard />}
-        {user?.role === 'manager' && <ManagerDashboard />}
+        {user?.is_security && <SecurityDashboard />}
+        {user?.is_admin && <ManagerDashboard />}
       </main>
     </div>
   );

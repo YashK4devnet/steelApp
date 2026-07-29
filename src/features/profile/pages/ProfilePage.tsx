@@ -18,7 +18,7 @@ export function ProfilePage() {
           </div>
           <h1 className="text-[28px] font-bold text-text-primary tracking-tight mb-1">{user?.name}</h1>
           <p className="text-text-secondary text-[15px] font-medium capitalize">
-            {user?.role} • #{user?.employee_id || 'N/A'}
+            {user?.is_admin ? 'Administrator' : user?.is_security ? 'Security Guard' : 'User'} • #{user?.employee_id || 'N/A'}
           </p>
         </div>
 
@@ -52,7 +52,11 @@ export function ProfilePage() {
           <Button 
             variant="danger" 
             className="w-full max-w-[280px] shadow-[0_8px_24px_rgba(200,16,46,0.1)] hover:shadow-[0_8px_24px_rgba(200,16,46,0.25)]" 
-            onClick={logout}
+            onClick={() => {
+              if (window.confirm('Are you sure you want to sign out?')) {
+                logout();
+              }
+            }}
           >
             <LogoutIcon />
             Sign Out
