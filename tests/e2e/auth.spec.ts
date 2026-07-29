@@ -13,7 +13,7 @@ test.describe('Authentication Flow', () => {
     await expect(page.getByRole('heading', { name: 'Welcome Back' })).toBeVisible();
 
     // Fill out the login form
-    await page.getByPlaceholder('Enter your name or email').fill('security');
+    await page.getByPlaceholder('Enter your name or email').fill('security@gmail.com');
     await page.getByPlaceholder('Enter your password').fill('security');
     
     // Wait for the login screen's 1.2s loading animation to finish
@@ -32,7 +32,7 @@ test.describe('Authentication Flow', () => {
   test('should successfully log out', async ({ page }) => {
     // 1. Log in first
     await page.goto('/login');
-    await page.getByPlaceholder('Enter your name or email').fill('security');
+    await page.getByPlaceholder('Enter your name or email').fill('security@gmail.com');
     await page.getByPlaceholder('Enter your password').fill('security');
     await page.waitForTimeout(1500); // wait for animation
     await page.getByRole('button', { name: 'Sign In' }).click();

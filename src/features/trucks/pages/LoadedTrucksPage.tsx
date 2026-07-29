@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../../../lib/api';
 
-interface Truck {
+export interface Truck {
   id: number;
   truck_type_id: number;
   truck_type: string;
@@ -12,53 +13,6 @@ interface Truck {
   delivery_address_id: number;
   delivery_address_name: string;
 }
-
-const MOCK_TRUCKS: Truck[] = [
-  {
-    id: 1,
-    truck_type_id: 101,
-    truck_type: 'Flatbed',
-    truck_number_plate: 'MH 12 AB 1234',
-    driver_name: 'Rajesh Kumar',
-    is_reported: false,
-    state: 'loaded',
-    delivery_address_id: 201,
-    delivery_address_name: 'Site A, Pune, Maharashtra'
-  },
-  {
-    id: 2,
-    truck_type_id: 102,
-    truck_type: 'Trailer',
-    truck_number_plate: 'KA 01 CD 5678',
-    driver_name: 'Suresh Singh',
-    is_reported: false,
-    state: 'loaded',
-    delivery_address_id: 202,
-    delivery_address_name: 'Site B, Bangalore, Karnataka'
-  },
-  {
-    id: 3,
-    truck_type_id: 103,
-    truck_type: 'Container',
-    truck_number_plate: 'DL 04 EF 9012',
-    driver_name: 'Amit Patel',
-    is_reported: true,
-    state: 'loaded',
-    delivery_address_id: 203,
-    delivery_address_name: 'Site C, Delhi'
-  },
-  {
-    id: 4,
-    truck_type_id: 101,
-    truck_type: 'Flatbed',
-    truck_number_plate: 'MH 14 XX 9999',
-    driver_name: 'Vikram Singh',
-    is_reported: false,
-    state: 'loaded',
-    delivery_address_id: 204,
-    delivery_address_name: 'Site D, Mumbai'
-  }
-];
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -87,8 +41,25 @@ const TruckIcon = () => (
 export function LoadedTrucksPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchTrucks = async () => {
+      try {
+        const res = await apiRequest<{ status: string, trucks: Truck[] }>('GET', '/booking/trucks/loaded');
+        setTrucks(res.trucks || []);
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch trucks');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchTrucks();
+  }, []);
   
-  const filteredTrucks = MOCK_TRUCKS.filter(t => 
+  const filteredTrucks = trucks.filter(t => 
     t.driver_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.truck_number_plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.truck_type.toLowerCase().includes(searchQuery.toLowerCase())
@@ -126,7 +97,15 @@ export function LoadedTrucksPage() {
 
       {/* List Content */}
       <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex flex-col gap-4">
-        {filteredTrucks.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-text-secondary">Loading trucks...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-12">
+            <p className="text-error">{error}</p>
+          </div>
+        ) : filteredTrucks.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-text-secondary">No trucks found.</p>
           </div>

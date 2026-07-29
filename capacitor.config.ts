@@ -8,6 +8,12 @@ const config: CapacitorConfig = {
     StatusBar: {
       overlaysWebView: true,
       style: 'LIGHT'
+    },
+    CapacitorHttp: {
+      enabled: true
+    },
+    CapacitorCookies: {
+      enabled: true
     }
   }
 };

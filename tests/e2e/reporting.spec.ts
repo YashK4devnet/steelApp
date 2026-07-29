@@ -5,7 +5,7 @@ test.describe('Truck Reporting Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Log in as security guard (context is isolated per test automatically)
     await page.goto('/login');
-    await page.getByPlaceholder('Enter your name or email').fill('security');
+    await page.getByPlaceholder('Enter your name or email').fill('security@gmail.com');
     await page.getByPlaceholder('Enter your password').fill('security');
     await page.waitForTimeout(1500);
     await page.getByRole('button', { name: 'Sign In' }).click();

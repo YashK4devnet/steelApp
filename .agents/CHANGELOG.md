@@ -72,3 +72,13 @@ This document logs the major architectural, feature, and design changes implemen
   - `auth.spec.ts`: Validates complete login flow, invalid credentials error states, and the logout workflow. 
   - `reporting.spec.ts`: Validates the end-to-end Truck Arrival workflow from the dashboard to successful submission.
 - **Native Bypasses**: Implemented an E2E bypass flag (`window.__E2E_MOCK_IMAGE__`) in `ImageUpload.tsx` to instantly mock native Capacitor Camera plugin responses without triggering the interactive PWA Shadow DOM UI, avoiding test hangs.
+
+## Phase 8: Odoo API Integration
+- **Capacitor Native HTTP**: 
+  - Enabled `CapacitorHttp` and `CapacitorCookies` in `capacitor.config.ts`.
+  - Created `src/lib/api.ts` to wrap `CapacitorHttp`, automatically routing all HTTP requests through the native mobile layer to inherently bypass browser CORS restrictions and correctly manage the Odoo `session_id` cookies.
+- **Authentication**: Refactored `AuthProvider.tsx` to replace mock timeouts with real `POST /booking/auth/login` and `POST /booking/auth/logout` API calls, parsing the returned `User` object.
+- **Data Fetching**: 
+  - Updated `LoadedTrucksPage.tsx` to fetch `GET /booking/trucks/loaded`, displaying a loading state and replacing hardcoded mocks with real truck data.
+  - Updated `ReportTruckPage.tsx` to send `POST /booking/trucks/report` utilizing an `application/json` payload structure containing base64 images, streamlining the upload process over `multipart/form-data`.
+- **E2E Alignment**: Updated Playwright E2E tests (`auth.spec.ts`, `reporting.spec.ts`) to use real staging credentials (`security@gmail.com`).
