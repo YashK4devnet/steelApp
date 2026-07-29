@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { ImageUpload } from '../components/ImageUpload';
@@ -43,9 +43,10 @@ export function ReportTruckPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // In a real app, you would fetch truck details by ID from state or API.
-  // For now, we just mock the display.
-  const truckPlate = `Truck #${id}`;
+  const location = useLocation();
+  const truck = location.state?.truck;
+  const truckPlate = truck ? truck.truck_number_plate : `Truck #${id}`;
+  const addressName = truck ? truck.delivery_address_name : '';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,7 +113,10 @@ export function ReportTruckPage() {
           </button>
           <div>
             <h1 className="text-[24px] font-bold text-text-primary tracking-tight leading-none">Report Arrival</h1>
-            <p className="text-[14px] text-text-secondary font-medium mt-1">{truckPlate}</p>
+            <p className="text-[14px] font-semibold text-primary mt-1">{truckPlate}</p>
+            {addressName && (
+              <p className="text-[12px] text-text-secondary mt-0.5 line-clamp-1 max-w-[250px]">{addressName}</p>
+            )}
           </div>
         </div>
       </div>
@@ -137,25 +141,25 @@ export function ReportTruckPage() {
             <h2 className="text-[18px] font-semibold text-text-primary">Photos</h2>
             
             <ImageUpload 
-              label="Primary Image" 
+              label="Image 1" 
               required={true}
               onImageSelected={setImage1} 
             />
             
             <div className="grid grid-cols-2 gap-4">
               <ImageUpload 
-                label="Image 2 (Optional)" 
+                label="Image 2" 
                 onImageSelected={setImage2} 
               />
               <ImageUpload 
-                label="Image 3 (Optional)" 
+                label="Image 3" 
                 onImageSelected={setImage3} 
               />
             </div>
           </div>
 
           <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-4">
-            <label className="text-[14px] font-semibold text-text-primary">Notes (Optional)</label>
+            <label className="text-[14px] font-semibold text-text-primary">Notes</label>
             <textarea 
               value={note}
               onChange={(e) => setNote(e.target.value)}

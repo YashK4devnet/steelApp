@@ -69,7 +69,7 @@ export function LoadedTrucksPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
       
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-8 pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto flex items-center gap-4 mb-6">
           <button 
             onClick={() => navigate('/dashboard')}
@@ -146,7 +146,7 @@ export function LoadedTrucksPage() {
                       : 'bg-primary text-white shadow-[0_4px_12px_rgba(10,46,99,0.15)] hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)]'
                   }`}
                   disabled={truck.is_reported}
-                  onClick={() => navigate(`/trucks/report/${truck.id}`)}
+                  onClick={() => navigate(`/trucks/report/${truck.id}`, { state: { truck } })}
                 >
                   {truck.is_reported ? 'Reported' : 'Report Arrival'}
                 </button>

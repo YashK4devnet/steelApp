@@ -8,8 +8,21 @@ export function ProfilePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
+      <div className="absolute top-[calc(env(safe-area-inset-top,2rem)+1rem)] right-4 sm:right-6 lg:right-8 z-20">
+        <button 
+          onClick={() => {
+            if (window.confirm('Are you sure you want to sign out?')) {
+              logout();
+            }
+          }}
+          className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(200,16,46,0.1)] border border-slate-900/5 text-error hover:bg-error/5 active:scale-95 transition-all"
+          title="Sign Out"
+        >
+          <LogoutIcon />
+        </button>
+      </div>
       
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-32 flex flex-col gap-6">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+4rem)] pb-32 flex flex-col gap-6">
         
         {/* Header Profile Section */}
         <div className="flex flex-col items-center justify-center mt-6 mb-4">
@@ -45,22 +58,6 @@ export function ProfilePage() {
             <span className="text-[16px] font-semibold text-text-primary">{user?.employee_address_name || 'N/A'}</span>
           </div>
 
-        </div>
-
-        {/* Action Button */}
-        <div className="mt-8 flex justify-center">
-          <Button 
-            variant="danger" 
-            className="w-full max-w-[280px] shadow-[0_8px_24px_rgba(200,16,46,0.1)] hover:shadow-[0_8px_24px_rgba(200,16,46,0.25)]" 
-            onClick={() => {
-              if (window.confirm('Are you sure you want to sign out?')) {
-                logout();
-              }
-            }}
-          >
-            <LogoutIcon />
-            Sign Out
-          </Button>
         </div>
 
       </main>
