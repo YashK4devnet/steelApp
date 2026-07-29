@@ -36,3 +36,18 @@ This document logs the major architectural, feature, and design changes implemen
   - Implemented a fixed "Submit" button at the bottom of the reporting form.
   - Handled auto-scrolling to the top of the page when navigating between screens.
   - Added an editable `datetime-local` input preloaded with the exact arrival time.
+
+## Phase 5: Architecture Cleanup & UI Expansions
+- **Dashboard Enhancements**: 
+  - Restructured the Security Dashboard into a 2-column grid layout for better mobile usability.
+  - Added multi-colored demo feature cards (Gate Pass, Inventory, Security Logs, Shift Schedule) with custom iconography.
+- **Profile Page Overhaul**:
+  - Removed the `SettingsPage` to streamline the bottom navigation.
+  - Expanded the `User` mock data model in `AuthProvider` to align with the backend `REPORTING.md` specs (including Phone, Company, Employee ID, and Location).
+  - Completely redesigned `ProfilePage.tsx` into a rich, card-based layout displaying all user data.
+- **Architecture Refactoring**:
+  - Strictly enforced the rules in `PROJECT_STRUCTURE.md`.
+  - Extracted inline SVGs from `DashboardPage.tsx` and `ProfilePage.tsx` into dedicated `Icons.tsx` files within their respective feature folders.
+  - Split the monolithic `DashboardPage.tsx` by extracting `<SecurityDashboard />` and `<ManagerDashboard />` into their own components.
+  - Moved `ImageUpload.tsx` from the global `components/ui/` folder into `features/trucks/components/` where it belongs.
+- **Web Camera Support**: Added `@ionic/pwa-elements` and initialized them in `main.tsx` to allow the Capacitor Camera plugin to render natively in the web browser during development.
