@@ -35,7 +35,8 @@ export function ImageUpload({ label, onImageSelected, required = false }: ImageU
 
     try {
       const image = await Camera.getPhoto({
-        quality: 90,
+        quality: 70, // Reduced quality to avoid huge file sizes
+        width: 1024, // Resize the image width to 1024px maximum
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
         source: CameraSource.Prompt, // Prompt user for Camera or Photos
