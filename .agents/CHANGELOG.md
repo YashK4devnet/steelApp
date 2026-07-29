@@ -82,3 +82,11 @@ This document logs the major architectural, feature, and design changes implemen
   - Updated `LoadedTrucksPage.tsx` to fetch `GET /booking/trucks/loaded`, displaying a loading state and replacing hardcoded mocks with real truck data.
   - Updated `ReportTruckPage.tsx` to send `POST /booking/trucks/report` utilizing an `application/json` payload structure containing base64 images, streamlining the upload process over `multipart/form-data`.
 - **E2E Alignment**: Updated Playwright E2E tests (`auth.spec.ts`, `reporting.spec.ts`) to use real staging credentials (`security@gmail.com`).
+
+## Phase 9: API Alignment & UI Bugfixes
+- **Role Synchronization**: Discovered that the real Odoo backend returns `"role": "Security"` instead of boolean flags. Updated `types/index.ts`, `DashboardPage.tsx`, and `ProfilePage.tsx` to handle this string, fixing the blank dashboard rendering issue.
+- **Header Enhancements**: Added the `user.login` string to display directly beneath the username in the Dashboard header.
+- **Login Improvements**: Softened the login error banner message to a generic "Invalid credentials. Please try again."
+- **Logout Confirmation**: Added a native browser `window.confirm` popup to the profile sign out button to prevent accidental logouts.
+- **Payload Size Optimization**: Resolved a `413 Payload Too Large` backend error during truck reporting by shrinking the `@capacitor/camera` photo captures (setting `quality: 70` and `width: 1024`), drastically reducing the size of the Base64 JSON payload.
+- **Token Auth Alignment**: Updated `AuthProvider.tsx` to persist the returned Bearer token from the backend, and modified `api.ts` to automatically inject the `Authorization: Bearer <token>` header into all requests.
