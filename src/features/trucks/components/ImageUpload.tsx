@@ -26,6 +26,13 @@ export function ImageUpload({ label, onImageSelected, required = false }: ImageU
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const takePicture = async () => {
+    // E2E Mock Bypass
+    if ((window as any).__E2E_MOCK_IMAGE__) {
+      setPreviewUrl((window as any).__E2E_MOCK_IMAGE__);
+      onImageSelected((window as any).__E2E_MOCK_IMAGE__);
+      return;
+    }
+
     try {
       const image = await Camera.getPhoto({
         quality: 90,

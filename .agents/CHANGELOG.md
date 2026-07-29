@@ -61,3 +61,14 @@ This document logs the major architectural, feature, and design changes implemen
   - Configured `capacitor.config.ts` to overlay the webview (`overlaysWebView: true`) and use dark icons (`style: 'LIGHT'`), allowing the app's clean white/blue gradient to naturally blend into the top edge of the screen.
 - **Developer Experience (DX)**:
   - Relaxed strict Vite TypeScript linting rules in `tsconfig.app.json` (`noUnusedLocals` and `noUnusedParameters` set to `false`) to prevent the build process from crashing during rapid prototyping due to harmless unused imports.
+
+## Phase 7: End-to-End Testing (Playwright)
+- **Framework Integration**: Installed and configured `@playwright/test` for robust E2E testing of the web layer before native compilation.
+- **Test Configuration**: 
+  - Created `playwright.config.ts` to automatically spin up the Vite dev server (`npm run dev`) and run tests concurrently.
+  - Hardcoded `webServer` routing to `127.0.0.1` to bypass Chromium IPv6 network resolution hangs on Windows.
+  - Switched the Chromium project to use the native `chrome` channel, avoiding crashes caused by the bundled headless-shell binary on specific Windows setups.
+- **Test Suites**:
+  - `auth.spec.ts`: Validates complete login flow, invalid credentials error states, and the logout workflow. 
+  - `reporting.spec.ts`: Validates the end-to-end Truck Arrival workflow from the dashboard to successful submission.
+- **Native Bypasses**: Implemented an E2E bypass flag (`window.__E2E_MOCK_IMAGE__`) in `ImageUpload.tsx` to instantly mock native Capacitor Camera plugin responses without triggering the interactive PWA Shadow DOM UI, avoiding test hangs.
