@@ -82,7 +82,7 @@ export function ReportTruckPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
       
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-8 pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto flex items-center gap-4">
           <button 
             onClick={() => navigate(-1)}

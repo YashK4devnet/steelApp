@@ -1,4 +1,4 @@
-import React, { InputHTMLAttributes } from 'react';
+import React, { type InputHTMLAttributes } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
@@ -15,9 +15,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         </label>
         <input
           ref={ref}
-          className={`h-[48px] rounded-[12px] bg-surface px-4 border ${
-            error ? 'border-error focus:border-error' : 'border-border focus:border-primary'
-          } outline-none transition-colors ${className}`}
+          className={`h-[48px] rounded-[12px] bg-surface px-4 border ${error ? 'border-error focus:border-error' : 'border-border focus:border-primary'
+            } outline-none transition-colors ${className}`}
           {...props}
         />
         {(error || helperText) && (

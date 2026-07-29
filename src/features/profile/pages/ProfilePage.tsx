@@ -9,7 +9,7 @@ export function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
       
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32 flex flex-col gap-6">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-32 flex flex-col gap-6">
         
         {/* Header Profile Section */}
         <div className="flex flex-col items-center justify-center mt-6 mb-4">

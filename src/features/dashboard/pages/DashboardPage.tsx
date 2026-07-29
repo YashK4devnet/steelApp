@@ -9,7 +9,7 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-32">
         {/* Header Section */}
         <div className="mb-8 flex justify-between items-start">
           <div>
