@@ -31,8 +31,8 @@ export function DashboardPage() {
         </div>
 
         {/* Role Content */}
-        {user?.is_security && <SecurityDashboard />}
-        {user?.is_admin && <ManagerDashboard />}
+        {user?.role?.toLowerCase() === 'security' && <SecurityDashboard />}
+        {user?.role?.toLowerCase() === 'admin' && <ManagerDashboard />}
       </main>
     </div>
   );
