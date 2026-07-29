@@ -90,3 +90,5 @@ This document logs the major architectural, feature, and design changes implemen
 - **Logout Confirmation**: Added a native browser `window.confirm` popup to the profile sign out button to prevent accidental logouts.
 - **Payload Size Optimization**: Resolved a `413 Payload Too Large` backend error during truck reporting by shrinking the `@capacitor/camera` photo captures (setting `quality: 70` and `width: 1024`), drastically reducing the size of the Base64 JSON payload.
 - **Token Auth Alignment**: Updated `AuthProvider.tsx` to persist the returned Bearer token from the backend, and modified `api.ts` to automatically inject the `Authorization: Bearer <token>` header into all requests.
+- **Report Page UI**: Passed full truck details via React Router state to display the specific Truck Number Plate and Delivery Address in the `ReportTruckPage` header. Simplified the camera and note form labels.
+- **Profile Layout**: Relocated the Logout button to a dedicated floating action icon at the top-right corner of the `ProfilePage` for a cleaner interface.
