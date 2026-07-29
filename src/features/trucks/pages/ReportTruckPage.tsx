@@ -61,7 +61,11 @@ export function ReportTruckPage() {
       setShowSuccess(true);
       
       setTimeout(() => {
-        navigate('/trucks/loaded');
+        if (window.history.length > 1) {
+          navigate(-1);
+        } else {
+          navigate('/trucks/loaded', { replace: true });
+        }
       }, 1500);
     }, 1000);
   };

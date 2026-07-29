@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
 import { ProfilePage } from '../../features/profile/pages/ProfilePage';
@@ -10,10 +11,14 @@ import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
 
-function AndroidBackButtonHandler() {
+function CapacitorNativeSetup() {
   const navigate = useNavigate();
   
   useEffect(() => {
+    // Set status bar icons to dark (Style.Light) and overlay web view (transparent bar)
+    StatusBar.setStyle({ style: Style.Light }).catch(() => {});
+    StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
+
     const listener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
       if (canGoBack) {
         navigate(-1);
@@ -33,7 +38,7 @@ function AndroidBackButtonHandler() {
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <AndroidBackButtonHandler />
+      <CapacitorNativeSetup />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
