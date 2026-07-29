@@ -92,3 +92,8 @@ This document logs the major architectural, feature, and design changes implemen
 - **Token Auth Alignment**: Updated `AuthProvider.tsx` to persist the returned Bearer token from the backend, and modified `api.ts` to automatically inject the `Authorization: Bearer <token>` header into all requests.
 - **Report Page UI**: Passed full truck details via React Router state to display the specific Truck Number Plate and Delivery Address in the `ReportTruckPage` header. Simplified the camera and note form labels.
 - **Profile Layout**: Relocated the Logout button to a dedicated floating action icon at the top-right corner of the `ProfilePage` for a cleaner interface.
+- **Dashboard Refinements**: 
+  - Added a quick-access logout button to the dashboard header.
+  - Removed unused mock features (Material Inventory, Shift Schedule) from the security dashboard.
+  - Disabled and visually muted incomplete features (Gate Pass, Security Logs, Outbound Trucks), tagging them with "Coming Soon" ribbons to focus the user exclusively on the inbound truck flow.
+- **Header Alignment**: Standardized the top padding of `LoadedTrucksPage` to use the dynamic `safe-area-inset-top` calculation, ensuring perfect alignment with the rest of the application headers.
