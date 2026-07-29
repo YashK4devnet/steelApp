@@ -51,3 +51,13 @@ This document logs the major architectural, feature, and design changes implemen
   - Split the monolithic `DashboardPage.tsx` by extracting `<SecurityDashboard />` and `<ManagerDashboard />` into their own components.
   - Moved `ImageUpload.tsx` from the global `components/ui/` folder into `features/trucks/components/` where it belongs.
 - **Web Camera Support**: Added `@ionic/pwa-elements` and initialized them in `main.tsx` to allow the Capacitor Camera plugin to render natively in the web browser during development.
+
+## Phase 6: Native Mobile Polish & DX Improvements
+- **Notch & Safe Area Handling**:
+  - Updated `index.html` viewport meta tag to use `viewport-fit=cover`, ensuring the app extends fully underneath the hardware notch/home indicator on iOS and Android.
+  - Replaced hardcoded top padding (`pt-8`) with dynamic CSS environment variables (`pt-[calc(env(safe-area-inset-top,2rem)+1rem)]`) across all main layout wrappers (`DashboardPage`, `ProfilePage`, `ReportTruckPage`).
+- **Status Bar Integration**:
+  - Integrated `@capacitor/status-bar` to take full control of the device's native notification bar.
+  - Configured `capacitor.config.ts` to overlay the webview (`overlaysWebView: true`) and use dark icons (`style: 'LIGHT'`), allowing the app's clean white/blue gradient to naturally blend into the top edge of the screen.
+- **Developer Experience (DX)**:
+  - Relaxed strict Vite TypeScript linting rules in `tsconfig.app.json` (`noUnusedLocals` and `noUnusedParameters` set to `false`) to prevent the build process from crashing during rapid prototyping due to harmless unused imports.
