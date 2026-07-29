@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { ImageUpload } from '../components/ImageUpload';
+import { apiRequest } from '../../../lib/api';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -46,20 +47,31 @@ export function ReportTruckPage() {
   // For now, we just mock the display.
   const truckPlate = `Truck #${id}`;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!image1) {
       alert('At least one image is required.');
       return;
     }
+    if (!id) return;
 
     setIsSubmitting(true);
 
-    // Mock UI submission
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setShowSuccess(true);
+    try {
+      const formattedTime = reportingDateTime.replace('T', ' ') + ':00';
       
+      const payload: any = {
+        truck_line_id: parseInt(id, 10),
+        reporting_datetime: formattedTime,
+        note: note,
+        image_1: image1
+      };
+      if (image2) payload.image_2 = image2;
+      if (image3) payload.image_3 = image3;
+
+      await apiRequest('POST', '/booking/trucks/report', payload);
+      
+      setShowSuccess(true);
       setTimeout(() => {
         if (window.history.length > 1) {
           navigate(-1);
@@ -67,7 +79,11 @@ export function ReportTruckPage() {
           navigate('/trucks/loaded', { replace: true });
         }
       }, 1500);
-    }, 1000);
+    } catch (error: any) {
+      alert(error.message || 'Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (showSuccess) {
