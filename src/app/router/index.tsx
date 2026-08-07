@@ -8,6 +8,7 @@ import { ProfilePage } from '../../features/profile/pages/ProfilePage';
 import { LoadedTrucksPage } from '../../features/trucks/pages/LoadedTrucksPage';
 import { LoadingTrucksPage } from '../../features/trucks/pages/LoadingTrucksPage';
 import { ReportTruckPage } from '../../features/trucks/pages/ReportTruckPage';
+import { SubmitVendorBillPage } from '../../features/trucks/pages/SubmitVendorBillPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
@@ -50,10 +51,12 @@ export function AppRouter() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
             <Route path="/trucks/loading" element={<LoadingTrucksPage />} />
+            <Route path="/trucks/submit-bill/:id" element={<SubmitVendorBillPage />} />
             <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
+
 
         
         {/* Redirect root and unknown routes to dashboard (which will redirect to login if unauthenticated) */}

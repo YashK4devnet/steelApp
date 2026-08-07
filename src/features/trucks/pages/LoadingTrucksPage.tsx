@@ -1,57 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-export interface LoadingTruck {
-  id: number;
-  truck_type_id: number;
-  truck_type: string;
-  truck_number_plate: string;
-  driver_name: string;
-  state: string;
-  pickup_location_id: number;
-  pickup_location_name: string;
-  delivery_address_id: number;
-  delivery_address_name: string;
-}
-
-export const MOCK_LOADING_TRUCKS: LoadingTruck[] = [
-  {
-    id: 201,
-    truck_type_id: 7,
-    truck_type: '20 Ft Container',
-    truck_number_plate: 'KA-01-AB-1234',
-    driver_name: 'Rajesh Kumar',
-    state: 'loading',
-    pickup_location_id: 32,
-    pickup_location_name: 'Vendor Godown, 123 Industrial Area, Bangalore 560001',
-    delivery_address_id: 45,
-    delivery_address_name: 'Main Warehouse, 123 Industrial Area, Bangalore 560001'
-  },
-  {
-    id: 202,
-    truck_type_id: 3,
-    truck_type: 'Open Body 16 Ton',
-    truck_number_plate: 'MH-12-PQ-9876',
-    driver_name: 'Vikram Sharma',
-    state: 'loading',
-    pickup_location_id: 32,
-    pickup_location_name: 'Vendor Godown, 123 Industrial Area, Bangalore 560001',
-    delivery_address_id: 48,
-    delivery_address_name: 'North Depot, Sector 4, Bangalore 560042'
-  },
-  {
-    id: 203,
-    truck_type_id: 5,
-    truck_type: '32 Ft Multi-Axle',
-    truck_number_plate: 'TN-07-EF-4321',
-    driver_name: 'Amit Patel',
-    state: 'loading',
-    pickup_location_id: 32,
-    pickup_location_name: 'Vendor Godown, 123 Industrial Area, Bangalore 560001',
-    delivery_address_id: 50,
-    delivery_address_name: 'Central Yard, Plot 12, Bangalore 560099'
-  }
-];
+import { getLoadingTrucks } from '../services/truckApi';
+import type { LoadingTruck } from '../types';
+import { PullToRefresh } from '../../../components/ui/PullToRefresh';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -77,10 +28,66 @@ const TruckIcon = () => (
   </svg>
 );
 
+/**
+ * Animated Skeleton loader for loading trucks list
+ */
+function LoadingTruckSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {[1, 2, 3].map((n) => (
+        <div 
+          key={n} 
+          className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col sm:flex-row gap-5 animate-pulse"
+        >
+          <div className="flex flex-row items-center gap-4 flex-1">
+            <div className="w-12 h-12 flex-shrink-0 bg-slate-200 rounded-full" />
+            <div className="flex-1 space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="h-5 bg-slate-200 rounded-md w-32" />
+                <div className="h-4 bg-slate-200 rounded-full w-16" />
+              </div>
+              <div className="h-4 bg-slate-200 rounded-md w-48" />
+              <div className="h-3.5 bg-slate-100 rounded-md w-full max-w-sm mt-1" />
+            </div>
+          </div>
+          <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-900/5 pt-4 sm:pt-0 sm:pl-5">
+            <div className="sm:text-right space-y-1">
+              <div className="h-3 bg-slate-100 rounded w-20 sm:ml-auto" />
+              <div className="h-4 bg-slate-200 rounded w-36 sm:ml-auto" />
+            </div>
+            <div className="h-10 bg-slate-200 rounded-[12px] w-full sm:w-36" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function LoadingTrucksPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [trucks] = useState<LoadingTruck[]>(MOCK_LOADING_TRUCKS);
+  const [trucks, setTrucks] = useState<LoadingTruck[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLoadingTrucks = async () => {
+    setError(null);
+
+    try {
+      const data = await getLoadingTrucks();
+      setTrucks(data);
+    } catch (err: any) {
+      console.error('[LoadingTrucksPage] API error:', err);
+      setTrucks([]);
+      setError(err.message || 'Failed to connect to server. Please check your internet connection.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLoadingTrucks();
+  }, []);
 
   const filteredTrucks = trucks.filter(t => 
     t.driver_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -94,14 +101,16 @@ export function LoadingTrucksPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
       {/* Sticky Header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-[1200px] mx-auto flex items-center gap-4 mb-6">
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
-          >
-            <ArrowLeftIcon />
-          </button>
-          <h1 className="text-[24px] font-bold text-text-primary tracking-tight">Loading Trucks</h1>
+        <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/dashboard', { replace: true }))}
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+            >
+              <ArrowLeftIcon />
+            </button>
+            <h1 className="text-[24px] font-bold text-text-primary tracking-tight">Loading Trucks</h1>
+          </div>
         </div>
 
         {/* Search Bar */}
@@ -119,11 +128,28 @@ export function LoadingTrucksPage() {
         </div>
       </div>
 
-      {/* List Content */}
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex flex-col gap-4">
-        {filteredTrucks.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-text-secondary">No loading trucks found.</p>
+      {/* List Content wrapped in PullToRefresh */}
+      <PullToRefresh onRefresh={fetchLoadingTrucks}>
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex flex-col gap-4">
+        {loading ? (
+          <LoadingTruckSkeleton />
+        ) : error ? (
+          <div className="bg-white rounded-[24px] p-8 text-center shadow-sm border border-slate-900/5 flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl font-bold">
+              ⚠️
+            </div>
+            <h3 className="text-base font-bold text-text-primary">Unable to Load Trucks</h3>
+            <p className="text-xs text-text-secondary max-w-md">{error}</p>
+            <button 
+              onClick={fetchLoadingTrucks}
+              className="mt-2 px-5 py-2 bg-primary text-white text-xs font-semibold rounded-full shadow-sm active:scale-95 transition-all"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : filteredTrucks.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-[24px] p-6 shadow-sm border border-slate-900/5">
+            <p className="text-text-secondary font-medium">No loading trucks found.</p>
           </div>
         ) : (
           filteredTrucks.map(truck => (
@@ -141,8 +167,12 @@ export function LoadingTrucksPage() {
                     <h3 className="text-[18px] font-bold text-text-primary tracking-tight leading-none">
                       {truck.truck_number_plate}
                     </h3>
-                    <span className="text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                      {truck.state}
+                    <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
+                      truck.is_submitted 
+                        ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
+                        : 'bg-blue-50 text-blue-600'
+                    }`}>
+                      {truck.is_submitted ? 'Bill Submitted' : truck.state}
                     </span>
                   </div>
                   <p className="text-[14px] text-text-secondary font-medium">
@@ -164,16 +194,22 @@ export function LoadingTrucksPage() {
                 </div>
                 
                 <button 
-                  className="w-full sm:w-auto px-6 py-2.5 bg-primary text-white rounded-[12px] font-semibold text-[14px] shadow-[0_4px_12px_rgba(10,46,99,0.15)] hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)] transition-transform active:scale-[0.98]"
-                  onClick={() => alert(`Submit bill for truck #${truck.truck_number_plate}`)}
+                  disabled={truck.is_submitted}
+                  className={`w-full sm:w-auto px-6 py-2.5 rounded-[12px] font-semibold text-[14px] transition-all ${
+                    truck.is_submitted 
+                      ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none' 
+                      : 'bg-primary text-white shadow-[0_4px_12px_rgba(10,46,99,0.15)] hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)] active:scale-[0.98]'
+                  }`}
+                  onClick={() => !truck.is_submitted && navigate(`/trucks/submit-bill/${truck.id}`, { state: { truck } })}
                 >
-                  Submit Vendor Bill
+                  {truck.is_submitted ? 'Bill Submitted' : 'Submit Vendor Bill'}
                 </button>
               </div>
             </div>
           ))
         )}
       </main>
-    </div>
-  );
+    </PullToRefresh>
+  </div>
+);
 }
