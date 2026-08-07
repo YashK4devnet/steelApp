@@ -54,11 +54,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    try {
-      await apiRequest('POST', '/booking/auth/logout');
-    } catch (e) {
-      console.warn('Logout API failed, but clearing local session anyway', e);
+    // 1. Call Odoo backend API POST /booking/auth/logout
+    const res = await apiRequest<{ status?: string }>('POST', '/booking/auth/logout');
+
+    if (res && res.status === 'error') {
+      throw new Error((res as any).message || 'Server rejected logout request');
     }
+
+    // 2. Clear local user session ONLY if API call succeeds
     setUser(null);
     setToken(null);
     localStorage.removeItem('authUser');

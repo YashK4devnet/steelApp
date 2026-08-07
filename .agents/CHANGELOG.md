@@ -170,4 +170,43 @@ This document logs the major architectural, feature, and design changes implemen
 - **Static Header & Search Bar**: Kept top navigation header, back buttons, and search inputs static at the top of the viewport when dragging.
 - **Inline Floating Refresh Badge**: Rendered the floating spinner indicator right above the list cards (between search bar and list items), translating only the list elements during pull gestures.
 
+## Phase 18: Page Level Navigation & Double-Back-to-Exit Toast
+- **Single Source Changelog**: Locked changelog updates strictly to `.agents/CHANGELOG.md`.
+- **Page Level Hierarchy (`PAGE_LEVEL_MAP`)**:
+  - Established strict page hierarchy levels: Level 0 (`/dashboard`, `/profile`, `/login`), Level 1 (`/trucks/loading`, `/trucks/loaded`), Level 2 (`/trucks/submit-bill/:id`, `/trucks/report/:id`).
+  - Configured strict parent navigation so going back on sub-pages steps directly to the parent level with `{ replace: true }`, preventing history stack accumulation or returning to stale pages.
+- **Double-Back-to-Exit on Dashboard**:
+  - Configured Android hardware back button handler in `CapacitorNativeSetup`.
+  - Pressing back once on Level 0 (`/dashboard`) shows a floating toast: `"Press back again to exit"`.
+  - Pressing back a second time within 2000ms triggers `CapacitorApp.minimizeApp()`, natively minimizing the app.
+- **Bottom Navigation Alignment**: Added `replace` prop to `NavLink` elements in `BottomNav.tsx` so tab switching between Home and Profile maintains a clean stack.
+
+## Phase 19: Custom Logout Confirmation Modal & Strict API Validation
+- **Custom UI Modal (`LogoutModal.tsx`)**: Replaced default browser/android `window.confirm` popups with a custom modal matching the design system (`bg-white rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.18)]`).
+- **Loading Animation State**: Added an active spinning loader ("Signing out...") inside the action button while the API request is in progress.
+- **Strict API Success Requirement**: Updated `logout` in `AuthProvider.tsx` to throw an error if `POST /booking/auth/logout` fails. Local session (`user`, `token`, `localStorage`) is strictly preserved unless the API returns success.
+- **Error Handling**: Displays an inline red alert banner inside `LogoutModal` if the API request fails, keeping the user securely logged in.
+- **App-wide Integration**: Connected `LogoutModal` across both `DashboardPage.tsx` and `ProfilePage.tsx`.
+
+## Phase 20: Comprehensive Application UI Animations
+- **Sign In Button Spring Dots Loader**: Replaced text loading string on `LoginPage.tsx` button with a 3-dot spring bouncing animation (`animate-spring-dot-1`, `2`, `3`) when authenticating.
+- **Logout Modal Bottom Sheet Animations**: Styled `LogoutModal.tsx` as a mobile bottom sheet featuring slide-up (`animate-slide-up-bottom`) opening and slide-down (`animate-slide-down-bottom`) dismissal.
+- **Navbar Hiding on Logout Modal**: Added `toggle-logout-modal` event listener in `MainLayout.tsx` to automatically hide `BottomNav.tsx` whenever the logout confirmation modal is open.
+- **Fluid Page Transitions**: Applied `.animate-page-transition` keyframe animation (`translateY(10px)` fade-in blend) across route switches in `MainLayout.tsx`.
+
+## Phase 21: Fixed Bottom Submit Action Bar CSS Isolation
+- **Root Cause Fix**: Resolved CSS spec behavior where parent `transform` properties in `.animate-page-transition` created containing blocks for `position: fixed` child elements.
+- **Keyframe Cleanup**: Updated `pageTransition` keyframes in `src/index.css` to clear transforms upon animation completion (`100% { transform: none; }`), ensuring fixed elements pin directly to the browser viewport.
+- **Layout Placement**: Moved the fixed bottom submit button bar in `SubmitVendorBillPage.tsx` outside the `<main>` element to the root layout container (`fixed bottom-0 left-0 right-0 z-50`).
+
+## Phase 22: Opacity-Only Page Transitions for Fixed Element Viewport Pinning
+- **Permanent Fixed Positioning Fix**: Switched `.animate-page-transition` keyframes in `src/index.css` to an opacity-only fade transition (`opacity: 0` -> `opacity: 1`).
+- **Eliminated Containing Block Context**: Removed `transform` properties from the global page transition wrapper, preventing browser layout engines from scoping `position: fixed` elements to wrapper boundaries.
+- **Always Visible Viewport Pinning**: Confirmed the "Submit Vendor Bill" action bar in `SubmitVendorBillPage.tsx` and "Submit Report" button in `ReportTruckPage.tsx` remain **always visible** and pinned 100% permanently to the bottom of the screen regardless of form length or scroll position.
+
+
+
+
+
+
 

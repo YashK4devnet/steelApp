@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { BellIcon } from '../components/Icons';
 import { LogoutIcon } from '../../profile/components/Icons';
 import { SecurityDashboard } from '../components/SecurityDashboard';
 import { ManagerDashboard } from '../components/ManagerDashboard';
 import { SellerDashboard } from '../components/SellerDashboard';
+import { LogoutModal } from '../../../components/ui/LogoutModal';
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const userRole = user?.role?.toLowerCase() || '';
   const isSecurity = userRole === 'security';
@@ -37,11 +39,7 @@ export function DashboardPage() {
               <BellIcon />
             </button>
             <button 
-              onClick={() => {
-                if (window.confirm('Are you sure you want to sign out?')) {
-                  logout();
-                }
-              }}
+              onClick={() => setShowLogoutModal(true)}
               className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(200,16,46,0.1)] border border-slate-900/5 text-error hover:bg-error/5 active:scale-95 transition-all"
               title="Sign Out"
             >
@@ -55,8 +53,13 @@ export function DashboardPage() {
         {isAdmin && <ManagerDashboard />}
         {isSeller && <SellerDashboard />}
       </main>
+
+      {/* Reusable Custom Logout Modal */}
+      <LogoutModal 
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={logout}
+      />
     </div>
   );
 }
-
-
