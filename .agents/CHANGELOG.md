@@ -111,3 +111,63 @@ This document logs the major architectural, feature, and design changes implemen
   - Added "Submit Vendor Bill" action buttons per loading truck line.
 - **Routing Setup**: Registered the `/trucks/loading` route in `src/app/router/index.tsx` under protected layout routing, resolving route fallback redirects.
 
+## Phase 11: Submit Vendor Bill Workflow & Strict Document Restrictions
+- **Document Upload Component**:
+  - Built `DocumentUpload.tsx` at `src/features/trucks/components/DocumentUpload.tsx` supporting PDF and Image files only (`application/pdf`, `image/jpeg`, `image/png`, `image/webp`).
+  - Implemented strict MIME-type and extension validation to reject all non-PDF/Image formats (e.g. DOCX, XLSX, TXT, ZIP) with clear inline error messages.
+  - Added live file previews: image thumbnail preview for image files, and PDF badge with file size for PDF files.
+- **Submit Vendor Bill Page**:
+  - Created `SubmitVendorBillPage.tsx` at `src/features/trucks/pages/SubmitVendorBillPage.tsx`.
+  - Added form fields mirroring `.agents/README.md` API spec (`bill_number`, `bill_date`, `bill_document`, `eway_bill_attached_with_bill`, `eway_bill_number`, `eway_bill_document`).
+  - Automatically populated `bill_document_name` and `eway_bill_document_name` from uploaded file objects.
+  - Enforced E-Way bill backend validation rules (requiring number or document when not attached with bill).
+  - **Fixed Bottom Button**: Made the "Submit Vendor Bill" action bar fixed at the bottom (`fixed bottom-0 left-0 right-0 z-50`), ensuring instant visibility without requiring page scrolling.
+  - **Feedback & Error Messaging**: Added full-screen success confirmation view ("Vendor Bill Submitted!") and prominent error alert banners for network failures/request errors.
+- **Navigation & Layout**:
+  - Connected `LoadingTrucksPage` "Submit Vendor Bill" buttons to `/trucks/submit-bill/:id`.
+  - Registered `/trucks/submit-bill/:id` route in `src/app/router/index.tsx`.
+  - Updated `MainLayout.tsx` to hide bottom navigation on the submit bill screen.
+
+## Phase 12: Real API Integration for Vendor/Seller Flow
+- **Loading Trucks API Integration (`GET /booking/trucks/loading`)**:
+  - Integrated real HTTP endpoint in `LoadingTrucksPage.tsx` using `apiRequest('GET', '/booking/trucks/loading')`.
+  - Removed all hardcoded mock data and mock fallbacks (`MOCK_LOADING_TRUCKS`).
+  - Implemented a custom animated pulse skeleton loading component (`LoadingTruckSkeleton`) for a premium mobile loading experience.
+  - Added an error container with a "Try Again" retry action for network failures.
+  - Dynamically fetched loading truck count on `SellerDashboard.tsx`.
+- **Submit Vendor Bill API Integration (`POST /booking/trucks/submit_vendor_bill`)**:
+  - Integrated real POST endpoint in `SubmitVendorBillPage.tsx` using `apiRequest('POST', '/booking/trucks/submit_vendor_bill', payload)`.
+  - Added `fileToBase64` helper to encode PDF and Image documents into base64 Data-URIs for JSON payload transmission.
+  - Included `bill_document_name` and `eway_bill_document_name` parameters matching Odoo mobile backend requirements.
+
+## Phase 13: Vendor Bill Submitted Flag Handling
+- **Data Model Update**: Added `is_submitted?: boolean` to `LoadingTruck` interface in `src/features/trucks/types.ts`.
+- **UI State & Action Guarding**:
+  - Updated `LoadingTrucksPage.tsx` to render a green `BILL SUBMITTED` badge when `truck.is_submitted` is true.
+  - Disabled the action button ("Bill Submitted") and blocked navigation for submitted trucks.
+  - Added an `useEffect` guard in `SubmitVendorBillPage.tsx` that redirects users back to `/trucks/loading` if they attempt to open the submission form for an already submitted truck.
+
+## Phase 14: History Stack Navigation & Native Back Button Alignment
+- **Native Android Back Button**:
+  - Verified `@capacitor/app` `backButton` handler in `AppRouter` (`src/app/router/index.tsx`), which delegates directly to `navigate(-1)` on browser history or exits app if at stack root.
+- **Form Submission Stack Removal**:
+  - Updated `SubmitVendorBillPage.tsx` to call `navigate(-1)` upon successful submission, cleanly popping the submission form entry off the browser history stack.
+  - Guarantees the user cannot press the Android native back button to return to the submit page once a bill is submitted.
+- **Header Back Buttons**:
+  - Standardized all sub-page header back buttons (`SubmitVendorBillPage.tsx`, `LoadingTrucksPage.tsx`, `LoadedTrucksPage.tsx`) to pop history entries using `navigate(-1)` with fallback replacing routes.
+
+## Phase 15: Native Pull-to-Refresh Mechanic
+- **Reusable UI Component**: Created `src/components/ui/PullToRefresh.tsx` matching the application's clean design system, featuring touch gesture tracking, rubberband dampening, rotational arrow scaling, and CSS spinners.
+- **Seller Flow (`LoadingTrucksPage.tsx`)**: Removed the static "Refresh" button from the header and wrapped the list in `PullToRefresh` to refresh seller loading trucks on pull-down.
+- **Security Flow (`LoadedTrucksPage.tsx`)**: Wrapped loaded trucks list in `PullToRefresh` to allow security personnel to seamlessly refresh inbound truck data via pull-down gestures.
+
+## Phase 16: Pull-to-Refresh Clipping & Animation Duration Polish
+- **Z-Index Overlay & Clipping Fix**: Re-positioned the floating refresh indicator in `PullToRefresh.tsx` to `fixed top-[calc(env(safe-area-inset-top,1rem)+0.5rem)] z-50`. Prevents the floating indicator from clipping behind sticky headers (`z-20`) or page containers.
+- **Minimum Visible Animation Duration**: Enforced a minimum visible spinning duration (`minDurationMs = 800`) using `Promise.all([onRefresh(), minTimer])`. Guarantees a smooth, non-jarring feedback animation even on instant API responses, while extending dynamically if network requests take longer.
+
+## Phase 17: Selective List Pull-to-Refresh
+- **Selective Layout Wrapping**: Updated `LoadingTrucksPage.tsx` and `LoadedTrucksPage.tsx` so `<PullToRefresh>` wraps only the `<main>` list content container.
+- **Static Header & Search Bar**: Kept top navigation header, back buttons, and search inputs static at the top of the viewport when dragging.
+- **Inline Floating Refresh Badge**: Rendered the floating spinner indicator right above the list cards (between search bar and list items), translating only the list elements during pull gestures.
+
+

@@ -1,50 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TruckIcon, ReceiptIcon, FileTextIcon, WarehouseIcon } from './Icons';
-
-// Mock data structure matching Odoo Mobile API schema for /booking/trucks/loading
-export interface MockLoadingTruck {
-  id: number;
-  truck_type_id: number;
-  truck_type: string;
-  truck_number_plate: string;
-  driver_name: string;
-  state: string;
-  pickup_location_id: number;
-  pickup_location_name: string;
-  delivery_address_id: number;
-  delivery_address_name: string;
-}
-
-export const MOCK_LOADING_TRUCKS: MockLoadingTruck[] = [
-  {
-    id: 201,
-    truck_type_id: 7,
-    truck_type: '20 Ft Container',
-    truck_number_plate: 'KA-01-AB-1234',
-    driver_name: 'Rajesh Kumar',
-    state: 'loading',
-    pickup_location_id: 32,
-    pickup_location_name: 'Vendor Godown, 123 Industrial Area, Bangalore 560001',
-    delivery_address_id: 45,
-    delivery_address_name: 'Main Warehouse, 123 Industrial Area, Bangalore 560001'
-  },
-  {
-    id: 202,
-    truck_type_id: 3,
-    truck_type: 'Open Body 16 Ton',
-    truck_number_plate: 'MH-12-PQ-9876',
-    driver_name: 'Vikram Sharma',
-    state: 'loading',
-    pickup_location_id: 32,
-    pickup_location_name: 'Vendor Godown, 123 Industrial Area, Bangalore 560001',
-    delivery_address_id: 48,
-    delivery_address_name: 'North Depot, Sector 4, Bangalore 560042'
-  }
-];
+import { apiRequest } from '../../../lib/api';
 
 export function SellerDashboard() {
   const navigate = useNavigate();
+  const [loadingCount, setLoadingCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCount = async () => {
+      try {
+        const res = await apiRequest<{ status: string; count?: number; trucks?: any[] }>(
+          'GET',
+          '/booking/trucks/loading'
+        );
+        if (isMounted) {
+          const count = res.count !== undefined ? res.count : (res.trucks ? res.trucks.length : 0);
+          setLoadingCount(count);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch seller loading trucks count:', err);
+        if (isMounted) setLoadingCount(0);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchCount();
+    return () => { isMounted = false; };
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -58,13 +44,17 @@ export function SellerDashboard() {
           <div className="w-12 h-12 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 transition-colors">
             <TruckIcon className="w-6 h-6" />
           </div>
-          <div className="flex flex-col gap-1">
+          <div className="flex flex-col gap-1 w-full">
             <h3 className="text-[16px] font-semibold text-text-primary leading-tight">
               Loading Trucks
             </h3>
-            <span className="text-[12px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
-              {MOCK_LOADING_TRUCKS.length} Pending
-            </span>
+            {loading ? (
+              <div className="h-5 w-20 bg-slate-100 rounded-full animate-pulse mt-0.5" />
+            ) : (
+              <span className="text-[12px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
+                {loadingCount ?? 0} Pending
+              </span>
+            )}
           </div>
         </button>
 
