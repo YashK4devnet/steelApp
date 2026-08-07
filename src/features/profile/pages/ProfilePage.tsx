@@ -1,20 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
-import { Button } from '../../../components/ui/Button';
 import { LogoutIcon, UserAvatarIcon } from '../components/Icons';
+import { LogoutModal } from '../../../components/ui/LogoutModal';
 
 export function ProfilePage() {
   const { user, logout } = useAuth();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
       <div className="absolute top-[calc(env(safe-area-inset-top,2rem)+1rem)] right-4 sm:right-6 lg:right-8 z-20">
         <button 
-          onClick={() => {
-            if (window.confirm('Are you sure you want to sign out?')) {
-              logout();
-            }
-          }}
+          onClick={() => setShowLogoutModal(true)}
           className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(200,16,46,0.1)] border border-slate-900/5 text-error hover:bg-error/5 active:scale-95 transition-all"
           title="Sign Out"
         >
@@ -61,6 +58,13 @@ export function ProfilePage() {
         </div>
 
       </main>
+
+      {/* Reusable Custom Logout Modal */}
+      <LogoutModal 
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={logout}
+      />
     </div>
   );
 }

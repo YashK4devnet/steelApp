@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { LoginPage } from '../../features/auth/pages/LoginPage';
@@ -13,28 +13,89 @@ import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
 
+export interface PageLevelConfig {
+  level: number;
+  parent: string;
+}
+
+export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
+  '/dashboard': { level: 0, parent: '' },
+  '/profile': { level: 0, parent: '/dashboard' },
+  '/login': { level: 0, parent: '' },
+  '/trucks/loading': { level: 1, parent: '/dashboard' },
+  '/trucks/loaded': { level: 1, parent: '/dashboard' },
+  '/trucks/submit-bill': { level: 2, parent: '/trucks/loading' },
+  '/trucks/report': { level: 2, parent: '/trucks/loaded' },
+};
+
+export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.startsWith('/trucks/submit-bill')) return PAGE_LEVEL_MAP['/trucks/submit-bill'];
+  if (pathname.startsWith('/trucks/report')) return PAGE_LEVEL_MAP['/trucks/report'];
+  if (pathname.startsWith('/trucks/loading')) return PAGE_LEVEL_MAP['/trucks/loading'];
+  if (pathname.startsWith('/trucks/loaded')) return PAGE_LEVEL_MAP['/trucks/loaded'];
+  if (pathname.startsWith('/profile')) return PAGE_LEVEL_MAP['/profile'];
+  if (pathname.startsWith('/login')) return PAGE_LEVEL_MAP['/login'];
+  return PAGE_LEVEL_MAP['/dashboard'];
+}
+
 function CapacitorNativeSetup() {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+  const lastBackPressTimeRef = useRef<number>(0);
+  const [showExitToast, setShowExitToast] = useState(false);
+  const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
-    // Set status bar icons to dark (Style.Light) and overlay web view (transparent bar)
+    // Configure native status bar
     StatusBar.setStyle({ style: Style.Light }).catch(() => {});
     StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
 
-    const listener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
-      if (canGoBack) {
-        navigate(-1);
+    // Native Android hardware back button handler
+    const listener = CapacitorApp.addListener('backButton', () => {
+      const path = location.pathname;
+      const config = getPageConfig(path);
+
+      if (config.level === 0) {
+        // Level 0 (Top-level tabs: Dashboard, Profile, Login)
+        const now = Date.now();
+        if (now - lastBackPressTimeRef.current < 2000) {
+          // Double back press within 2 seconds -> minimize app natively
+          setShowExitToast(false);
+          CapacitorApp.minimizeApp().catch(() => {
+            CapacitorApp.exitApp();
+          });
+        } else {
+          // First back press -> set timestamp & show double-back toast
+          lastBackPressTimeRef.current = now;
+          setShowExitToast(true);
+          if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+          toastTimeoutRef.current = setTimeout(() => {
+            setShowExitToast(false);
+          }, 2000);
+        }
       } else {
-        CapacitorApp.exitApp();
+        // Sub-page (Level 1 or Level 2) -> navigate strictly to parent level replacing history
+        navigate(config.parent, { replace: true });
       }
     });
 
     return () => {
       listener.then(handle => handle.remove());
+      if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
-  return null;
+  return (
+    <>
+      {showExitToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[100] pointer-events-none transition-all duration-200 animate-fade-in-up">
+          <div className="bg-slate-900/90 text-white backdrop-blur-md px-5 py-2.5 rounded-full shadow-[0_8px_24px_rgba(15,23,42,0.3)] text-xs font-semibold tracking-wide border border-slate-700/50 flex items-center gap-2">
+            <span>Press back again to exit</span>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 export function AppRouter() {
@@ -56,8 +117,6 @@ export function AppRouter() {
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
-
-
         
         {/* Redirect root and unknown routes to dashboard (which will redirect to login if unauthenticated) */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

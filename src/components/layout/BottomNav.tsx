@@ -38,6 +38,7 @@ export function BottomNav() {
 
       <NavLink 
         to="/dashboard"
+        replace
         className={({ isActive }) => `flex flex-row items-center justify-center gap-2 w-[104px] h-full rounded-full transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}
       >
         <HomeIcon className="w-5 h-5" />
@@ -47,6 +48,7 @@ export function BottomNav() {
 
       <NavLink 
         to="/profile"
+        replace
         className={({ isActive }) => `flex flex-row items-center justify-center gap-2 w-[104px] h-full rounded-full transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}
       >
         <UserIcon className="w-5 h-5" />

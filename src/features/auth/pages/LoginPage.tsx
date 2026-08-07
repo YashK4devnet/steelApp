@@ -96,8 +96,16 @@ export function LoginPage() {
                 </div>
               )}
               
-              <Button type="submit" disabled={isLoading} className="mt-4 w-full">
-                {isLoading ? 'Signing in...' : 'Sign In'}
+              <Button type="submit" disabled={isLoading} className="mt-4 w-full h-12">
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2 py-0.5">
+                    <span className="w-2.5 h-2.5 bg-white rounded-full animate-spring-dot-1" />
+                    <span className="w-2.5 h-2.5 bg-white rounded-full animate-spring-dot-2" />
+                    <span className="w-2.5 h-2.5 bg-white rounded-full animate-spring-dot-3" />
+                  </div>
+                ) : (
+                  'Sign In'
+                )}
               </Button>
             </form>
           </Card>

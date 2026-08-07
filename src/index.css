@@ -35,3 +35,71 @@ body {
 .animate-fade-in-up {
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Opacity-only page transition to strictly preserve position:fixed viewport positioning */
+@keyframes pageTransition {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-page-transition {
+  animation: pageTransition 0.25s ease-out;
+}
+
+@keyframes slideUpBottom {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideDownBottom {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-up-bottom {
+  animation: slideUpBottom 0.32s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+.animate-slide-down-bottom {
+  animation: slideDownBottom 0.25s cubic-bezier(0.32, 0, 0.67, 0) forwards;
+}
+
+@keyframes springBounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.25);
+  }
+}
+
+.animate-spring-dot-1 {
+  animation: springBounce 0.6s ease-in-out infinite;
+  animation-delay: 0s;
+}
+
+.animate-spring-dot-2 {
+  animation: springBounce 0.6s ease-in-out infinite;
+  animation-delay: 0.15s;
+}
+
+.animate-spring-dot-3 {
+  animation: springBounce 0.6s ease-in-out infinite;
+  animation-delay: 0.3s;
+}

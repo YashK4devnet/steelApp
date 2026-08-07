@@ -1,14 +1,31 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
 
 export function MainLayout() {
   const location = useLocation();
-  const hideBottomNav = location.pathname.includes('/trucks/report') || location.pathname.includes('/trucks/submit-bill');
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleLogoutModalToggle = (e: Event) => {
+      const customEvent = e as CustomEvent<{ open: boolean }>;
+      setIsLogoutModalOpen(!!customEvent.detail?.open);
+    };
+
+    window.addEventListener('toggle-logout-modal', handleLogoutModalToggle);
+    return () => {
+      window.removeEventListener('toggle-logout-modal', handleLogoutModalToggle);
+    };
+  }, []);
+
+  const hideBottomNav = 
+    isLogoutModalOpen ||
+    location.pathname.includes('/trucks/report') || 
+    location.pathname.includes('/trucks/submit-bill');
 
   return (
     <>
-      <div key={location.pathname}>
+      <div key={location.pathname} className="animate-page-transition">
         <Outlet />
       </div>
       {!hideBottomNav && <BottomNav />}
