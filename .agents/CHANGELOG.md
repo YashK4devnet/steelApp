@@ -204,6 +204,27 @@ This document logs the major architectural, feature, and design changes implemen
 - **Eliminated Containing Block Context**: Removed `transform` properties from the global page transition wrapper, preventing browser layout engines from scoping `position: fixed` elements to wrapper boundaries.
 - **Always Visible Viewport Pinning**: Confirmed the "Submit Vendor Bill" action bar in `SubmitVendorBillPage.tsx` and "Submit Report" button in `ReportTruckPage.tsx` remain **always visible** and pinned 100% permanently to the bottom of the screen regardless of form length or scroll position.
 
+## Phase 23: Profile Header Centering & Seller/Vendor Profile Layout Handling
+- **Header Alignment**: Centered the user's name (`text-center w-full`) and role subtitle in `ProfilePage.tsx`.
+- **Seller/Vendor Non-Employee Handling**:
+  - Employee ID: Displays `• #<id>` only when `employee_id` exists, removing `#N/A` for external sellers.
+  - Company: Shows company name or falls back to "External Vendor Partner" for sellers.
+  - Work Location / Vendor Status: Displays "Work Location" for internal employees and a green pulsing "Verified Vendor Partner" badge for sellers without employee address IDs/names.
+
+## Phase 24: Dashboard Header Responsiveness & Profile Card Cleanup
+- **Vendor Status Removal**: Removed the unnecessary Vendor Status card section from `ProfilePage.tsx`.
+- **Lower Dashboard Top Margin**: Increased top padding in `DashboardPage.tsx` to `pt-[calc(env(safe-area-inset-top,2rem)+2rem)]` for clean top edge breathing room.
+- **Long Name Responsive Flexbox**: Restructured header in `DashboardPage.tsx` using `min-w-0 flex-1` text box and `flex-shrink-0` button container, ensuring long names wrap naturally (`break-words`) without overlapping top notification & logout icons.
+
+## Phase 25: Premium Glass Action Pill Buttons & Profile Logout Button Alignment
+- **Profile Logout Button Alignment**: Synchronized `ProfilePage.tsx` top logout button positioning (`top-[calc(env(safe-area-inset-top,2rem)+2rem)] pt-0.5 right-4 sm:right-6 lg:right-8`) to align 1:1 with `DashboardPage.tsx` header action buttons.
+- **Frosted Glass Pill Buttons**: Upgraded top notification and sign-out buttons to 42x42px frosted glass surfaces (`bg-white/90 backdrop-blur-md shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10`).
+- **Interactive Unread Notification Indicator**: Added an active pulsing status dot (`w-2 h-2 rounded-full bg-accent ring-2 ring-white animate-pulse`) on the notification bell icon.
+- **Red Soft Tint Hover on Logout**: Applied a subtle red hover tint (`text-red-500 hover:text-red-600 hover:bg-red-50/80 hover:border-red-200/80`) to the sign-out action button.
+
+
+
+
 
 
 
