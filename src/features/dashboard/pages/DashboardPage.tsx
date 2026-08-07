@@ -18,29 +18,39 @@ export function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-32">
+      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+2rem)] pb-32">
         {/* Header Section */}
-        <div className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-base font-medium text-text-secondary mb-0.5">
+        <div className="mb-8 flex justify-between items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
               Good Morning,
-            </h1>
-            <h2 className="text-[32px] font-bold text-text-primary tracking-tight leading-tight">
+            </p>
+            <h2 className="text-[26px] sm:text-[30px] font-bold text-text-primary tracking-tight leading-snug break-words pr-2">
               {user?.name} 👋
             </h2>
-            <p className="text-sm font-medium text-primary mb-1">{user?.login}</p>
-            <p className="text-sm text-text-secondary mt-1">
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-full">
+                {user?.login}
+              </span>
+            </div>
+            <p className="text-xs sm:text-sm text-text-secondary mt-2 font-normal">
               What would you like to do today?
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button className="w-10 h-10 rounded-full bg-white shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors active:scale-95">
+          {/* Action Buttons - Premium Glass Pill Buttons */}
+          <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5">
+            <button 
+              className="relative w-[42px] h-[42px] rounded-full bg-white/90 backdrop-blur-md shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)] active:scale-95 transition-all duration-200"
+              title="Notifications"
+            >
               <BellIcon />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-accent ring-2 ring-white animate-pulse" />
             </button>
+
             <button 
               onClick={() => setShowLogoutModal(true)}
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(200,16,46,0.1)] border border-slate-900/5 text-error hover:bg-error/5 active:scale-95 transition-all"
+              className="w-[42px] h-[42px] rounded-full bg-white/90 backdrop-blur-md shadow-[0_4px_12px_rgba(220,38,38,0.08)] border border-slate-900/10 flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50/80 hover:border-red-200/80 active:scale-95 transition-all duration-200"
               title="Sign Out"
             >
               <LogoutIcon />
