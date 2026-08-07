@@ -1,0 +1,346 @@
+{
+    "info": {
+        "name": "Reporting Mobile API",
+        "description": "Postman collection for the Reporting Mobile App APIs exposed by booking_modifier_4devnet.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Login",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.status === 'success' && jsonData.token) {",
+                            "    pm.collectionVariables.set('token', jsonData.token);",
+                            "    console.log('Token saved:', jsonData.token);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Username",
+                        "value": "{{username}}"
+                    },
+                    {
+                        "key": "Password",
+                        "value": "{{password}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/auth/login",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "auth",
+                        "login"
+                    ]
+                },
+                "description": "Authenticate with username and password. Returns the user's persistent mobile token (generated on first login, reused afterwards), saved to the collection variable 'token' for subsequent requests."
+            },
+            "response": []
+        },
+        {
+            "name": "2. Logout",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/auth/logout",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "auth",
+                        "logout"
+                    ]
+                },
+                "description": "Signs out the current session. The token is not deleted or rotated and remains valid for future logins."
+            },
+            "response": []
+        },
+        {
+            "name": "3. Loaded Trucks",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.trucks && jsonData.trucks.length > 0) {",
+                            "    const truck = jsonData.trucks.find(t => !t.is_reported) || jsonData.trucks[0];",
+                            "    pm.collectionVariables.set('truck_line_id', truck.id);",
+                            "    console.log('Truck line ID set to:', truck.id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/loaded",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "loaded"
+                    ]
+                },
+                "description": "Fetch loaded trucks waiting for unloading. The first unreported truck id is saved to the variable 'truck_line_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "4. Report Truck",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "truck_line_id",
+                            "value": "{{truck_line_id}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "reporting_datetime",
+                            "value": "{{reporting_datetime}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "note",
+                            "value": "Truck arrived at gate",
+                            "type": "text"
+                        },
+                        {
+                            "key": "image_1",
+                            "value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                            "type": "text"
+                        },
+                        {
+                            "key": "image_2",
+                            "value": "",
+                            "type": "text"
+                        },
+                        {
+                            "key": "image_3",
+                            "value": "",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/report",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "report"
+                    ]
+                },
+                "description": "Report a truck arrival. Requires an unreported truck_line_id (set automatically after a successful Loaded Trucks call)."
+            },
+            "response": []
+        },
+        {
+            "name": "5. Loading Trucks",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.trucks && jsonData.trucks.length > 0) {",
+                            "    const truck = jsonData.trucks[0];",
+                            "    pm.collectionVariables.set('loading_truck_line_id', truck.id);",
+                            "    console.log('Loading truck line ID set to:', truck.id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/loading",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "loading"
+                    ]
+                },
+                "description": "Fetch trucks currently in Loading state. Sellers see only trucks assigned to their pickup location; Admins see all. The first truck id is saved to 'loading_truck_line_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "6. Submit Vendor Bill",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "truck_line_id",
+                            "value": "{{loading_truck_line_id}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "bill_number",
+                            "value": "INV/2026/0001",
+                            "type": "text"
+                        },
+                        {
+                            "key": "bill_date",
+                            "value": "2026-07-28",
+                            "type": "text"
+                        },
+                        {
+                            "key": "bill_document",
+                            "value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                            "type": "text"
+                        },
+                        {
+                            "key": "eway_bill_attached_with_bill",
+                            "value": "false",
+                            "type": "text"
+                        },
+                        {
+                            "key": "eway_bill_number",
+                            "value": "123456789012",
+                            "type": "text"
+                        },
+                        {
+                            "key": "eway_bill_document",
+                            "value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/submit_vendor_bill",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "submit_vendor_bill"
+                    ]
+                },
+                "description": "Submit vendor bill and optional E-Way Bill for a loading truck. Reuses the same fields and validation as the Odoo loading flow."
+            },
+            "response": []
+        }
+    ],
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:8069",
+            "description": "Your Odoo instance base URL."
+        },
+        {
+            "key": "username",
+            "value": "",
+            "description": "Odoo username or email."
+        },
+        {
+            "key": "password",
+            "value": "",
+            "description": "Odoo password."
+        },
+        {
+            "key": "db",
+            "value": "",
+            "description": "Database name (optional if auto-detected)."
+        },
+        {
+            "key": "token",
+            "value": "",
+            "description": "Filled automatically by the Login request."
+        },
+        {
+            "key": "truck_line_id",
+            "value": "",
+            "description": "Filled automatically by the Loaded Trucks request (first unreported truck)."
+        },
+        {
+            "key": "reporting_datetime",
+            "value": "2026-07-28 12:30:00",
+            "description": "UTC datetime in YYYY-MM-DD HH:MM:SS format."
+        }
+    ]
+}

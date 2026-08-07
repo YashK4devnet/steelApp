@@ -97,3 +97,17 @@ This document logs the major architectural, feature, and design changes implemen
   - Removed unused mock features (Material Inventory, Shift Schedule) from the security dashboard.
   - Disabled and visually muted incomplete features (Gate Pass, Security Logs, Outbound Trucks), tagging them with "Coming Soon" ribbons to focus the user exclusively on the inbound truck flow.
 - **Header Alignment**: Standardized the top padding of `LoadedTrucksPage` to use the dynamic `safe-area-inset-top` calculation, ensuring perfect alignment with the rest of the application headers.
+
+## Phase 10: Seller Dashboard & Loading Trucks Workflow
+- **Seller Role Integration**: Added support for Vendor/Seller role users (`group_role_seller`). Updated `DashboardPage.tsx` to conditionally render a dedicated `SellerDashboard` component.
+- **Seller Dashboard Component**: Created `SellerDashboard.tsx` with a modern 2-column action grid matching the design system:
+  - **Loading Trucks** primary action card displaying the count of pending loading trucks.
+  - Secondary feature cards ("Submitted Bills", "E-Way Bills", "Godown Dispatches") tagged with "Coming Soon" ribbons.
+- **Icon Set Expansion**: Added `FileTextIcon`, `ReceiptIcon`, and `WarehouseIcon` to `src/features/dashboard/components/Icons.tsx`.
+- **Loading Trucks Page**:
+  - Created `LoadingTrucksPage.tsx` at `src/features/trucks/pages/LoadingTrucksPage.tsx`.
+  - Implemented mock data (`MOCK_LOADING_TRUCKS`) matching the exact schema specified in `.agents/README.md` (`id`, `truck_number_plate`, `driver_name`, `state`, `pickup_location_name`, `delivery_address_name`).
+  - Added real-time search filtering across driver name, plate number, truck type, and pickup/delivery locations.
+  - Added "Submit Vendor Bill" action buttons per loading truck line.
+- **Routing Setup**: Registered the `/trucks/loading` route in `src/app/router/index.tsx` under protected layout routing, resolving route fallback redirects.
+
