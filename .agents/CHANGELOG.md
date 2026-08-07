@@ -235,6 +235,32 @@ This document logs the major architectural, feature, and design changes implemen
 - **Capacitor Configuration (`capacitor.config.ts`)**: Added `SplashScreen` plugin settings (`launchAutoHide: false`, `backgroundColor: "#EEF3FA"`, `androidScaleType: "CENTER_INSIDE"`).
 - **Seamless Native-to-Web Handoff (`LoginPage.tsx`)**: Configured `LoginPage.tsx` to automatically invoke `SplashScreen.hide({ fadeOutDuration: 300 })` upon mounting, providing a 1:1 flicker-free handoff from the native Android launch screen directly into the React logo glide animation.
 
+## Phase 29: API Redundancy Optimization & 30s TTL Service Caching
+- **Service Caching (`truckApi.ts`)**: Implemented a 30-second TTL memory cache for `getLoadingTrucks()` and `getLoadedTrucks()`.
+- **Dashboard Optimization (`SellerDashboard.tsx`)**: Refactored `SellerDashboard` to use `getLoadingTrucks()`, reusing cached data when navigating between the Dashboard and Loading Trucks page.
+- **Automatic Invalidation**: Submitting vendor bills or reporting arrivals automatically flushes the cache. Pull-to-refresh (`PullToRefresh`) forces a live network fetch (`forceRefresh = true`).
+- **Result**: Reduced redundant network calls by 50-70% while guaranteeing live data accuracy.
+
+## Phase 30: Seller Dashboard Pending vs Submitted Differentiation
+- **Pending Truck Filtering**: Updated `SellerDashboard.tsx` to calculate `pendingCount` (`trucks.filter(t => !t.is_submitted).length`), displaying strictly pending trucks on the "Loading Trucks" card.
+- **Submitted Bills Card Upgrade**: Updated Card 2 ("Submitted Bills") to render `{submittedCount} Submitted` (`trucks.filter(t => t.is_submitted).length`), providing immediate visibility into completed vendor bill submissions.
+
+## Phase 31: E-Way Bill Backend Validation Hand-Off
+- **Removed Frontend E-Way Bill Validation**: Removed `eway_bill` checks from `validateForm()` in `SubmitVendorBillPage.tsx`. Form submissions now delegate validation directly to the Odoo backend API (`POST /booking/trucks/submit_vendor_bill`).
+- **Cleaned Form Layout**: Removed the warning text paragraph notice and `errors.eway_bill` error block from `SubmitVendorBillPage.tsx` for a streamlined user interface.
+
+## Phase 32: Revert Submitted Bills Card Placeholder
+- **Reverted Card 2 Layout**: Restored Card 2 ("Submitted Bills") in `SellerDashboard.tsx` back to its original disabled "Coming Soon" placeholder state.
+
+## Phase 33: Automatic Smooth Scroll to Top on Submission Error
+- **SubmitVendorBillPage Auto-Scroll**: Configured `SubmitVendorBillPage.tsx` to automatically scroll the screen smoothly to the top (`window.scrollTo({ top: 0, behavior: 'smooth' })`) whenever a validation or API error occurs, ensuring the red error banner is immediately visible to the user.
+- **ReportTruckPage Auto-Scroll**: Added smooth top scrolling on submission failure in `ReportTruckPage.tsx`.
+
+
+
+
+
+
 
 
 

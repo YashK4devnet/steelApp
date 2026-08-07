@@ -99,15 +99,14 @@ export function SubmitVendorBillPage() {
       newErrors.bill_document = 'Vendor Bill Document (PDF or Image) is required.';
     }
 
-    // E-Way bill rules: If not attached with bill, at least one of E-Way Bill Number or E-Way Bill Document is required
-    if (!form.eway_bill_attached_with_bill) {
-      if (!form.eway_bill_number.trim() && !form.eway_bill_document) {
-        newErrors.eway_bill = 'Either E-Way Bill Number or E-Way Bill Document (PDF/Image) is required when E-Way bill is not attached with bill.';
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,6 +114,7 @@ export function SubmitVendorBillPage() {
     setApiError(null);
 
     if (!validateForm()) {
+      scrollToTop();
       return;
     }
 
@@ -169,6 +169,7 @@ export function SubmitVendorBillPage() {
       }, 1500);
     } catch (err: any) {
       setApiError(err.message || 'Failed to submit vendor bill due to a network error. Please try again.');
+      scrollToTop();
     } finally {
       setSubmitting(false);
     }
@@ -326,10 +327,7 @@ export function SubmitVendorBillPage() {
               <input 
                 type="checkbox"
                 checked={form.eway_bill_attached_with_bill}
-                onChange={(e) => {
-                  setForm({ ...form, eway_bill_attached_with_bill: e.target.checked });
-                  if (errors.eway_bill) setErrors({ ...errors, eway_bill: '' });
-                }}
+                onChange={(e) => setForm({ ...form, eway_bill_attached_with_bill: e.target.checked })}
                 className="w-5 h-5 accent-primary rounded cursor-pointer"
               />
               <span className="text-sm font-semibold text-text-primary">
@@ -340,10 +338,6 @@ export function SubmitVendorBillPage() {
             {/* E-Way Bill Sub-fields when not attached with bill */}
             {!form.eway_bill_attached_with_bill && (
               <div className="flex flex-col gap-5 p-4 bg-blue-50/40 rounded-[20px] border border-blue-100">
-                <p className="text-xs text-slate-600 font-medium">
-                  Please provide either the E-Way Bill Number or upload the separate E-Way Bill document below:
-                </p>
-
                 {/* E-Way Bill Number */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="eway_bill_number" className="text-sm font-semibold text-text-primary">
@@ -354,10 +348,7 @@ export function SubmitVendorBillPage() {
                     type="text"
                     placeholder="e.g. 123456789012"
                     value={form.eway_bill_number}
-                    onChange={(e) => {
-                      setForm({ ...form, eway_bill_number: e.target.value });
-                      if (errors.eway_bill) setErrors({ ...errors, eway_bill: '' });
-                    }}
+                    onChange={(e) => setForm({ ...form, eway_bill_number: e.target.value })}
                     className="w-full h-12 px-4 bg-white border border-slate-200 rounded-[14px] outline-none focus:border-primary transition-all text-sm font-medium"
                   />
                 </div>
@@ -374,13 +365,8 @@ export function SubmitVendorBillPage() {
                       eway_bill_document: file,
                       eway_bill_document_name: fileName
                     });
-                    if (errors.eway_bill) setErrors({ ...errors, eway_bill: '' });
                   }}
                 />
-
-                {errors.eway_bill && (
-                  <p className="text-xs font-semibold text-error mt-0.5">{errors.eway_bill}</p>
-                )}
               </div>
             )}
           </div>

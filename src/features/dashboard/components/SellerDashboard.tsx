@@ -1,34 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TruckIcon, ReceiptIcon, FileTextIcon, WarehouseIcon } from './Icons';
-import { apiRequest } from '../../../lib/api';
+import { getLoadingTrucks } from '../../trucks/services/truckApi';
 
 export function SellerDashboard() {
   const navigate = useNavigate();
-  const [loadingCount, setLoadingCount] = useState<number | null>(null);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let isMounted = true;
-    const fetchCount = async () => {
+    const fetchCounts = async () => {
       try {
-        const res = await apiRequest<{ status: string; count?: number; trucks?: any[] }>(
-          'GET',
-          '/booking/trucks/loading'
-        );
+        const trucks = await getLoadingTrucks();
         if (isMounted) {
-          const count = res.count !== undefined ? res.count : (res.trucks ? res.trucks.length : 0);
-          setLoadingCount(count);
+          const pending = trucks.filter(t => !t.is_submitted).length;
+          setPendingCount(pending);
         }
       } catch (err) {
         console.warn('Failed to fetch seller loading trucks count:', err);
-        if (isMounted) setLoadingCount(0);
+        if (isMounted) {
+          setPendingCount(0);
+        }
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
-    fetchCount();
+    fetchCounts();
     return () => { isMounted = false; };
   }, []);
 
@@ -51,8 +50,8 @@ export function SellerDashboard() {
             {loading ? (
               <div className="h-5 w-20 bg-slate-100 rounded-full animate-pulse mt-0.5" />
             ) : (
-              <span className="text-[12px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full w-fit">
-                {loadingCount ?? 0} Pending
+              <span className="text-[12px] font-medium text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-full w-fit">
+                {pendingCount ?? 0} Pending
               </span>
             )}
           </div>

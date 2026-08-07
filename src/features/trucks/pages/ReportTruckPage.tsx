@@ -48,10 +48,17 @@ export function ReportTruckPage() {
   const truckPlate = truck ? truck.truck_number_plate : `Truck #${id}`;
   const addressName = truck ? truck.delivery_address_name : '';
 
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!image1) {
       alert('At least one image is required.');
+      scrollToTop();
       return;
     }
     if (!id) return;
@@ -81,6 +88,7 @@ export function ReportTruckPage() {
         }
       }, 1500);
     } catch (error: any) {
+      scrollToTop();
       alert(error.message || 'Failed to submit report. Please try again.');
     } finally {
       setIsSubmitting(false);
