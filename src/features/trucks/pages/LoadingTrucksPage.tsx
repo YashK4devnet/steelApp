@@ -70,11 +70,11 @@ export function LoadingTrucksPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLoadingTrucks = async () => {
+  const fetchLoadingTrucks = async (forceRefresh = false) => {
     setError(null);
 
     try {
-      const data = await getLoadingTrucks();
+      const data = await getLoadingTrucks(forceRefresh);
       setTrucks(data);
     } catch (err: any) {
       console.error('[LoadingTrucksPage] API error:', err);
@@ -129,7 +129,7 @@ export function LoadingTrucksPage() {
       </div>
 
       {/* List Content wrapped in PullToRefresh */}
-      <PullToRefresh onRefresh={fetchLoadingTrucks}>
+      <PullToRefresh onRefresh={() => fetchLoadingTrucks(true)}>
         <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex flex-col gap-4">
         {loading ? (
           <LoadingTruckSkeleton />
@@ -141,7 +141,7 @@ export function LoadingTrucksPage() {
             <h3 className="text-base font-bold text-text-primary">Unable to Load Trucks</h3>
             <p className="text-xs text-text-secondary max-w-md">{error}</p>
             <button 
-              onClick={fetchLoadingTrucks}
+              onClick={() => fetchLoadingTrucks(true)}
               className="mt-2 px-5 py-2 bg-primary text-white text-xs font-semibold rounded-full shadow-sm active:scale-95 transition-all"
             >
               Try Again
