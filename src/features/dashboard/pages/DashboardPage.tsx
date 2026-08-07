@@ -4,9 +4,15 @@ import { BellIcon } from '../components/Icons';
 import { LogoutIcon } from '../../profile/components/Icons';
 import { SecurityDashboard } from '../components/SecurityDashboard';
 import { ManagerDashboard } from '../components/ManagerDashboard';
+import { SellerDashboard } from '../components/SellerDashboard';
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
+
+  const userRole = user?.role?.toLowerCase() || '';
+  const isSecurity = userRole === 'security';
+  const isAdmin = userRole === 'admin';
+  const isSeller = userRole.includes('seller') || userRole.includes('vendor') || (!isSecurity && !isAdmin);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
@@ -45,10 +51,12 @@ export function DashboardPage() {
         </div>
 
         {/* Role Content */}
-        {user?.role?.toLowerCase() === 'security' && <SecurityDashboard />}
-        {user?.role?.toLowerCase() === 'admin' && <ManagerDashboard />}
+        {isSecurity && <SecurityDashboard />}
+        {isAdmin && <ManagerDashboard />}
+        {isSeller && <SellerDashboard />}
       </main>
     </div>
   );
 }
+
 

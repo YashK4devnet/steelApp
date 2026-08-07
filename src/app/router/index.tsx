@@ -6,6 +6,7 @@ import { LoginPage } from '../../features/auth/pages/LoginPage';
 import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
 import { ProfilePage } from '../../features/profile/pages/ProfilePage';
 import { LoadedTrucksPage } from '../../features/trucks/pages/LoadedTrucksPage';
+import { LoadingTrucksPage } from '../../features/trucks/pages/LoadingTrucksPage';
 import { ReportTruckPage } from '../../features/trucks/pages/ReportTruckPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
@@ -48,10 +49,12 @@ export function AppRouter() {
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
+            <Route path="/trucks/loading" element={<LoadingTrucksPage />} />
             <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>
+
         
         {/* Redirect root and unknown routes to dashboard (which will redirect to login if unauthenticated) */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
