@@ -14,10 +14,16 @@ export function LoginPage() {
   const { login } = useAuth();
 
   useEffect(() => {
-    // Simulate initial loading animation
+    // Hide native Android splash screen with a smooth fade if running natively via Capacitor
+    const capacitorSplash = (window as any)?.Capacitor?.Plugins?.SplashScreen;
+    if (capacitorSplash) {
+      capacitorSplash.hide({ fadeOutDuration: 300 }).catch(() => {});
+    }
+
+    // Initial splash logo animation timer
     const timer = setTimeout(() => {
       setIsAppLoading(false);
-    }, 1200);
+    }, 1400);
     return () => clearTimeout(timer);
   }, []);
 
@@ -35,20 +41,22 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] overflow-hidden relative z-0">
-      <div className="w-full max-w-[420px]">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] overflow-hidden relative z-0">
+      <div className="w-full max-w-[420px] flex flex-col items-center justify-center">
         
-        {/* Logo Container */}
+        {/* Logo Container - Starts at exact screen dead center, glides up smoothly & slowly */}
         <div 
-          className={`flex justify-center transition-all duration-1000 ease-in-out ${
-            isAppLoading ? 'translate-y-[150px] scale-110' : 'translate-y-0 scale-100'
-          } mb-8`}
+          className={`flex justify-center transition-all duration-[1500ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            isAppLoading 
+              ? 'scale-110 mb-0' 
+              : 'scale-100 mb-8'
+          }`}
         >
           {/* Please place the provided logo image as "logo.png" in the "public" folder */}
           <img 
             src="/logo.png" 
             alt="RNE Logo" 
-            className="w-[280px] h-auto object-contain"
+            className="w-[280px] sm:w-[300px] h-auto object-contain"
             onError={(e) => {
               // Fallback text just in case the image is missing
               e.currentTarget.style.display = 'none';
@@ -59,10 +67,12 @@ export function LoginPage() {
           <h1 style={{ display: 'none' }} className="text-[32px] font-bold text-primary">RNE</h1>
         </div>
         
-        {/* Form Container */}
+        {/* Form Container - Expands and fades in slowly & gracefully beneath logo */}
         <div 
-          className={`transition-all duration-1000 ease-in-out ${
-            isAppLoading ? 'opacity-0 translate-y-12 pointer-events-none' : 'opacity-100 translate-y-0'
+          className={`w-full transition-all duration-[1500ms] ease-[cubic-bezier(0.22,1,0.36,1)] overflow-hidden ${
+            isAppLoading 
+              ? 'max-h-0 opacity-0 pointer-events-none translate-y-8' 
+              : 'max-h-[600px] opacity-100 translate-y-0'
           }`}
         >
           <Card>
@@ -115,4 +125,3 @@ export function LoginPage() {
     </div>
   );
 }
-

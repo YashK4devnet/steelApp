@@ -222,6 +222,22 @@ This document logs the major architectural, feature, and design changes implemen
 - **Interactive Unread Notification Indicator**: Added an active pulsing status dot (`w-2 h-2 rounded-full bg-accent ring-2 ring-white animate-pulse`) on the notification bell icon.
 - **Red Soft Tint Hover on Logout**: Applied a subtle red hover tint (`text-red-500 hover:text-red-600 hover:bg-red-50/80 hover:border-red-200/80`) to the sign-out action button.
 
+## Phase 26: Login Screen Splash Logo Centering & Transition Polish
+- **Dead-Center Initial Splash Position**: Refactored `LoginPage.tsx` so during initial splash load (`isAppLoading = true`), the form container collapses (`max-h-0 opacity-0`), centering the logo at the **exact 100% dead center** of the viewport screen across all device sizes.
+- **Smooth Glide-Up Transition**: When app loading completes, the logo glides smoothly upward into its header slot while the login form card expands (`max-h-[600px] opacity-100 translate-y-0`) beneath it.
+
+## Phase 27: Relaxed Luxury Splash Animation Timing
+- **Extended Transition Duration**: Increased transition duration in `LoginPage.tsx` to 1500ms (`duration-[1500ms]`).
+- **Smooth Silky Easing Curve**: Replaced aggressive snapping curve with a smooth ease-out curve (`cubic-bezier(0.22, 1, 0.36, 1)`).
+- **Splash Display Duration**: Adjusted initial splash display delay to 1400ms, creating a relaxed, unhurried, premium logo presentation as it glides up above the login card.
+
+## Phase 28: Native Android Splash Screen Integration Architecture
+- **Capacitor Configuration (`capacitor.config.ts`)**: Added `SplashScreen` plugin settings (`launchAutoHide: false`, `backgroundColor: "#EEF3FA"`, `androidScaleType: "CENTER_INSIDE"`).
+- **Seamless Native-to-Web Handoff (`LoginPage.tsx`)**: Configured `LoginPage.tsx` to automatically invoke `SplashScreen.hide({ fadeOutDuration: 300 })` upon mounting, providing a 1:1 flicker-free handoff from the native Android launch screen directly into the React logo glide animation.
+
+
+
+
 
 
 

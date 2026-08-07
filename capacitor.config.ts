@@ -9,6 +9,15 @@ const config: CapacitorConfig = {
       overlaysWebView: true,
       style: 'LIGHT'
     },
+    SplashScreen: {
+      launchShowDuration: 0,
+      launchAutoHide: false,
+      backgroundColor: "#EEF3FA",
+      androidScaleType: "CENTER_INSIDE",
+      showSpinner: false,
+      splashFullScreen: true,
+      splashImmersive: true
+    },
     CapacitorHttp: {
       enabled: true
     },
