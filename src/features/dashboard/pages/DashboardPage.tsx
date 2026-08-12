@@ -17,11 +17,57 @@ export function DashboardPage() {
   const isSeller = userRole.includes('seller') || userRole.includes('vendor') || (!isSecurity && !isAdmin);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,2rem)+2rem)] pb-32">
-        {/* Header Section */}
-        <div className="mb-8 flex justify-between items-start gap-4">
-          <div className="min-w-0 flex-1">
+    <div className="min-h-screen bg-white relative z-0 flex flex-col">
+      {/* Top Header Bar Layer (White Background) */}
+      <header className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-[calc(env(safe-area-inset-top,1.5rem)+1.25rem)] pb-4 sm:pb-5 bg-white">
+        <div className="flex items-center justify-between gap-4">
+          {/* Brand Identity */}
+          <div className="flex items-center gap-2.5 min-w-0">
+            <img 
+              src="/in-app-logo.png" 
+              alt="RNE Logo" 
+              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <div className="flex flex-col leading-tight select-none">
+              <span className="text-[11px] sm:text-xs font-extrabold uppercase tracking-wide">
+                <span className="text-primary">RATHI </span>
+                <span className="text-accent">NORTH EAST</span>
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-extrabold text-primary uppercase tracking-wider">
+                BROTHERS
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons - Premium Glass Pill Buttons */}
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <button 
+              className="relative w-[42px] h-[42px] rounded-full bg-slate-50 shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-100 hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)] active:scale-95 transition-all duration-200"
+              title="Notifications"
+            >
+              <BellIcon />
+              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-accent ring-2 ring-white animate-pulse" />
+            </button>
+
+            <button 
+              onClick={() => setShowLogoutModal(true)}
+              className="w-[42px] h-[42px] rounded-full bg-slate-50 shadow-[0_4px_12px_rgba(220,38,38,0.08)] border border-slate-900/10 flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50/80 hover:border-red-200/80 active:scale-95 transition-all duration-200"
+              title="Sign Out"
+            >
+              <LogoutIcon />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main App Sheet Canvas (Soft Layered Gradient Container Spanning Bottom Screen) */}
+      <main className="flex-1 w-full bg-gradient-to-b from-[#EEF3FA] via-[#F1F5F9] to-[#FFFFFF] rounded-t-[28px] sm:rounded-t-[36px] shadow-[0_-8px_30px_rgba(15,23,42,0.06)] border-t border-slate-900/10 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32">
+        <div className="max-w-[1200px] mx-auto">
+          {/* User Greeting Section */}
+          <div className="mb-6 sm:mb-8">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
               Good Morning,
             </p>
@@ -38,30 +84,11 @@ export function DashboardPage() {
             </p>
           </div>
 
-          {/* Action Buttons - Premium Glass Pill Buttons */}
-          <div className="flex items-center gap-2.5 flex-shrink-0 pt-0.5">
-            <button 
-              className="relative w-[42px] h-[42px] rounded-full bg-white/90 backdrop-blur-md shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:shadow-[0_6px_16px_rgba(15,23,42,0.08)] active:scale-95 transition-all duration-200"
-              title="Notifications"
-            >
-              <BellIcon />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-accent ring-2 ring-white animate-pulse" />
-            </button>
-
-            <button 
-              onClick={() => setShowLogoutModal(true)}
-              className="w-[42px] h-[42px] rounded-full bg-white/90 backdrop-blur-md shadow-[0_4px_12px_rgba(220,38,38,0.08)] border border-slate-900/10 flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50/80 hover:border-red-200/80 active:scale-95 transition-all duration-200"
-              title="Sign Out"
-            >
-              <LogoutIcon />
-            </button>
-          </div>
+          {/* Role Content */}
+          {isSecurity && <SecurityDashboard />}
+          {isAdmin && <ManagerDashboard />}
+          {isSeller && <SellerDashboard />}
         </div>
-
-        {/* Role Content */}
-        {isSecurity && <SecurityDashboard />}
-        {isAdmin && <ManagerDashboard />}
-        {isSeller && <SellerDashboard />}
       </main>
 
       {/* Reusable Custom Logout Modal */}

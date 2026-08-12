@@ -252,9 +252,35 @@ This document logs the major architectural, feature, and design changes implemen
 ## Phase 32: Revert Submitted Bills Card Placeholder
 - **Reverted Card 2 Layout**: Restored Card 2 ("Submitted Bills") in `SellerDashboard.tsx` back to its original disabled "Coming Soon" placeholder state.
 
-## Phase 33: Automatic Smooth Scroll to Top on Submission Error
-- **SubmitVendorBillPage Auto-Scroll**: Configured `SubmitVendorBillPage.tsx` to automatically scroll the screen smoothly to the top (`window.scrollTo({ top: 0, behavior: 'smooth' })`) whenever a validation or API error occurs, ensuring the red error banner is immediately visible to the user.
-- **ReportTruckPage Auto-Scroll**: Added smooth top scrolling on submission failure in `ReportTruckPage.tsx`.
+## Phase 34: Top Header Logo Integration (Option 1)
+- **Public Logo Asset (`/public/in-app-logo.png`)**: Copied `resources/in-app-logo.png` to `public/in-app-logo.png` for fast, zero-overhead static serving across the web app and Capacitor mobile webview.
+- **Top Header Bar Restructure (`DashboardPage.tsx`)**: Reorganized top header section into a 2-row layout:
+  - **Top Row**: RNE Brand Logo (`in-app-logo.png`, `h-8 sm:h-9`) aligned to the left, balanced by notification bell and logout action buttons on the right.
+  - **Below Row**: "Good Morning, [User Name] 👋" greeting and quick status pill.
+- **Profile Header Alignment (`ProfilePage.tsx`)**: Added matching top bar row with the left-aligned RNE logo and right-aligned logout button for seamless visual consistency across primary navigation tabs.
+
+## Phase 35: Brand Name Typography Integration
+- **Brand Text Placement (`DashboardPage.tsx` & `ProfilePage.tsx`)**: Integrated 2-line stacked brand typography directly to the right of the in-app logo:
+  - Line 1: `RATHI` in Deep Navy (`#0A2E63` / `text-primary`), `NORTH EAST` in Corporate Red (`#C8102E` / `text-accent`).
+  - Line 2: `BROTHERS` in Deep Navy (`#0A2E63` / `text-primary`).
+- **Color Accent Alignment**: Perfectly matched the red middle accent from `in-app-logo.png` onto the `NORTH EAST` text string.
+- **Omitted Legal Suffix**: Omitted `pvt ltd` as requested to optimize horizontal layout space for mobile viewports.
+
+## Phase 36: Top-Rounded Sheet Canvas Layout Architecture
+- **Header Bar Layer (`<header>`)**: Extracted top bar (Logo, `RATHI NORTH EAST BROTHERS` brand text, Notification Bell, Sign Out button) to rest on the soft top background layer (`bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA] to-[#E2E8F0]`).
+- **Top-Rounded Canvas Sheet (`<main>`)**: Housed page content (greeting section, action grid, profile avatar & info cards) inside a full-bleed white sheet canvas container (`bg-white rounded-t-[28px] sm:rounded-t-[36px] shadow-[0_-8px_30px_rgba(15,23,42,0.06)] border-t border-slate-900/5`).
+- **Responsive Screen Spanning**: Sheet container spans dynamically down to the bottom of the viewport (`flex-1 w-full pb-32`), creating a native mobile bottom-sheet visual separation.
+- **Synchronized Across Views**: Applied identically across `DashboardPage.tsx` and `ProfilePage.tsx`.
+
+## Phase 37: Interchanged Header & Canvas Sheet Color Palette
+- **Crisp White Header Bar (`bg-white`)**: Swapped header background layer to crisp solid white (`bg-white`), providing high contrast for the RNE logo image, `RATHI NORTH EAST BROTHERS` Navy & Red typography, and header action buttons.
+- **Soft Layered Canvas Sheet (`bg-gradient-to-b from-[#EEF3FA] via-[#F1F5F9] to-[#FFFFFF]`)**: Applied the soft grayish-blue gradient background to the main top-rounded sheet canvas.
+- **Maximum Card Contrast**: White feature cards (`bg-white` with `shadow-[0_8px_24px_rgba(15,23,42,0.04)]`) inside the sheet canvas now pop out with clean 3D depth and visual separation against the soft gradient sheet background.
+- **App-wide Alignment**: Synchronized across `DashboardPage.tsx` and `ProfilePage.tsx`.
+
+
+
+
 
 
 
