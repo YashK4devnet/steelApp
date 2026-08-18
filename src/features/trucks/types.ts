@@ -10,6 +10,18 @@ export interface LoadedTruck {
   delivery_address_name: string;
 }
 
+export interface OutgoingTruck {
+  id: number;
+  truck_type_id: number;
+  truck_type: string;
+  truck_number_plate: string;
+  driver_name: string;
+  is_reported: boolean;
+  state: string;
+  delivery_address_id: number;
+  delivery_address_name: string;
+}
+
 export interface LoadingTruck {
   id: number;
   truck_type_id: number;

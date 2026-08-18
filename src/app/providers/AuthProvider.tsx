@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../../types';
 import { apiRequest } from '../../lib/api';
+import { SessionExpiredModal } from '../../components/ui/SessionExpiredModal';
 
 interface AuthContextType {
   user: User | null;
@@ -17,6 +18,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isExpiredModalOpen, setIsExpiredModalOpen] = useState(false);
 
   useEffect(() => {
     // Check local storage for persisted user session
@@ -27,6 +29,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(storedToken);
     }
     setLoading(false);
+
+    const handleAuthExpired = () => {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('authUser');
+      localStorage.removeItem('authToken');
+      setIsExpiredModalOpen(true);
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired);
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -71,6 +86,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{ user, token, login, logout, loading, isAuthenticated: !!user && !!token }}>
       {children}
+      <SessionExpiredModal 
+        isOpen={isExpiredModalOpen} 
+        onClose={() => setIsExpiredModalOpen(false)} 
+      />
     </AuthContext.Provider>
   );
 }

@@ -6,7 +6,7 @@ This document describes the REST-style HTTP endpoints added to the
 ## Authentication
 
 The API uses **token-based authentication**. Each user has a single persistent
-token stored on their `res.users` record (`reporting_mobile_token`). On the
+token stored on their `res.users` record (`mobile_token`). On the
 first successful login the server generates this token; subsequent logins
 return the same token. The mobile client must send that token in the
 `Authorization` header on all subsequent requests:
@@ -220,7 +220,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/loaded" \
 
 ---
 
-## 4. Truck Reporting
+## 4. Incoming Truck Reporting
 
 **Endpoint**
 
@@ -350,6 +350,7 @@ Returns truck lines that are currently in the `loading` state
 | `truck_number_plate`     | string  | Number plate of the truck.                               |
 | `driver_name`            | string  | Name of the driver.                                      |
 | `state`                  | string  | Current state of the truck line (`loading`).             |
+| `is_submitted`           | boolean | `true` if the vendor bill (and E-Way Bill) details have already been submitted for this truck. |
 | `pickup_location_id`     | integer | ID of the pickup location.                               |
 | `pickup_location_name`   | string  | Full contact address of the pickup location.             |
 | `delivery_address_id`    | integer | ID of the delivery location.                             |
@@ -377,6 +378,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/loading" \
       "truck_number_plate": "KA-01-AB-1234",
       "driver_name": "Rajesh Kumar",
       "state": "loading",
+      "is_submitted": false,
       "pickup_location_id": 32,
       "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
       "delivery_address_id": 45,
@@ -472,6 +474,130 @@ curl -X POST "http://<odoo-host>/booking/trucks/submit_vendor_bill" \
 
 ---
 
+## 7. Outgoing Trucks
+
+**Endpoint**
+
+```text
+GET /booking/trucks/outgoing
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Description**
+
+Returns outgoing trucks currently in `draft` that are waiting to be reported at the warehouse.
+
+* **Admin users** receive all matching trucks.
+* **Security users** receive only trucks whose warehouse / pickup address matches their employee work address.
+* Other users receive `403 Forbidden`.
+* If a security user has no work address, the list is empty.
+
+**Response fields**
+
+| Field                   | Type    | Description |
+| ----------------------- | ------- | ----------- |
+| `id`                    | integer | Truck ID. Send this as `truck_id` when reporting. |
+| `truck_type_id`         | integer | Truck type ID. |
+| `truck_type`            | string  | Truck type name. |
+| `truck_number_plate`    | string  | Number plate. |
+| `driver_name`           | string  | Driver name. |
+| `is_reported`           | boolean | `true` if already reported. |
+| `state`                 | string  | Current state (`draft`). |
+| `delivery_address_id`   | integer | Delivery location ID. |
+| `delivery_address_name` | string  | Delivery address. |
+
+**Example request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/trucks/outgoing" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Success — `200 OK`**
+
+```json
+{
+  "status": "success",
+  "count": 1,
+  "trucks": [
+    {
+      "id": 55,
+      "truck_type_id": 7,
+      "truck_type": "20 Ft Container",
+      "truck_number_plate": "KA-01-AB-1234",
+      "driver_name": "Rajesh Kumar",
+      "is_reported": false,
+      "state": "draft",
+      "delivery_address_id": 40,
+      "delivery_address_name": "Customer D, Lucknow"
+    }
+  ]
+}
+```
+
+---
+
+## 8. Outgoing Truck Reporting
+
+**Endpoint**
+
+```text
+POST /booking/trucks/outgoing/report
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Description**
+
+Report an outgoing truck arrival at the warehouse. Same auth and reporting rules as incoming truck reporting: admin or security only, at least one image, and the truck must still be `draft` and not already reported. Security users may only report trucks at their work address.
+
+**Request fields**
+
+Recommended format: `multipart/form-data`. JSON with base64 images is also accepted.
+
+| Field                | Type   | Required | Description |
+| -------------------- | ------ | -------- | ----------- |
+| `truck_id`           | integer | Yes     | `id` from `GET /booking/trucks/outgoing`. `id` is also accepted. |
+| `reporting_datetime` | string  | Yes     | UTC datetime. `YYYY-MM-DD HH:MM:SS` or ISO-8601. |
+| `note`               | string  | No      | Free-text note. |
+| `image_1`            | file    | Yes*    | First image. |
+| `image_2`            | file    | No      | Second image. |
+| `image_3`            | file    | No      | Third image. |
+
+\* At least one of `image_1`, `image_2`, `image_3` is required.
+
+Images may be uploaded as files or as base64 / data-URI strings.
+
+**Example request (multipart)**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/trucks/outgoing/report" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -F "truck_id=55" \
+  -F "reporting_datetime=2026-07-28 12:30:00" \
+  -F "note=Outgoing truck reported at gate" \
+  -F "image_1=@/path/to/photo1.jpg"
+```
+
+**Success — `200 OK`**
+
+```json
+{
+  "status": "success",
+  "message": "Truck reported successfully.",
+  "truck_id": 55
+}
+```
+
+---
+
 ## HTTP Status Codes
 
 | Code | Meaning                                                            |
@@ -488,11 +614,8 @@ curl -X POST "http://<odoo-host>/booking/trucks/submit_vendor_bill" \
 
 1. Call `POST /booking/auth/login` with `X-Odoo-Database` to obtain a bearer token.
 2. **Security Guard flow**
-   - Call `GET /booking/trucks/loaded` with the `Authorization: Bearer <token>`
-     header to list loaded trucks.
-   - Show a **Report** button on the app when `is_reported` is `false`.
-   - Call `POST /booking/trucks/report` with the selected truck line ID,
-     reporting date/time, note and images.
+   - Incoming: `GET /booking/trucks/loaded` → show **Report** when `is_reported` is `false` → `POST /booking/trucks/report` with `truck_line_id`, datetime, note, and images.
+   - Outgoing: `GET /booking/trucks/outgoing` → show **Report** when `is_reported` is `false` → `POST /booking/trucks/outgoing/report` with `truck_id`, datetime, note, and images.
 3. **Vendor / Seller flow**
    - Call `GET /booking/trucks/loading` with the `Authorization: Bearer <token>`
      header to list trucks in `loading` state assigned to your pickup location.

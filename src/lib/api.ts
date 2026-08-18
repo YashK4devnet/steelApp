@@ -33,8 +33,22 @@ export async function apiRequest<T = any>(
   }
 
   try {
-    const response: HttpResponse = await CapacitorHttp.request({ ...options, method });
+    let response: HttpResponse;
+    try {
+      response = await CapacitorHttp.request({ ...options, method });
+    } catch (networkError: any) {
+      window.dispatchEvent(new CustomEvent('network-error', { detail: { isOffline: true } }));
+      throw new Error('Network error: Unable to reach the server. Please check your connection.');
+    }
+
+    // Since the request reached the server, clear any offline banners
+    window.dispatchEvent(new CustomEvent('network-error', { detail: { isOffline: false } }));
     
+    if (response.status === 401) {
+      window.dispatchEvent(new CustomEvent('auth-expired'));
+      throw new Error('Session expired. Please log in again.');
+    }
+
     // Odoo API returns 200 OK but sometimes indicates error in body
     if (response.status >= 400 || response.data?.status === 'error') {
       const errorMsg = response.data?.message || `Request failed with status ${response.status}`;

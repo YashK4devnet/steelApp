@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
 import { ImageUpload } from '../components/ImageUpload';
-import { apiRequest } from '../../../lib/api';
+import { reportOutgoingTruckArrival } from '../services/truckApi';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -19,7 +17,7 @@ const CheckCircleIcon = () => (
   </svg>
 );
 
-export function ReportTruckPage() {
+export function ReportOutgoingTruckPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
@@ -69,7 +67,7 @@ export function ReportTruckPage() {
       const formattedTime = reportingDateTime.replace('T', ' ') + ':00';
       
       const payload: any = {
-        truck_line_id: parseInt(id, 10),
+        truck_id: parseInt(id, 10),
         reporting_datetime: formattedTime,
         note: note,
         image_1: image1
@@ -77,14 +75,14 @@ export function ReportTruckPage() {
       if (image2) payload.image_2 = image2;
       if (image3) payload.image_3 = image3;
 
-      await apiRequest('POST', '/booking/trucks/report', payload);
+      await reportOutgoingTruckArrival(payload);
       
       setShowSuccess(true);
       setTimeout(() => {
         if (window.history.length > 1) {
           navigate(-1);
         } else {
-          navigate('/trucks/loaded', { replace: true });
+          navigate('/trucks/outgoing', { replace: true });
         }
       }, 1500);
     } catch (error: any) {

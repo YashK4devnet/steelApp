@@ -9,9 +9,12 @@ import { LoadedTrucksPage } from '../../features/trucks/pages/LoadedTrucksPage';
 import { LoadingTrucksPage } from '../../features/trucks/pages/LoadingTrucksPage';
 import { ReportTruckPage } from '../../features/trucks/pages/ReportTruckPage';
 import { SubmitVendorBillPage } from '../../features/trucks/pages/SubmitVendorBillPage';
+import { OutgoingTrucksPage } from '../../features/trucks/pages/OutgoingTrucksPage';
+import { ReportOutgoingTruckPage } from '../../features/trucks/pages/ReportOutgoingTruckPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
+import { NetworkBanner } from '../../components/ui/NetworkBanner';
 
 export interface PageLevelConfig {
   level: number;
@@ -24,15 +27,19 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/login': { level: 0, parent: '' },
   '/trucks/loading': { level: 1, parent: '/dashboard' },
   '/trucks/loaded': { level: 1, parent: '/dashboard' },
+  '/trucks/outgoing': { level: 1, parent: '/dashboard' },
   '/trucks/submit-bill': { level: 2, parent: '/trucks/loading' },
   '/trucks/report': { level: 2, parent: '/trucks/loaded' },
+  '/trucks/outgoing/report': { level: 2, parent: '/trucks/outgoing' },
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
   if (pathname.startsWith('/trucks/submit-bill')) return PAGE_LEVEL_MAP['/trucks/submit-bill'];
+  if (pathname.startsWith('/trucks/outgoing/report')) return PAGE_LEVEL_MAP['/trucks/outgoing/report'];
   if (pathname.startsWith('/trucks/report')) return PAGE_LEVEL_MAP['/trucks/report'];
   if (pathname.startsWith('/trucks/loading')) return PAGE_LEVEL_MAP['/trucks/loading'];
   if (pathname.startsWith('/trucks/loaded')) return PAGE_LEVEL_MAP['/trucks/loaded'];
+  if (pathname.startsWith('/trucks/outgoing')) return PAGE_LEVEL_MAP['/trucks/outgoing'];
   if (pathname.startsWith('/profile')) return PAGE_LEVEL_MAP['/profile'];
   if (pathname.startsWith('/login')) return PAGE_LEVEL_MAP['/login'];
   return PAGE_LEVEL_MAP['/dashboard'];
@@ -41,9 +48,15 @@ export function getPageConfig(pathname: string): PageLevelConfig {
 function CapacitorNativeSetup() {
   const navigate = useNavigate();
   const location = useLocation();
+  const locationRef = useRef(location.pathname);
   const lastBackPressTimeRef = useRef<number>(0);
   const [showExitToast, setShowExitToast] = useState(false);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    locationRef.current = location.pathname;
+    setShowExitToast(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     // Configure native status bar
@@ -52,7 +65,7 @@ function CapacitorNativeSetup() {
 
     // Native Android hardware back button handler
     const listener = CapacitorApp.addListener('backButton', () => {
-      const path = location.pathname;
+      const path = locationRef.current;
       const config = getPageConfig(path);
 
       if (config.level === 0) {
@@ -82,8 +95,9 @@ function CapacitorNativeSetup() {
     return () => {
       listener.then(handle => handle.remove());
       if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
+      setShowExitToast(false);
     };
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   return (
     <>
@@ -102,6 +116,7 @@ export function AppRouter() {
   return (
     <BrowserRouter>
       <CapacitorNativeSetup />
+      <NetworkBanner />
       <Routes>
         <Route element={<PublicRoute />}>
           <Route path="/login" element={<LoginPage />} />
@@ -111,9 +126,11 @@ export function AppRouter() {
           <Route element={<MainLayout />}>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
+            <Route path="/trucks/outgoing" element={<OutgoingTrucksPage />} />
             <Route path="/trucks/loading" element={<LoadingTrucksPage />} />
             <Route path="/trucks/submit-bill/:id" element={<SubmitVendorBillPage />} />
             <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
+            <Route path="/trucks/outgoing/report/:id" element={<ReportOutgoingTruckPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

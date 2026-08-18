@@ -1,5 +1,7 @@
 import { apiRequest } from '../../../lib/api';
-import type { LoadedTruck, LoadingTruck, SubmitVendorBillPayload } from '../types';
+import type { LoadedTruck, LoadingTruck, SubmitVendorBillPayload, OutgoingTruck } from '../types';
+
+let outgoingTrucksCache: { data: OutgoingTruck[]; timestamp: number } | null = null;
 
 let loadingTrucksCache: { data: LoadingTruck[]; timestamp: number } | null = null;
 let loadedTrucksCache: { data: LoadedTruck[]; timestamp: number } | null = null;
@@ -50,6 +52,28 @@ export function invalidateLoadedTrucksCache() {
   loadedTrucksCache = null;
 }
 
+export function invalidateOutgoingTrucksCache() {
+  outgoingTrucksCache = null;
+}
+
+/**
+ * Fetches outgoing trucks currently in draft state waiting to be reported at the warehouse.
+ */
+export async function getOutgoingTrucks(forceRefresh = false): Promise<OutgoingTruck[]> {
+  const now = Date.now();
+  if (!forceRefresh && outgoingTrucksCache && (now - outgoingTrucksCache.timestamp < CACHE_TTL_MS)) {
+    return outgoingTrucksCache.data;
+  }
+
+  const res = await apiRequest<{ status: string; trucks: OutgoingTruck[] }>(
+    'GET',
+    '/booking/trucks/outgoing'
+  );
+  const trucks = res.trucks || [];
+  outgoingTrucksCache = { data: trucks, timestamp: now };
+  return trucks;
+}
+
 /**
  * Submits vendor bill details and optional E-Way bill documents for a loading truck line.
  */
@@ -72,5 +96,21 @@ export async function reportTruckArrival(payload: {
 }): Promise<{ status: string; truck_line_id: number }> {
   const res = await apiRequest<{ status: string; truck_line_id: number }>('POST', '/booking/trucks/report', payload);
   invalidateLoadedTrucksCache();
+  return res;
+}
+
+/**
+ * Reports an outgoing truck's arrival at the gate with timestamp, notes, and images.
+ */
+export async function reportOutgoingTruckArrival(payload: {
+  truck_id: number;
+  reporting_datetime: string;
+  note?: string;
+  image_1: string;
+  image_2?: string;
+  image_3?: string;
+}): Promise<{ status: string; truck_id: number }> {
+  const res = await apiRequest<{ status: string; truck_id: number }>('POST', '/booking/trucks/outgoing/report', payload);
+  invalidateOutgoingTrucksCache();
   return res;
 }

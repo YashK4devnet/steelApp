@@ -1,6 +1,6 @@
 {
     "info": {
-        "name": "Reporting Mobile API",
+        "name": "Mobile API",
         "description": "Postman collection for the Reporting Mobile App APIs exposed by booking_modifier_4devnet.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
@@ -304,6 +304,116 @@
                 "description": "Submit vendor bill and optional E-Way Bill for a loading truck. Reuses the same fields and validation as the Odoo loading flow."
             },
             "response": []
+        },
+        {
+            "name": "7. Outgoing Trucks",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.trucks && jsonData.trucks.length > 0) {",
+                            "    const truck = jsonData.trucks.find(t => !t.is_reported) || jsonData.trucks[0];",
+                            "    pm.collectionVariables.set('outgoing_truck_id', truck.id);",
+                            "    console.log('Outgoing truck ID set to:', truck.id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/outgoing",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "outgoing"
+                    ]
+                },
+                "description": "Fetch outgoing draft trucks waiting to be reported. The first unreported truck id is saved to 'outgoing_truck_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "8. Report Outgoing Truck",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "truck_id",
+                            "value": "{{outgoing_truck_id}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "reporting_datetime",
+                            "value": "{{reporting_datetime}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "note",
+                            "value": "Outgoing truck reported at gate",
+                            "type": "text"
+                        },
+                        {
+                            "key": "image_1",
+                            "value": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+                            "type": "text"
+                        },
+                        {
+                            "key": "image_2",
+                            "value": "",
+                            "type": "text"
+                        },
+                        {
+                            "key": "image_3",
+                            "value": "",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/outgoing/report",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "outgoing",
+                        "report"
+                    ]
+                },
+                "description": "Report an outgoing truck. Requires an unreported truck_id from GET /booking/trucks/outgoing."
+            },
+            "response": []
         }
     ],
     "variable": [
@@ -341,6 +451,11 @@
             "key": "reporting_datetime",
             "value": "2026-07-28 12:30:00",
             "description": "UTC datetime in YYYY-MM-DD HH:MM:SS format."
+        },
+        {
+            "key": "outgoing_truck_id",
+            "value": "",
+            "description": "Filled automatically by the Outgoing Trucks request (first unreported truck)."
         }
     ]
 }

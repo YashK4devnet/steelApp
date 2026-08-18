@@ -21,19 +21,19 @@ export function SecurityDashboard() {
       </button>
 
       {/* Card 2: Outbound Trucks */}
-      <div className="bg-white/60 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.02)] border border-slate-900/5 flex flex-col items-start gap-4 w-full text-left cursor-not-allowed relative overflow-hidden">
-        <div className="absolute top-0 right-0 bg-slate-800 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-[16px]">
-          Coming Soon
-        </div>
-        <div className="w-12 h-12 flex-shrink-0 bg-red-50 rounded-full flex items-center justify-center text-red-400">
+      <button 
+        onClick={() => navigate('/trucks/outgoing')}
+        className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-start gap-4 group cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 w-full text-left active:scale-[0.98] transition-all duration-150"
+      >
+        <div className="w-12 h-12 flex-shrink-0 bg-red-50 rounded-full flex items-center justify-center text-red-500 transition-colors">
           <div style={{ transform: 'scaleX(-1)' }}>
             <TruckIcon className="w-6 h-6" />
           </div>
         </div>
         <div>
-          <h3 className="text-[16px] font-semibold text-slate-400 leading-tight">Trucks from warehouse</h3>
+          <h3 className="text-[16px] font-semibold text-text-primary leading-tight">Trucks from warehouse</h3>
         </div>
-      </div>
+      </button>
 
       {/* Card 3: Gate Pass */}
       <div className="bg-white/60 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.02)] border border-slate-900/5 flex flex-col items-start gap-4 w-full text-left cursor-not-allowed relative overflow-hidden">
