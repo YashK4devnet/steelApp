@@ -21,7 +21,10 @@ export function MainLayout() {
   const hideBottomNav = 
     isLogoutModalOpen ||
     location.pathname.includes('/report') || 
-    location.pathname.includes('/trucks/submit-bill');
+    location.pathname.includes('/trucks/submit-bill') ||
+    location.pathname.includes('/bookings/new') ||
+    location.pathname.includes('/bookings/edit') ||
+    location.pathname.includes('/bookings/view');
 
   return (
     <>

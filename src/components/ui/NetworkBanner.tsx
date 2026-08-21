@@ -38,7 +38,7 @@ export function NetworkBanner() {
   if (!isOffline) return null;
 
   return (
-    <div className="sticky top-0 w-full z-[99999] bg-red-600/95 backdrop-blur-md text-white px-4 pt-[calc(env(safe-area-inset-top,0px)+0.375rem)] pb-1.5 -mb-3 text-center text-[12px] font-bold tracking-wide shadow-lg flex items-center justify-center gap-2 animate-fade-in-down">
+    <div className="sticky top-0 w-full z-[99999] bg-red-600/95 backdrop-blur-md text-white px-4 pt-[calc(env(safe-area-inset-top,0px)+0.375rem)] pb-2.5 -mb-8 text-center text-[12px] font-bold tracking-wide shadow-lg flex items-center justify-center gap-2 animate-fade-in-down">
       <WifiOffIcon />
       <span>Cannot connect to server. Please check your network.</span>
     </div>

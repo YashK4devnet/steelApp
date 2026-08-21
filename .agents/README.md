@@ -1,7 +1,8 @@
 # Mobile API
 
-This document describes the REST-style HTTP endpoints added to the
-`booking_modifier_4devnet` module for the mobile application.
+This document describes the REST-style HTTP endpoints for the **RNE
+application**. There is one app: screens and data change by the logged-in
+user's **role** (for example Security, Seller / Vendor, Buyer, Admin).
 
 ## Authentication
 
@@ -598,6 +599,219 @@ curl -X POST "http://<odoo-host>/booking/trucks/outgoing/report" \
 
 ---
 
+## 9. Customer Master Data
+
+Use this API to fill the dropdowns on the **create truck request** screen
+(warehouse, ship-to, bill-to, UOM, truck type).
+
+**Endpoint**
+
+```text
+GET /booking/customer/master-data
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Who can call it**
+
+* **Buyer** — warehouses, UOMs, truck types, plus that customer's ship-to and bill-to addresses.
+* **Admin** — warehouses, UOMs, and truck types. Address lists are empty for now.
+* Other roles receive `403 Forbidden`.
+
+**What it returns**
+
+| Field                 | Type   | Meaning |
+| --------------------- | ------ | ------- |
+| `customer_id`         | integer or `false` | Logged-in customer's ID (Buyer). `false` for Admin. |
+| `customer_name`       | string | Customer name. Empty for Admin. |
+| `warehouses`          | array  | Pickup warehouses for the warehouse dropdown. |
+| `ship_to_addresses`   | array  | Addresses for the Ship To dropdown. |
+| `bill_to_addresses`   | array  | Addresses for the Bill To dropdown. |
+| `uoms`                | array  | Weight units (kg and ton). Use these when the user enters weight. |
+| `truck_types`         | array  | Existing truck type names. The app can show them as suggestions and send the matching `id`, or type a name to match later. |
+
+**`warehouses[]`**
+
+| Field             | Type    | Meaning |
+| ----------------- | ------- | ------- |
+| `id`              | integer | Warehouse ID. Send this when creating the request. |
+| `name`            | string  | Warehouse name (dropdown label). |
+| `contact_address` | string  | Full address. Show under the name if needed. |
+
+**`ship_to_addresses[]` and `bill_to_addresses[]`**
+
+Show `contact_address` in the dropdown. Send `id` when the user selects one.
+
+| Field             | Type    | Meaning |
+| ----------------- | ------- | ------- |
+| `id`              | integer | Address ID. |
+| `contact_address` | string  | Full address text. |
+
+**`uoms[]` / `truck_types[]`**
+
+| Field  | Type    | Meaning |
+| ------ | ------- | ------- |
+| `id`   | integer | Record ID. |
+| `name` | string  | Display name. |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/customer/master-data" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "customer_id": 40,
+  "customer_name": "Customer D",
+  "warehouses": [
+    {
+      "id": 1,
+      "name": "Main Warehouse",
+      "contact_address": "Main Warehouse, 123 Industrial Area, Bangalore 560001"
+    }
+  ],
+  "ship_to_addresses": [
+    {
+      "id": 40,
+      "contact_address": "Customer D, Lucknow"
+    }
+  ],
+  "bill_to_addresses": [
+    {
+      "id": 40,
+      "contact_address": "Customer D, Lucknow"
+    }
+  ],
+  "uoms": [
+    { "id": 1, "name": "kg" },
+    { "id": 3, "name": "t" }
+  ],
+  "truck_types": [
+    { "id": 7, "name": "20 Ft Container" }
+  ]
+}
+```
+
+---
+
+## 10. Customer Products
+
+Use this API to list products the customer can pick for DIA / line details
+on the truck request screen.
+
+**Endpoint**
+
+```text
+GET /booking/customer/products
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Who can call it**
+
+* **Buyer** and **Admin** — full product list for the app.
+* Other roles receive `403 Forbidden`.
+
+**What it returns**
+
+Top level: `status`, `count`, `products`.
+
+**`products[]`**
+
+| Field              | Type    | Meaning |
+| ------------------ | ------- | ------- |
+| `id`               | integer | Product ID. Send this when the user selects the product. |
+| `name`             | string  | Product name to show in the list. |
+| `default_code`     | string  | Internal reference / SKU. |
+| `image_128`        | string  | Small product image as **base64**. Empty string if there is no image. Decode and display directly. Do not treat this as a URL. |
+| `brand_id`         | integer or `false` | Brand ID. |
+| `brand`            | string  | Brand name. |
+| `material_type_id` | integer or `false` | Material type ID. |
+| `material_type`    | string  | Material type name. |
+| `shape_id`         | integer or `false` | Shape ID. |
+| `shape`            | string  | Shape name. |
+| `weight_type_id`   | integer or `false` | Weight type ID. |
+| `weight_type`      | string  | Weight type name. |
+| `weight_type_code` | string  | Short code (for example `L`, `SL`). |
+| `diameter_id`      | integer or `false` | Diameter ID. |
+| `diameter`         | string  | Diameter label (for example `12`). |
+| `has_bundles`      | boolean | `true` if this product has bundle options. |
+| `bundles`          | array   | Bundle options. Empty when `has_bundles` is `false`. |
+
+**`bundles[]`**
+
+Use this list when `has_bundles` is `true` so the user can pick a bundle and enter quantity.
+
+| Field           | Type    | Meaning |
+| --------------- | ------- | ------- |
+| `id`            | integer | Bundle ID. Send this when the user selects a bundle. |
+| `name`          | string  | Bundle name. |
+| `rod_qty`       | integer | Number of rods in the bundle. |
+| `rod_length`    | number  | Rod length in meters. |
+| `weight`| number  | Bundle weight. |
+| `uom_id`        | integer or `false` | UOM ID for the bundle weight. |
+| `uom`           | string  | UOM name (usually kg). |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/customer/products" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 1,
+  "products": [
+    {
+      "id": 58,
+      "name": "12mm TMT Fe500",
+      "default_code": "12/1",
+      "image_128": "/9j/4AAQSkZJRgABAQ...",
+      "brand_id": 2,
+      "brand": "Brand A",
+      "material_type_id": 1,
+      "material_type": "TMT",
+      "shape_id": 1,
+      "shape": "Round",
+      "weight_type_id": 3,
+      "weight_type": "Standard",
+      "weight_type_code": "S",
+      "diameter_id": 4,
+      "diameter": "12",
+      "has_bundles": true,
+      "bundles": [
+        {
+          "id": 10,
+          "name": "12mm x 12m",
+          "rod_qty": 10,
+          "rod_length": 12.0,
+          "weight": 106.56,
+          "uom_id": 1,
+          "uom": "kg"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
 ## HTTP Status Codes
 
 | Code | Meaning                                                            |
@@ -621,7 +835,11 @@ curl -X POST "http://<odoo-host>/booking/trucks/outgoing/report" \
      header to list trucks in `loading` state assigned to your pickup location.
    - Call `POST /booking/trucks/submit_vendor_bill` with the selected truck line
      ID, bill number, bill date, bill document, and E-Way Bill details.
-4. Call `POST /booking/auth/logout` with the token header when the user signs
+4. **Buyer flow** (same RNE app; shown when login `role` is Buyer, or for Admin)
+   - Call `GET /booking/customer/master-data` to fill warehouse, ship-to, bill-to, UOM, and truck type dropdowns.
+   - Call `GET /booking/customer/products` to list products, images, and bundles for DIA selection.
+   - Truck request submit (POST) will be added later.
+5. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.
 

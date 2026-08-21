@@ -11,6 +11,10 @@ import { ReportTruckPage } from '../../features/trucks/pages/ReportTruckPage';
 import { SubmitVendorBillPage } from '../../features/trucks/pages/SubmitVendorBillPage';
 import { OutgoingTrucksPage } from '../../features/trucks/pages/OutgoingTrucksPage';
 import { ReportOutgoingTruckPage } from '../../features/trucks/pages/ReportOutgoingTruckPage';
+import { BookingsPage } from '../../features/bookings/pages/BookingsPage';
+import { CreateBookingStep1Page } from '../../features/bookings/pages/CreateBookingStep1Page';
+import { CreateBookingStep2Page } from '../../features/bookings/pages/CreateBookingStep2Page';
+import { ProductSelectionPage } from '../../features/bookings/pages/ProductSelectionPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
@@ -25,6 +29,9 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/dashboard': { level: 0, parent: '' },
   '/profile': { level: 0, parent: '/dashboard' },
   '/login': { level: 0, parent: '' },
+  '/bookings': { level: 1, parent: '/dashboard' },
+  '/bookings/new': { level: 2, parent: '/bookings' },
+  '/bookings/new/step2': { level: 3, parent: '/bookings/new' },
   '/trucks/loading': { level: 1, parent: '/dashboard' },
   '/trucks/loaded': { level: 1, parent: '/dashboard' },
   '/trucks/outgoing': { level: 1, parent: '/dashboard' },
@@ -34,12 +41,23 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
-  if (pathname.startsWith('/trucks/submit-bill')) return PAGE_LEVEL_MAP['/trucks/submit-bill'];
-  if (pathname.startsWith('/trucks/outgoing/report')) return PAGE_LEVEL_MAP['/trucks/outgoing/report'];
-  if (pathname.startsWith('/trucks/report')) return PAGE_LEVEL_MAP['/trucks/report'];
-  if (pathname.startsWith('/trucks/loading')) return PAGE_LEVEL_MAP['/trucks/loading'];
-  if (pathname.startsWith('/trucks/loaded')) return PAGE_LEVEL_MAP['/trucks/loaded'];
-  if (pathname.startsWith('/trucks/outgoing')) return PAGE_LEVEL_MAP['/trucks/outgoing'];
+  if (pathname.match(/^\/bookings\/view\/\d+\/step2/)) {
+    const id = pathname.split('/')[3];
+    return { level: 3, parent: `/bookings/view/${id}` };
+  }
+  if (pathname.match(/^\/bookings\/view\/\d+/)) {
+    return { level: 2, parent: '/bookings' };
+  }
+  if (pathname.match(/^\/bookings\/edit\/\d+\/step2/)) {
+    const id = pathname.split('/')[3];
+    return { level: 3, parent: `/bookings/edit/${id}` };
+  }
+  if (pathname.match(/^\/bookings\/edit\/\d+/)) {
+    return { level: 2, parent: '/bookings' };
+  }
+  if (pathname.startsWith('/bookings/new/step2')) return PAGE_LEVEL_MAP['/bookings/new/step2'];
+  if (pathname.startsWith('/bookings/new')) return PAGE_LEVEL_MAP['/bookings/new'];
+  if (pathname.startsWith('/bookings')) return PAGE_LEVEL_MAP['/bookings'];
   if (pathname.startsWith('/profile')) return PAGE_LEVEL_MAP['/profile'];
   if (pathname.startsWith('/login')) return PAGE_LEVEL_MAP['/login'];
   return PAGE_LEVEL_MAP['/dashboard'];
@@ -131,6 +149,13 @@ export function AppRouter() {
             <Route path="/trucks/submit-bill/:id" element={<SubmitVendorBillPage />} />
             <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
             <Route path="/trucks/outgoing/report/:id" element={<ReportOutgoingTruckPage />} />
+            <Route path="/bookings" element={<BookingsPage />} />
+            <Route path="/bookings/new" element={<CreateBookingStep1Page />} />
+            <Route path="/bookings/new/step2" element={<CreateBookingStep2Page />} />
+            <Route path="/bookings/edit/:id" element={<CreateBookingStep1Page />} />
+            <Route path="/bookings/edit/:id/step2" element={<CreateBookingStep2Page />} />
+            <Route path="/bookings/view/:id" element={<CreateBookingStep1Page />} />
+            <Route path="/bookings/view/:id/step2" element={<CreateBookingStep2Page />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

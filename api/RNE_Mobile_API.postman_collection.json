@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "Mobile API",
-        "description": "Postman collection for the Reporting Mobile App APIs exposed by booking_modifier_4devnet.",
+        "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Buyer, Admin).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -412,6 +412,64 @@
                     ]
                 },
                 "description": "Report an outgoing truck. Requires an unreported truck_id from GET /booking/trucks/outgoing."
+            },
+            "response": []
+        },
+        {
+            "name": "9. Customer Master Data",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/customer/master-data",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "customer",
+                        "master-data"
+                    ]
+                },
+                "description": "Buyer/Admin: dropdown data for the truck request screen (warehouses, ship-to, bill-to, UOMs, truck types). Other roles get 403."
+            },
+            "response": []
+        },
+        {
+            "name": "10. Customer Products",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/customer/products",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "customer",
+                        "products"
+                    ]
+                },
+                "description": "Buyer/Admin: approved saleable products with image_128 (base64) and bundle options for DIA selection. Other roles get 403."
             },
             "response": []
         }

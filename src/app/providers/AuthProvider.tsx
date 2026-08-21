@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { User } from '../../types';
 import { apiRequest } from '../../lib/api';
 import { SessionExpiredModal } from '../../components/ui/SessionExpiredModal';
+import { syncMasterData } from '../../features/bookings/services/bookingApi';
 
 interface AuthContextType {
   user: User | null;
@@ -27,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
       setToken(storedToken);
+      syncMasterData();
     }
     setLoading(false);
 
@@ -63,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(receivedToken);
       localStorage.setItem('authUser', JSON.stringify(response.user));
       localStorage.setItem('authToken', receivedToken);
+      syncMasterData();
     } else {
       throw new Error('Invalid response from server or missing token');
     }
