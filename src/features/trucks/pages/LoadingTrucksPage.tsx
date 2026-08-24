@@ -67,7 +67,7 @@ export function LoadingTrucksPage() {
 
   const { data: trucks = [], isLoading: loading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.loadingTrucks,
-    queryFn: () => getLoadingTrucks(false),
+    queryFn: getLoadingTrucks,
   });
 
   const filteredTrucks = trucks.filter((t) =>
@@ -79,7 +79,6 @@ export function LoadingTrucksPage() {
   );
 
   const handleRefresh = async () => {
-    await getLoadingTrucks(true);
     await refetch();
   };
 
