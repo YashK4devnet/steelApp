@@ -278,24 +278,24 @@ This document logs the major architectural, feature, and design changes implemen
 - **Maximum Card Contrast**: White feature cards (`bg-white` with `shadow-[0_8px_24px_rgba(15,23,42,0.04)]`) inside the sheet canvas now pop out with clean 3D depth and visual separation against the soft gradient sheet background.
 - **App-wide Alignment**: Synchronized across `DashboardPage.tsx` and `ProfilePage.tsx`.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## Phase 38: Bookings Feature, Customer Master Data Caching & TanStack Query Integration
+- **Step 2 DIA Details Redesign**:
+  - Updated `SelectedProduct` schema to include `dia`, `shape`, `weight_option`, and `order_type`.
+  - Redesigned `ProductConfigSheet` to include dropdowns for DIA, Shape, and Weight.
+  - Added support for both custom weight and predefined bundle ordering modes.
+  - Implemented floating circular FAB button (`+`) for quick additions.
+- **Customer Master Data API & Caching**:
+  - Integrated `GET /booking/customer/master-data` endpoint into `bookingApi.ts`.
+  - Added background local storage sync (`syncMasterData`) triggered on app startup and login.
+  - Decommissioned legacy "Pickup Company" dropdown and simplified Step 1 flow to directly select warehouses.
+- **Bookings Architecture & Code Quality Refactoring**:
+  - Refactored `src/features/bookings/` to follow strict guidelines from `AGENT_INSTRUCTIONS.md`.
+  - **100% Type Safety**: Removed all `any` casts across types, services, and page components.
+  - **Custom Hooks**: Created `useBookings`, `useCreateBookingStep1`, `useCreateBookingStep2`, and `useBookingMutations` to separate logic from UI rendering.
+  - **Modular Components**: Extracted `PickupSection`, `DeliverySection`, `TruckDetailsSection`, `DriverDetailsSection`, and `SelectedProductCard`.
+  - **File Size Optimization**: Reduced `CreateBookingStep1Page.tsx` (from 411 to 115 lines) and `CreateBookingStep2Page.tsx` (from 336 to 165 lines).
+- **TanStack Query (`@tanstack/react-query`) Integration**:
+  - Installed `@tanstack/react-query` v5 and introduced global `QueryProvider.tsx` with 5-minute stale-while-revalidate caching and retry backoffs.
+  - Created centralized, type-safe query keys in `src/constants/queryKeys.ts`.
+  - Converted `useBookings`, `LoadedTrucksPage`, `LoadingTrucksPage`, and `OutgoingTrucksPage` data fetching to `useQuery`.
+  - Integrated `useMutation` hooks (`useSaveBooking`, `useCancelBooking`) with automatic `invalidateQueries` to instantly sync list views upon saving or cancelling orders.

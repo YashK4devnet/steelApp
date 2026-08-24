@@ -1,12 +1,15 @@
 import React from 'react';
+import { QueryProvider } from './app/providers/QueryProvider';
 import { AuthProvider } from './app/providers/AuthProvider';
 import { AppRouter } from './app/router';
 
 function App() {
   return (
-    <AuthProvider>
-      <AppRouter />
-    </AuthProvider>
+    <QueryProvider>
+      <AuthProvider>
+        <AppRouter />
+      </AuthProvider>
+    </QueryProvider>
   );
 }
 

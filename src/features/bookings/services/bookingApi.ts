@@ -1,10 +1,28 @@
-import { type Booking, type PickupCompany, type Warehouse, type Address, type Customer, type DIAProduct } from '../types';
+import { 
+  type Booking, 
+  type PickupCompany, 
+  type Warehouse, 
+  type Address, 
+  type Customer, 
+  type DIAProduct,
+  type SaveBookingPayload 
+} from '../types';
+import { BOOKING_STATUS } from '../constants';
 import { apiRequest } from '../../../lib/api';
 
-// Mock delay to simulate network latency
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-let mockBookings: any[] = [
+export interface StoredBooking extends SaveBookingPayload {
+  id: number;
+  reference: string;
+  created_date: string;
+  customer_name: string;
+  pickup_company_name: string;
+  is_truck_loaded: boolean;
+  status: typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS];
+}
+
+const mockBookings: StoredBooking[] = [
   {
     id: 1,
     reference: 'BKG-2026-0001',
@@ -12,17 +30,22 @@ let mockBookings: any[] = [
     customer_name: 'Acme Corp',
     pickup_company_name: 'Logistics Hub A',
     is_truck_loaded: true,
-    status: 'Loaded',
-    // Detailed fields
-    pickup_company_id: 101,
+    status: BOOKING_STATUS.LOADED,
     pickup_warehouse_id: 201,
-    warehouse_address_id: 301,
     warehouse_address_name: '123 Alpha St, Cityville',
     customer_id: 901,
     ship_to_address_id: 401,
     bill_to_same_as_ship_to: true,
     bill_to_address_id: 401,
     use_sellers_truck: true,
+    truck_type: '',
+    truck_number_plate: '',
+    truck_capacity: null,
+    transporter_name: '',
+    transporter_contact: '',
+    driver_name: '',
+    driver_contact: '',
+    driver_license_number: '',
     products: [
       {
         local_id: 'prod-1',
@@ -74,11 +97,8 @@ let mockBookings: any[] = [
     customer_name: 'Acme Corp',
     pickup_company_name: 'FastFreight LLC',
     is_truck_loaded: false,
-    status: 'Pending',
-    // Detailed fields
-    pickup_company_id: 102,
+    status: BOOKING_STATUS.PENDING,
     pickup_warehouse_id: 203,
-    warehouse_address_id: 303,
     warehouse_address_name: '789 North Ave, Metropolis',
     customer_id: 901,
     ship_to_address_id: 402,
@@ -148,7 +168,8 @@ export async function getBookings(): Promise<Booking[]> {
     customer_name: b.customer_name,
     pickup_warehouse_name: b.pickup_company_name,
     is_truck_loaded: b.is_truck_loaded,
-    status: b.status
+    status: b.status,
+    products: b.products,
   }));
 }
 
@@ -190,7 +211,7 @@ export async function getCustomerAddresses(type: 'ship' | 'bill'): Promise<Addre
   if (data) {
     const parsed = JSON.parse(data);
     const addresses = type === 'ship' ? parsed.ship_to_addresses : parsed.bill_to_addresses;
-    return (addresses || []).map((a: any) => ({ id: a.id, name: a.contact_address }));
+    return (addresses || []).map((a: { id: number; contact_address: string }) => ({ id: a.id, name: a.contact_address }));
   }
   return [];
 }
@@ -233,36 +254,28 @@ export async function searchDIAProducts(query: string): Promise<DIAProduct[]> {
   );
 }
 
-export async function getBookingById(id: number): Promise<any | null> {
+export async function getBookingById(id: number): Promise<StoredBooking | null> {
   await delay(400);
   const booking = mockBookings.find(b => b.id === id);
-  return booking ? JSON.parse(JSON.stringify(booking)) : null; // deep copy
+  return booking ? JSON.parse(JSON.stringify(booking)) : null;
 }
 
-export async function saveBooking(payload: any): Promise<{ success: boolean; reference: string }> {
+export async function saveBooking(payload: SaveBookingPayload): Promise<{ success: boolean; reference: string }> {
   await delay(1200);
-  console.log('[API] Saving Booking Payload:', payload);
   
+  const { id: _ignoredId, ...restPayload } = payload;
   const id = mockBookings.length + 1;
   const reference = `BKG-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
   
-  // Find pickup company name
-  const companies = [
-    { id: 101, name: 'Logistics Hub A' },
-    { id: 102, name: 'FastFreight LLC' },
-    { id: 103, name: 'Global Movers Inc.' },
-  ];
-  const companyName = companies.find(c => c.id === payload.pickup_company_id)?.name || 'Unknown Company';
-
-  const newBooking = {
-    ...payload,
+  const newBooking: StoredBooking = {
+    ...restPayload,
     id,
     reference,
     created_date: new Date().toISOString().split('T')[0],
-    customer_name: 'Acme Corp',
-    pickup_company_name: companyName,
+    customer_name: payload.customer_name || 'Acme Corp',
+    pickup_company_name: 'Main Warehouse',
     is_truck_loaded: false,
-    status: 'Pending'
+    status: BOOKING_STATUS.PENDING
   };
 
   mockBookings.push(newBooking);
@@ -273,15 +286,15 @@ export async function saveBooking(payload: any): Promise<{ success: boolean; ref
   };
 }
 
-export async function updateBooking(id: number, payload: any): Promise<{ success: boolean }> {
+export async function updateBooking(id: number, payload: SaveBookingPayload): Promise<{ success: boolean }> {
   await delay(1000);
-  console.log('[API] Updating Booking Payload:', payload);
   
   const idx = mockBookings.findIndex(b => b.id === id);
   if (idx !== -1) {
+    const { id: _ignoredId, ...restPayload } = payload;
     mockBookings[idx] = {
       ...mockBookings[idx],
-      ...payload
+      ...restPayload
     };
     return { success: true };
   }
@@ -292,8 +305,8 @@ export async function cancelBooking(id: number): Promise<{ success: boolean }> {
   await delay(800);
   const idx = mockBookings.findIndex(b => b.id === id);
   if (idx !== -1) {
-    mockBookings[idx].status = 'Cancelled';
-    mockBookings[idx].is_truck_loaded = true; // no longer editable
+    mockBookings[idx].status = BOOKING_STATUS.CANCELLED;
+    mockBookings[idx].is_truck_loaded = true;
     return { success: true };
   }
   throw new Error('Booking not found');
@@ -301,16 +314,13 @@ export async function cancelBooking(id: number): Promise<{ success: boolean }> {
 
 export async function syncMasterData(): Promise<void> {
   try {
-    const response = await apiRequest<any>('GET', '/booking/customer/master-data');
+    const response = await apiRequest<{ status: string }>('GET', '/booking/customer/master-data');
     if (response && response.status === 'success') {
       const currentCache = localStorage.getItem('masterData');
       const newDataStr = JSON.stringify(response);
       
       if (currentCache !== newDataStr) {
         localStorage.setItem('masterData', newDataStr);
-        console.log('[Master Data] Synced and updated cache.');
-      } else {
-        console.log('[Master Data] Cache is already up to date.');
       }
     }
   } catch (error) {

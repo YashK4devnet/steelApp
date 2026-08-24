@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { getLoadedTrucks } from '../services/truckApi';
 import type { LoadedTruck } from '../types';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -31,31 +33,21 @@ const TruckIcon = () => (
 export function LoadedTrucksPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [trucks, setTrucks] = useState<LoadedTruck[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
 
-  const fetchTrucks = async () => {
-    setError('');
-    try {
-      const data = await getLoadedTrucks();
-      setTrucks(data || []);
-    } catch (err: any) {
-      setError(err.message || 'Failed to fetch trucks');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: trucks = [], isLoading: loading, isError, error, refetch } = useQuery<LoadedTruck[], Error>({
+    queryKey: QUERY_KEYS.loadedTrucks,
+    queryFn: () => getLoadedTrucks(),
+  });
 
-  useEffect(() => {
-    fetchTrucks();
-  }, []);
-  
-  const filteredTrucks = trucks.filter(t => 
+  const filteredTrucks = trucks.filter((t) =>
     t.driver_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.truck_number_plate.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.truck_type.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
@@ -63,7 +55,9 @@ export function LoadedTrucksPage() {
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto flex items-center gap-4 mb-6">
           <button 
+            type="button"
             onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/dashboard', { replace: true }))}
+            aria-label="Back"
             className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
           >
             <ArrowLeftIcon />
@@ -87,22 +81,22 @@ export function LoadedTrucksPage() {
       </div>
 
       {/* List Content wrapped in PullToRefresh */}
-      <PullToRefresh onRefresh={fetchTrucks}>
+      <PullToRefresh onRefresh={handleRefresh}>
         <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 flex flex-col gap-4">
           {loading ? (
             <div className="text-center py-12">
               <p className="text-text-secondary">Loading trucks...</p>
             </div>
-          ) : error ? (
+          ) : isError ? (
             <div className="text-center py-12">
-              <p className="text-error">{error}</p>
+              <p className="text-error">{error instanceof Error ? error.message : 'Failed to fetch trucks'}</p>
             </div>
           ) : filteredTrucks.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-text-secondary">No trucks found.</p>
             </div>
           ) : (
-            filteredTrucks.map(truck => (
+            filteredTrucks.map((truck) => (
               <div 
                 key={truck.id}
                 className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col sm:flex-row gap-5"
@@ -132,6 +126,7 @@ export function LoadedTrucksPage() {
                   </div>
                   
                   <button 
+                    type="button"
                     className={`w-full sm:w-auto px-6 py-2.5 rounded-[12px] font-semibold text-[14px] transition-transform active:scale-[0.98] ${
                       truck.is_reported 
                         ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 

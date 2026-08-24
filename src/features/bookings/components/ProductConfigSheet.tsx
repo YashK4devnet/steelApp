@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import type { DIAProduct, SelectedProduct, DIABundle } from '../types';
+import type { DIAProduct, SelectedProduct } from '../types';
+import { DIA_OPTIONS, SHAPE_OPTIONS, WEIGHT_TYPE_OPTIONS } from '../constants';
 import { Select } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
 import { Toggle } from '../../../components/ui/Toggle';
@@ -192,24 +193,13 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
                 label="Select DIA"
                 value={dia}
                 onChange={(e) => setDia(e.target.value)}
-                options={[
-                  { value: '8', label: '8' },
-                  { value: '10', label: '10' },
-                  { value: '12', label: '12' },
-                  { value: '16', label: '16' },
-                  { value: '20', label: '20' },
-                  { value: '25', label: '25' },
-                  { value: 'CUTTING', label: 'CUTTING' }
-                ]}
+                options={DIA_OPTIONS.map((val) => ({ value: val, label: val }))}
               />
               <Select 
                 label="Select Shape"
                 value={shape}
                 onChange={(e) => setShape(e.target.value)}
-                options={[
-                  { value: 'U', label: 'U' },
-                  { value: 'STRAIGHT', label: 'STRAIGHT' }
-                ]}
+                options={SHAPE_OPTIONS.map((val) => ({ value: val, label: val }))}
               />
             </div>
 
@@ -217,11 +207,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
               label="Select Weight Type"
               value={weightOption}
               onChange={(e) => setWeightOption(e.target.value)}
-              options={[
-                { value: 'SUPER LIGHT', label: 'SUPER LIGHT' },
-                { value: 'LIGHT', label: 'LIGHT' },
-                { value: 'BIS', label: 'BIS' }
-              ]}
+              options={WEIGHT_TYPE_OPTIONS.map((val) => ({ value: val, label: val }))}
             />
 
             <Toggle 

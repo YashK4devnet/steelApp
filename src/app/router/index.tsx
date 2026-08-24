@@ -14,7 +14,6 @@ import { ReportOutgoingTruckPage } from '../../features/trucks/pages/ReportOutgo
 import { BookingsPage } from '../../features/bookings/pages/BookingsPage';
 import { CreateBookingStep1Page } from '../../features/bookings/pages/CreateBookingStep1Page';
 import { CreateBookingStep2Page } from '../../features/bookings/pages/CreateBookingStep2Page';
-import { ProductSelectionPage } from '../../features/bookings/pages/ProductSelectionPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
