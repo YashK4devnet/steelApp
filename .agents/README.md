@@ -599,6 +599,13 @@ curl -X POST "http://<odoo-host>/booking/trucks/outgoing/report" \
 
 ---
 
+## Customer App APIs
+
+The endpoints in this section (`/booking/customer/...`) are **Buyer-only**.
+Admin, Security, Seller, and other roles receive `403 Forbidden`.
+
+---
+
 ## 9. Customer Master Data
 
 Use this API to fill the dropdowns on the **create truck request** screen
@@ -612,20 +619,19 @@ GET /booking/customer/master-data
 
 **Authentication**
 
-Bearer token from `login`.
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
 
 **Who can call it**
 
 * **Buyer** — warehouses, UOMs, truck types, plus that customer's ship-to and bill-to addresses.
-* **Admin** — warehouses, UOMs, and truck types. Address lists are empty for now.
-* Other roles receive `403 Forbidden`.
+* Other roles (including Admin) receive `403 Forbidden`.
 
 **What it returns**
 
 | Field                 | Type   | Meaning |
 | --------------------- | ------ | ------- |
-| `customer_id`         | integer or `false` | Logged-in customer's ID (Buyer). `false` for Admin. |
-| `customer_name`       | string | Customer name. Empty for Admin. |
+| `customer_id`         | integer or `false` | Logged-in Buyer's customer ID. |
+| `customer_name`       | string | Logged-in Buyer's customer name. |
 | `warehouses`          | array  | Pickup warehouses for the warehouse dropdown. |
 | `ship_to_addresses`   | array  | Addresses for the Ship To dropdown. |
 | `bill_to_addresses`   | array  | Addresses for the Bill To dropdown. |
@@ -715,12 +721,12 @@ GET /booking/customer/products
 
 **Authentication**
 
-Bearer token from `login`.
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
 
 **Who can call it**
 
-* **Buyer** and **Admin** — full product list for the app.
-* Other roles receive `403 Forbidden`.
+* **Buyer** — full product list for the app.
+* Other roles (including Admin) receive `403 Forbidden`.
 
 **What it returns**
 
@@ -812,6 +818,165 @@ curl -X GET "http://<odoo-host>/booking/customer/products" \
 
 ---
 
+## 11. Customer Shapes and Weight Types
+
+Use this API to list product shapes and weight types for filters or DIA
+fields on the truck request screen.
+
+**Endpoint**
+
+```text
+GET /booking/customer/shapes-weight-types
+```
+
+**Authentication**
+
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
+
+**Who can call it**
+
+* **Buyer** only.
+* Other roles (including Admin) receive `403 Forbidden`.
+
+**What it returns**
+
+| Field          | Type  | Meaning |
+| -------------- | ----- | ------- |
+| `shapes`       | array | Product shapes. |
+| `weight_types` | array | Product weight types. |
+
+**`shapes[]`**
+
+| Field  | Type    | Meaning |
+| ------ | ------- | ------- |
+| `id`   | integer | Shape ID. |
+| `name` | string  | Shape name. |
+
+**`weight_types[]`**
+
+| Field  | Type    | Meaning |
+| ------ | ------- | ------- |
+| `id`   | integer | Weight type ID. |
+| `name` | string  | Weight type name. |
+| `code` | string  | Short code (for example `L`, `SL`). |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/customer/shapes-weight-types" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "shapes": [
+    { "id": 1, "name": "Round" }
+  ],
+  "weight_types": [
+    { "id": 3, "name": "Standard", "code": "S" }
+  ]
+}
+```
+
+---
+
+## 12. Submit Truck Request
+
+Use this API when the customer submits a new **Truck From Warehouse** request from the app.
+
+DIA / product line details are **not** part of this API yet. They will be added later.
+
+**Endpoint**
+
+```text
+POST /booking/customer/truck-request
+```
+
+**Authentication**
+
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
+
+**Who can call it**
+
+* **Buyer** only.
+* Other roles (including Admin) receive `403 Forbidden`.
+
+**Request format**
+
+Send JSON (`application/json`) or form fields.
+
+| Field                  | Type    | Required | Description |
+| ---------------------- | ------- | -------- | ----------- |
+| `warehouse_id`         | integer | Yes      | Selected warehouse `id` from `GET /booking/customer/master-data`. Company and pickup address are taken from this warehouse on the server. |
+| `ship_to_address_id`   | integer | Yes      | Selected Ship To address `id` from master data. |
+| `is_same_as_ship_to`   | boolean | Yes      | `true` — Bill To is the same as Ship To. `false` — send `bill_to_address_id`. |
+| `bill_to_address_id`   | integer | If `is_same_as_ship_to` is `false` | Selected Bill To address `id` from master data. |
+| `truck_number_plate`   | string  | Yes      | Truck number plate. |
+| `truck_capacity_ton`   | number  | Yes      | Truck capacity in ton. Maximum **3 decimal places**. |
+| `transporter_name`     | string  | No       | Transporter name. |
+| `transporter_contact`  | string  | No       | Transporter contact. |
+| `is_new_truck_type`    | boolean | Yes      | `false` — use an existing truck type (`truck_type_id`). `true` — enter a new truck type name. |
+| `truck_type_id`        | integer | If `is_new_truck_type` is `false` | Truck type `id` from master data. |
+| `truck_type`           | string  | If `is_new_truck_type` is `true` | New truck type name. `truck_type_name` is also accepted. If the name already exists, the existing record is reused. |
+| `driver_name`          | string  | Yes      | Driver name. |
+| `driver_contact`       | string  | Yes      | Driver contact. |
+| `driver_licence_number`| string  | No       | Driver license number. |
+
+**Server-side behaviour (for reference)**
+
+* Customer (`delivery_address_id`) is set from the logged-in Buyer’s partner.
+* From `warehouse_id`, the server sets pickup company, warehouse, and warehouse address.
+* When `is_same_as_ship_to` is `true`, Bill To is stored as the same address as Ship To.
+
+**Example request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "warehouse_id": 1,
+    "ship_to_address_id": 40,
+    "is_same_as_ship_to": true,
+    "truck_number_plate": "KA-01-AB-1234",
+    "truck_capacity_ton": 16.5,
+    "transporter_name": "ABC Transport",
+    "transporter_contact": "+91 98765 43210",
+    "is_new_truck_type": false,
+    "truck_type_id": 7,
+    "driver_name": "Rajesh Kumar",
+    "driver_contact": "+91 91234 56789",
+    "driver_licence_number": "DL-1234567890"
+  }'
+```
+
+**Example success response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Truck request submitted successfully.",
+  "truck_id": 55,
+  "state": "draft"
+}
+```
+
+**Example error response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "Truck Capacity must have at most 3 decimal places."
+}
+```
+
+---
+
 ## HTTP Status Codes
 
 | Code | Meaning                                                            |
@@ -835,10 +1000,11 @@ curl -X GET "http://<odoo-host>/booking/customer/products" \
      header to list trucks in `loading` state assigned to your pickup location.
    - Call `POST /booking/trucks/submit_vendor_bill` with the selected truck line
      ID, bill number, bill date, bill document, and E-Way Bill details.
-4. **Buyer flow** (same RNE app; shown when login `role` is Buyer, or for Admin)
+4. **Buyer flow** (same RNE app; shown when login `role` is Buyer). Customer App APIs are Buyer-only.
    - Call `GET /booking/customer/master-data` to fill warehouse, ship-to, bill-to, UOM, and truck type dropdowns.
-   - Call `GET /booking/customer/products` to list products, images, and bundles for DIA selection.
-   - Truck request submit (POST) will be added later.
+   - Call `GET /booking/customer/products` to list products, images, and bundles for DIA selection (for a later step).
+   - Call `GET /booking/customer/shapes-weight-types` for shape and weight-type lists.
+   - Call `POST /booking/customer/truck-request` to submit the truck request (without DIA lines for now).
 5. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.

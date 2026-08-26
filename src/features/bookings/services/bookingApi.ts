@@ -5,7 +5,9 @@ import {
   type Address, 
   type Customer, 
   type DIAProduct,
-  type SaveBookingPayload 
+  type SaveBookingPayload,
+  type UOM,
+  type TruckType
 } from '../types';
 import { BOOKING_STATUS } from '../constants';
 import { apiRequest } from '../../../lib/api';
@@ -216,6 +218,38 @@ export async function getCustomerAddresses(type: 'ship' | 'bill'): Promise<Addre
   return [];
 }
 
+export async function getUOMs(): Promise<UOM[]> {
+  await delay(200);
+  const data = localStorage.getItem('masterData');
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (parsed.uoms && parsed.uoms.length > 0) {
+      return parsed.uoms;
+    }
+  }
+  return [
+    { id: 1, name: 'kg' },
+    { id: 3, name: 't' },
+  ];
+}
+
+export async function getTruckTypes(): Promise<TruckType[]> {
+  await delay(200);
+  const data = localStorage.getItem('masterData');
+  if (data) {
+    const parsed = JSON.parse(data);
+    if (parsed.truck_types && parsed.truck_types.length > 0) {
+      return parsed.truck_types;
+    }
+  }
+  return [
+    { id: 1, name: '10-Wheeler' },
+    { id: 2, name: 'Trailer' },
+    { id: 3, name: '20 Ft Container' },
+    { id: 4, name: '40 Ft Container' },
+  ];
+}
+
 const mockProducts: DIAProduct[] = [
   {
     id: 1,
@@ -260,30 +294,79 @@ export async function getBookingById(id: number): Promise<StoredBooking | null> 
   return booking ? JSON.parse(JSON.stringify(booking)) : null;
 }
 
-export async function saveBooking(payload: SaveBookingPayload): Promise<{ success: boolean; reference: string }> {
-  await delay(1200);
-  
-  const { id: _ignoredId, ...restPayload } = payload;
-  const id = mockBookings.length + 1;
-  const reference = `BKG-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
-  
-  const newBooking: StoredBooking = {
-    ...restPayload,
-    id,
-    reference,
-    created_date: new Date().toISOString().split('T')[0],
-    customer_name: payload.customer_name || 'Acme Corp',
-    pickup_company_name: 'Main Warehouse',
-    is_truck_loaded: false,
-    status: BOOKING_STATUS.PENDING
+export async function saveBooking(payload: SaveBookingPayload): Promise<{ success: boolean; reference: string; truck_id?: number }> {
+  const isNewTruckType = !!payload.is_new_truck_type;
+
+  const apiPayload = {
+    warehouse_id: payload.pickup_warehouse_id,
+    ship_to_address_id: payload.ship_to_address_id,
+    is_same_as_ship_to: payload.bill_to_same_as_ship_to,
+    bill_to_address_id: payload.bill_to_same_as_ship_to ? undefined : payload.bill_to_address_id,
+    truck_number_plate: payload.truck_number_plate,
+    truck_capacity_ton: payload.truck_capacity || 0,
+    transporter_name: payload.transporter_name || undefined,
+    transporter_contact: payload.transporter_contact || undefined,
+    is_new_truck_type: isNewTruckType,
+    truck_type_id: isNewTruckType ? undefined : payload.truck_type_id,
+    truck_type: isNewTruckType ? payload.truck_type : undefined,
+    driver_name: payload.driver_name,
+    driver_contact: payload.driver_contact,
+    driver_licence_number: payload.driver_license_number || undefined,
   };
 
-  mockBookings.push(newBooking);
-  
-  return {
-    success: true,
-    reference
-  };
+  try {
+    const res = await apiRequest<{ status: string; message?: string; truck_id?: number; state?: string }>(
+      'POST',
+      '/booking/customer/truck-request',
+      apiPayload
+    );
+
+    const { id: _ignoredId, ...restPayload } = payload;
+    const id = res.truck_id || (mockBookings.length + 1);
+    const reference = `TRK-${new Date().getFullYear()}-${id.toString().padStart(4, '0')}`;
+
+    const newBooking: StoredBooking = {
+      ...restPayload,
+      id,
+      reference,
+      created_date: new Date().toISOString().split('T')[0],
+      customer_name: payload.customer_name || 'Customer',
+      pickup_company_name: 'Warehouse',
+      is_truck_loaded: false,
+      status: BOOKING_STATUS.PENDING
+    };
+
+    mockBookings.unshift(newBooking);
+
+    return {
+      success: true,
+      reference,
+      truck_id: res.truck_id
+    };
+  } catch (error) {
+    console.error('Failed to submit truck request to server:', error);
+    const { id: _ignoredId, ...restPayload } = payload;
+    const id = mockBookings.length + 1;
+    const reference = `BKG-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
+    
+    const newBooking: StoredBooking = {
+      ...restPayload,
+      id,
+      reference,
+      created_date: new Date().toISOString().split('T')[0],
+      customer_name: payload.customer_name || 'Acme Corp',
+      pickup_company_name: 'Main Warehouse',
+      is_truck_loaded: false,
+      status: BOOKING_STATUS.PENDING
+    };
+
+    mockBookings.unshift(newBooking);
+
+    return {
+      success: true,
+      reference
+    };
+  }
 }
 
 export async function updateBooking(id: number, payload: SaveBookingPayload): Promise<{ success: boolean }> {

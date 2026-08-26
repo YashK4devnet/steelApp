@@ -20,10 +20,13 @@ export function CreateBookingStep1Page() {
     isViewMode,
     warehouses,
     addresses,
+    truckTypes,
     form,
     errors,
     handleFormChange,
     handleWarehouseChange,
+    handleTruckTypeChange,
+    handleToggleNewTruckType,
     handleProceed,
     navigateBack,
   } = useCreateBookingStep1();
@@ -93,9 +96,12 @@ export function CreateBookingStep1Page() {
             <div className="flex flex-col gap-6 pt-2 border-t border-slate-900/5 animate-fade-in">
               <TruckDetailsSection
                 form={form}
+                truckTypes={truckTypes}
                 errors={errors}
                 isViewMode={isViewMode}
                 onFormChange={handleFormChange}
+                onTruckTypeChange={handleTruckTypeChange}
+                onToggleNewTruckType={handleToggleNewTruckType}
               />
               <DriverDetailsSection
                 form={form}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type { DIAProduct, SelectedProduct } from '../types';
+import type { DIAProduct, SelectedProduct, UOM } from '../types';
 import { DIA_OPTIONS, SHAPE_OPTIONS, WEIGHT_TYPE_OPTIONS } from '../constants';
+import { getUOMs } from '../services/bookingApi';
 import { Select } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
 import { Toggle } from '../../../components/ui/Toggle';
@@ -23,6 +24,9 @@ const CloseIcon = () => (
 export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSave }: ProductConfigSheetProps) {
   const [isClosing, setIsClosing] = useState(false);
   
+  // Master data UOMs
+  const [masterUOMs, setMasterUOMs] = useState<UOM[]>([]);
+
   // Toggle for bundle vs custom weight
   const [useBundle, setUseBundle] = useState<boolean>(true);
   
@@ -34,6 +38,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
   // Normal form state
   const [weight, setWeight] = useState<string>('');
   const [uom, setUom] = useState<string>('');
+  const [uomId, setUomId] = useState<number | undefined>(undefined);
   
   // Bundle form state
   const [selectedBundleId, setSelectedBundleId] = useState<number | null>(null);
@@ -43,13 +48,25 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
 
   useEffect(() => {
     if (isOpen && product) {
-      const uoms = product.uom_options && product.uom_options.length > 0 
-        ? product.uom_options 
-        : ['TON', 'KG'];
+      const loadUOMs = async () => {
+        try {
+          const list = await getUOMs();
+          setMasterUOMs(list);
+        } catch (e) {
+          console.error('Failed to load UOMs', e);
+        }
+      };
+
+      loadUOMs();
+
+      const defaultUomName = (product.uom_options && product.uom_options.length > 0)
+        ? product.uom_options[0]
+        : 'TON';
 
       if (initialData) {
         setWeight(initialData.weight && initialData.weight > 0 ? initialData.weight.toString() : '');
-        setUom(initialData.uom || uoms[0]);
+        setUom(initialData.uom || defaultUomName);
+        setUomId(initialData.uom_id);
         setSelectedBundleId(initialData.selected_bundle_id || product.bundles?.[0]?.id || null);
         setBundleQuantity(initialData.bundle_quantity || 1);
         setUseBundle(product.has_bundles && initialData.order_type === 'bundle');
@@ -58,7 +75,8 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setWeightOption(initialData.weight_option || 'BIS');
       } else {
         setWeight('');
-        setUom(uoms[0]);
+        setUom(defaultUomName);
+        setUomId(undefined);
         setSelectedBundleId(product.bundles?.[0]?.id || null);
         setBundleQuantity(1);
         setUseBundle(product.has_bundles);
@@ -80,6 +98,10 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
       onClose();
     }, 220);
   };
+
+  const uomSelectOptions = masterUOMs.length > 0
+    ? masterUOMs.map((u) => ({ value: u.name, label: u.name.toUpperCase() }))
+    : (product.uom_options && product.uom_options.length > 0 ? product.uom_options : ['TON', 'KG']).map((opt) => ({ value: opt, label: opt }));
 
   const handleSave = () => {
     setError('');
@@ -132,6 +154,8 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setError('Please select a UOM');
         return;
       }
+
+      const matchedMaster = masterUOMs.find((m) => m.name.toLowerCase() === uom.toLowerCase());
       
       onSave({
         local_id: initialData?.local_id || Date.now().toString(),
@@ -141,7 +165,8 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         weight_option: weightOption,
         order_type: 'weight',
         weight: weightNum,
-        uom
+        uom,
+        uom_id: matchedMaster ? matchedMaster.id : uomId,
       });
     }
     
@@ -177,7 +202,9 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
             </p>
           </div>
           <button 
+            type="button"
             onClick={handleClose}
+            aria-label="Close"
             className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
           >
             <CloseIcon />
@@ -286,8 +313,13 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
                     <Select 
                       label="UOM"
                       value={uom}
-                      onChange={(e) => setUom(e.target.value)}
-                      options={(product.uom_options && product.uom_options.length > 0 ? product.uom_options : ['TON', 'KG']).map(opt => ({ value: opt, label: opt }))}
+                      onChange={(e) => {
+                        const selectedVal = e.target.value;
+                        setUom(selectedVal);
+                        const matched = masterUOMs.find((m) => m.name.toLowerCase() === selectedVal.toLowerCase());
+                        if (matched) setUomId(matched.id);
+                      }}
+                      options={uomSelectOptions}
                     />
                   </div>
                 </div>

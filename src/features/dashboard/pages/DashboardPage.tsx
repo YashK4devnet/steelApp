@@ -12,14 +12,11 @@ export function DashboardPage() {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Toggle flag to force display Customer Dashboard regardless of user role (set to false to revert to role-based dashboard)
-  const FORCE_CUSTOMER_DASHBOARD = true;
-
   const userRole = user?.role?.toLowerCase() || '';
-  const isCustomer = FORCE_CUSTOMER_DASHBOARD || userRole === 'customer';
-  const isSecurity = !isCustomer && userRole === 'security';
-  const isAdmin = !isCustomer && userRole === 'admin';
-  const isSeller = !isCustomer && (userRole.includes('seller') || userRole.includes('vendor') || (!isSecurity && !isAdmin));
+  const isSecurity = userRole === 'security';
+  const isAdmin = userRole === 'admin';
+  const isSeller = userRole.includes('seller') || userRole.includes('vendor');
+  const isBuyer = userRole === 'buyer' || userRole === 'customer';
 
   return (
     <div className="min-h-screen bg-white relative z-0 flex flex-col">
@@ -90,10 +87,15 @@ export function DashboardPage() {
           </div>
 
           {/* Role Content */}
-          {isCustomer && <CustomerDashboard />}
-          {isSecurity && <SecurityDashboard />}
-          {isAdmin && <ManagerDashboard />}
-          {isSeller && <SellerDashboard />}
+          {isSecurity ? (
+            <SecurityDashboard />
+          ) : isAdmin ? (
+            <ManagerDashboard />
+          ) : isSeller ? (
+            <SellerDashboard />
+          ) : (
+            <CustomerDashboard />
+          )}
         </div>
       </main>
 

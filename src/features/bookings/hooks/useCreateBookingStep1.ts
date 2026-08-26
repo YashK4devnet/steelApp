@@ -4,6 +4,7 @@ import type {
   Warehouse, 
   Address, 
   Customer, 
+  TruckType,
   CreateBookingFormState, 
   SelectedProduct, 
   Step1LocationState 
@@ -12,6 +13,7 @@ import {
   getWarehouses, 
   getCustomerDetails, 
   getCustomerAddresses, 
+  getTruckTypes,
   getBookingById 
 } from '../services/bookingApi';
 import { INITIAL_BOOKING_FORM_STATE } from '../constants';
@@ -26,6 +28,7 @@ export function useCreateBookingStep1() {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
+  const [truckTypes, setTruckTypes] = useState<TruckType[]>([]);
   const [form, setForm] = useState<CreateBookingFormState>(INITIAL_BOOKING_FORM_STATE);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
@@ -35,14 +38,16 @@ export function useCreateBookingStep1() {
 
     const init = async () => {
       try {
-        const [whs, cust, addrs] = await Promise.all([
+        const [whs, cust, addrs, tTypes] = await Promise.all([
           getWarehouses(),
           getCustomerDetails(),
           getCustomerAddresses('ship'),
+          getTruckTypes(),
         ]);
         setWarehouses(whs);
         setCustomer(cust);
         setAddresses(addrs);
+        setTruckTypes(tTypes);
 
         if (bookingId) {
           const booking = await getBookingById(bookingId);
@@ -56,7 +61,9 @@ export function useCreateBookingStep1() {
               bill_to_same_as_ship_to: booking.bill_to_same_as_ship_to,
               bill_to_address_id: booking.bill_to_address_id,
               use_sellers_truck: booking.use_sellers_truck,
+              is_new_truck_type: booking.is_new_truck_type || false,
               truck_type: booking.truck_type || '',
+              truck_type_id: booking.truck_type_id || null,
               truck_number_plate: booking.truck_number_plate || '',
               truck_capacity: booking.truck_capacity || null,
               transporter_name: booking.transporter_name || '',
@@ -105,6 +112,39 @@ export function useCreateBookingStep1() {
     }
   };
 
+  const handleTruckTypeChange = (truckTypeId: number) => {
+    const selected = truckTypes.find((t) => t.id === truckTypeId);
+    setForm((prev) => ({
+      ...prev,
+      is_new_truck_type: false,
+      truck_type_id: truckTypeId,
+      truck_type: selected ? selected.name : prev.truck_type,
+    }));
+    if (errors.truck_type) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.truck_type;
+        return next;
+      });
+    }
+  };
+
+  const handleToggleNewTruckType = (isNew: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      is_new_truck_type: isNew,
+      truck_type: isNew ? '' : prev.truck_type,
+      truck_type_id: isNew ? null : prev.truck_type_id,
+    }));
+    if (errors.truck_type) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next.truck_type;
+        return next;
+      });
+    }
+  };
+
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -115,7 +155,15 @@ export function useCreateBookingStep1() {
     }
 
     if (!form.use_sellers_truck) {
-      if (!form.truck_type) newErrors.truck_type = 'Truck type is required';
+      if (form.is_new_truck_type) {
+        if (!form.truck_type || !form.truck_type.trim()) {
+          newErrors.truck_type = 'Please enter a custom truck type name';
+        }
+      } else {
+        if (!form.truck_type_id) {
+          newErrors.truck_type = 'Please select a truck type';
+        }
+      }
       if (!form.truck_number_plate) newErrors.truck_number_plate = 'Number plate is required';
       if (!form.transporter_name) newErrors.transporter_name = 'Transporter name is required';
       if (!form.driver_name) newErrors.driver_name = 'Driver name is required';
@@ -155,10 +203,13 @@ export function useCreateBookingStep1() {
     warehouses,
     customer,
     addresses,
+    truckTypes,
     form,
     errors,
     handleFormChange,
     handleWarehouseChange,
+    handleTruckTypeChange,
+    handleToggleNewTruckType,
     handleProceed,
     navigateBack: () => navigate(-1),
   };

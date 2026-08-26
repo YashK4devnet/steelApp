@@ -299,3 +299,20 @@ This document logs the major architectural, feature, and design changes implemen
   - Created centralized, type-safe query keys in `src/constants/queryKeys.ts`.
   - Converted `useBookings`, `LoadedTrucksPage`, `LoadingTrucksPage`, and `OutgoingTrucksPage` data fetching to `useQuery`.
   - Integrated `useMutation` hooks (`useSaveBooking`, `useCancelBooking`) with automatic `invalidateQueries` to instantly sync list views upon saving or cancelling orders.
+
+## Phase 39: Strict Role-Based Navigation & Buyer Dashboard Integration
+- **Removed Development Role Override**: Removed the `FORCE_CUSTOMER_DASHBOARD` bypass in `DashboardPage.tsx` that forced Customer Dashboard rendering during development.
+- **Buyer Role Support**: Implemented strict role-based dashboard evaluation supporting `"buyer"` / `"customer"`, `"seller"` / `"vendor"`, `"security"`, and `"admin"` returned from the authentication API.
+
+## Phase 40: Customer Master Data Section 9 Alignment
+- **UOM & TruckType Interfaces**: Added `UOM` and `TruckType` interfaces to `src/features/bookings/types.ts`.
+- **Master Data Getters**: Implemented `getUOMs()` and `getTruckTypes()` in `bookingApi.ts` to parse dynamically from cached Section 9 response.
+- **Truck Type Dropdown**: Updated `TruckDetailsSection.tsx` to render a `Select` dropdown populated from cached `truck_types` master data.
+- **Dynamic UOM Dropdown**: Updated `ProductConfigSheet.tsx` to populate UOM options dynamically from cached `uoms` master data.
+- **Buyer Role Auth Scoping**: Scoped `syncMasterData()` in `AuthProvider.tsx` to trigger only for `"buyer"` / `"customer"` users to prevent `403 Forbidden` API errors for non-buyer roles.
+
+## Phase 41: Section 12 Submit Truck Request API Integration & Custom Truck Type Option
+- **Section 12 API Payload**: Connected `saveBooking()` in `bookingApi.ts` to execute `POST /booking/customer/truck-request` formatted with Section 12 parameters (`warehouse_id`, `ship_to_address_id`, `is_same_as_ship_to`, `bill_to_address_id`, `truck_number_plate`, `truck_capacity_ton`, `transporter_name`, `transporter_contact`, `is_new_truck_type`, `truck_type_id` / `truck_type`, `driver_name`, `driver_contact`, `driver_licence_number`).
+- **Custom Truck Type Option**: Updated `TruckDetailsSection.tsx` and `useCreateBookingStep1.ts` to support both selecting existing master data truck types (`is_new_truck_type: false`) and entering a new custom truck type (`is_new_truck_type: true`).
+
+

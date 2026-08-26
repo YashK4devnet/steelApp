@@ -21,6 +21,16 @@ export interface Customer {
   name: string;
 }
 
+export interface UOM {
+  id: number;
+  name: string;
+}
+
+export interface TruckType {
+  id: number;
+  name: string;
+}
+
 export interface DIABundle {
   id: number;
   name: string;
@@ -54,6 +64,7 @@ export interface SelectedProduct {
   // Normal Product Fields
   weight?: number;
   uom?: string;
+  uom_id?: number;
   quantity?: number;
   
   // Bundle Fields
@@ -91,7 +102,9 @@ export interface CreateBookingFormState {
   use_sellers_truck: boolean;
 
   // Truck Details
+  is_new_truck_type?: boolean;
   truck_type: string;
+  truck_type_id?: number | null;
   truck_number_plate: string;
   truck_capacity: number | null;
   transporter_name: string;

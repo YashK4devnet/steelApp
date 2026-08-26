@@ -1,32 +1,85 @@
 import React from 'react';
 import { Accordion } from '../../../components/ui/Accordion';
 import { Input } from '../../../components/ui/Input';
-import type { CreateBookingFormState } from '../types';
+import { Select } from '../../../components/ui/Select';
+import type { CreateBookingFormState, TruckType } from '../types';
 
 interface TruckDetailsSectionProps {
   form: CreateBookingFormState;
+  truckTypes: TruckType[];
   errors: Record<string, string>;
   isViewMode: boolean;
   onFormChange: (field: keyof CreateBookingFormState, value: unknown) => void;
+  onTruckTypeChange: (truckTypeId: number) => void;
+  onToggleNewTruckType: (isNew: boolean) => void;
 }
 
 export function TruckDetailsSection({
   form,
+  truckTypes,
   errors,
   isViewMode,
   onFormChange,
+  onTruckTypeChange,
+  onToggleNewTruckType,
 }: TruckDetailsSectionProps) {
+  const truckOptions = [
+    ...truckTypes.map((t) => ({ value: t.id.toString(), label: t.name })),
+    { value: 'new_custom_type', label: '+ Enter New Custom Truck Type' },
+  ];
+
   return (
     <Accordion title="Truck Details" defaultExpanded={true}>
       <div className="flex flex-col gap-5 pb-2">
-        <Input
-          label="Truck Type *"
-          placeholder="e.g. 10-Wheeler, Trailer"
-          value={form.truck_type}
-          onChange={(e) => onFormChange('truck_type', e.target.value)}
-          disabled={isViewMode}
-          error={errors.truck_type}
-        />
+        {form.is_new_truck_type ? (
+          <div className="flex flex-col gap-2">
+            <Input
+              label="New Truck Type Name *"
+              placeholder="e.g. 24 Ft Open Body, Modular Trailer"
+              value={form.truck_type}
+              onChange={(e) => onFormChange('truck_type', e.target.value)}
+              disabled={isViewMode}
+              error={errors.truck_type}
+            />
+            {!isViewMode && (
+              <button
+                type="button"
+                onClick={() => onToggleNewTruckType(false)}
+                className="self-start text-[13px] font-semibold text-primary hover:underline mt-1 focus:outline-none"
+              >
+                ← Choose from existing truck types
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <Select
+              label="Truck Type *"
+              placeholder="Select Truck Type"
+              value={form.truck_type_id?.toString() || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                if (val === 'new_custom_type') {
+                  onToggleNewTruckType(true);
+                } else if (val) {
+                  onTruckTypeChange(Number(val));
+                }
+              }}
+              options={truckOptions}
+              disabled={isViewMode}
+              error={errors.truck_type}
+            />
+            {!isViewMode && (
+              <button
+                type="button"
+                onClick={() => onToggleNewTruckType(true)}
+                className="self-start text-[13px] font-semibold text-primary hover:underline mt-1 focus:outline-none"
+              >
+                + Enter a new truck type
+              </button>
+            )}
+          </div>
+        )}
 
         <Input
           label="Truck Number Plate *"

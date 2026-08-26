@@ -26,9 +26,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem('authUser');
     const storedToken = localStorage.getItem('authToken');
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser: User = JSON.parse(storedUser);
+      setUser(parsedUser);
       setToken(storedToken);
-      syncMasterData();
+      
+      const role = parsedUser.role?.toLowerCase() || '';
+      if (role === 'buyer' || role === 'customer') {
+        syncMasterData();
+      }
     }
     setLoading(false);
 
@@ -65,7 +70,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setToken(receivedToken);
       localStorage.setItem('authUser', JSON.stringify(response.user));
       localStorage.setItem('authToken', receivedToken);
-      syncMasterData();
+
+      const role = response.user.role?.toLowerCase() || '';
+      if (role === 'buyer' || role === 'customer') {
+        syncMasterData();
+      }
     } else {
       throw new Error('Invalid response from server or missing token');
     }
