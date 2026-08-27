@@ -78,7 +78,8 @@ export function BookingsPage() {
           <div className="flex flex-col gap-4">
             {bookings.map((booking) => {
               const isCancelled = booking.status === BOOKING_STATUS.CANCELLED;
-              const isReadOnly = booking.is_truck_loaded || isCancelled;
+              const isCancellable = booking.can_cancel ?? (!booking.is_truck_loaded && !isCancelled);
+              const canEdit = isCancellable && !isCancelled;
 
               return (
                 <div
@@ -94,12 +95,12 @@ export function BookingsPage() {
                       className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase ${
                         isCancelled
                           ? 'bg-red-50 text-red-700'
-                          : booking.is_truck_loaded
+                          : booking.is_truck_loaded || !canEdit
                             ? 'bg-blue-50 text-blue-700'
                             : 'bg-emerald-50 text-emerald-700'
                       }`}
                     >
-                      {isCancelled ? 'Cancelled' : booking.is_truck_loaded ? 'Read-Only' : 'Editable'}
+                      {booking.state_label || (isCancelled ? 'Cancelled' : !canEdit ? 'Read-Only' : 'Editable')}
                     </div>
                   </div>
 
@@ -112,20 +113,16 @@ export function BookingsPage() {
                       <span className="text-xs font-medium text-text-secondary w-16">Pickup:</span>
                       <span className="text-sm font-semibold text-text-primary">{booking.pickup_warehouse_name}</span>
                     </div>
+                    {booking.rejected_reason && (
+                      <div className="flex flex-col gap-0.5 mt-1 p-2.5 bg-red-50/70 rounded-[12px] border border-red-100">
+                        <span className="text-[11px] font-bold text-red-700 uppercase tracking-wide">Reject Reason</span>
+                        <span className="text-xs font-medium text-red-800">{booking.rejected_reason}</span>
+                      </div>
+                    )}
                   </div>
 
-                  {isReadOnly ? (
-                    <div className="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-900/5">
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/bookings/view/${booking.id}`)}
-                        className="px-4 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 active:scale-95 text-xs font-bold shadow-sm transition-all"
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-900/5">
+                  <div className="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-900/5">
+                    {isCancellable && !isCancelled && (
                       <button
                         type="button"
                         onClick={() => setCancelModalBooking(booking)}
@@ -133,6 +130,8 @@ export function BookingsPage() {
                       >
                         Cancel Booking
                       </button>
+                    )}
+                    {canEdit ? (
                       <button
                         type="button"
                         onClick={() => navigate(`/bookings/edit/${booking.id}`)}
@@ -140,8 +139,16 @@ export function BookingsPage() {
                       >
                         Edit Booking
                       </button>
-                    </div>
-                  )}
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/bookings/view/${booking.id}`)}
+                        className="px-4 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 active:scale-95 text-xs font-bold shadow-sm transition-all"
+                      >
+                        View Details
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}

@@ -5,11 +5,13 @@ import {
   type Address, 
   type Customer, 
   type DIAProduct,
+  type SelectedProduct,
   type SaveBookingPayload,
   type UOM,
   type TruckType,
   type ShapeOption,
-  type WeightTypeOption
+  type WeightTypeOption,
+  type BookingStatus
 } from '../types';
 import { BOOKING_STATUS } from '../constants';
 import { apiRequest } from '../../../lib/api';
@@ -155,8 +157,43 @@ let mockBookings: StoredBooking[] = [
 ];
 
 export async function getBookings(): Promise<Booking[]> {
-  await delay(600);
-  return mockBookings.map(b => ({
+  try {
+    const res = await apiRequest<{ status: string; count?: number; trucks?: Record<string, any>[] }>(
+      'GET',
+      '/booking/customer/trucks'
+    );
+    if (res && res.status === 'success' && Array.isArray(res.trucks)) {
+      return res.trucks.map((t) => {
+        let statusText: BookingStatus = BOOKING_STATUS.PENDING;
+        if (t.state === 'loaded') {
+          statusText = BOOKING_STATUS.LOADED;
+        } else if (t.state === 'cancelled') {
+          statusText = BOOKING_STATUS.CANCELLED;
+        }
+
+        return {
+          id: t.id,
+          reference: `TRK-${t.id}`,
+          created_date: t.create_date ? t.create_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+          customer_name: t.ship_to_address || 'Customer',
+          pickup_warehouse_name: t.warehouse_name || 'Warehouse',
+          is_truck_loaded: t.state === 'loaded' || t.is_reported || false,
+          status: statusText,
+          state_label: t.state_label || t.state,
+          can_cancel: t.can_cancel ?? true,
+          is_seller_truck: t.is_seller_truck || false,
+          truck_type: t.truck_type || '',
+          truck_number_plate: t.truck_number_plate || '',
+          ship_to_address: t.ship_to_address || '',
+          rejected_reason: t.rejected_reason || '',
+        };
+      });
+    }
+  } catch (err) {
+    console.error('Failed to fetch customer trucks list from API:', err);
+  }
+
+  return mockBookings.map((b) => ({
     id: b.id,
     reference: b.reference,
     created_date: b.created_date,
@@ -313,8 +350,71 @@ export async function searchDIAProducts(query: string): Promise<DIAProduct[]> {
 }
 
 export async function getBookingById(id: number): Promise<StoredBooking | null> {
-  await delay(400);
-  const booking = mockBookings.find(b => b.id === id);
+  try {
+    const res = await apiRequest<{ status: string; truck?: Record<string, any> }>(
+      'GET',
+      `/booking/customer/trucks/${id}`
+    );
+    if (res && res.status === 'success' && res.truck) {
+      const t = res.truck;
+      
+      const mappedProducts: SelectedProduct[] = (t.dia_details || []).map((d: Record<string, any>, index: number) => {
+        const isBundle = d.qty_selection === 'by_bundle';
+        return {
+          local_id: d.id ? d.id.toString() : `dia-${index}`,
+          product: {
+            id: d.id || index + 1,
+            name: `${d.dia || ''} ${d.shape || ''}`.trim() || 'DIA Product',
+            dia_shape: d.shape || 'Round',
+            dia_weight_type: d.weight_type || 'Standard',
+            has_bundles: isBundle,
+          },
+          dia: (d.dia || '').replace(/mm$/i, ''),
+          shape: d.shape || 'Round',
+          shape_id: d.shape_id,
+          weight_option: d.weight_type || 'Standard',
+          weight_type_id: d.weight_type_id,
+          order_type: isBundle ? 'bundle' : 'weight',
+          weight: d.weight || d.quantity || 0,
+          uom: d.uom || 'kg',
+          uom_id: d.uom_id,
+          bundle_quantity: d.bundle_qty || 1,
+          calculated_weight: d.weight || d.quantity || 0,
+        };
+      });
+
+      return {
+        id: t.id,
+        reference: `TRK-${t.id}`,
+        created_date: t.create_date ? t.create_date.split(' ')[0] : new Date().toISOString().split('T')[0],
+        customer_name: t.customer_name || 'Customer',
+        customer_id: t.customer_id || null,
+        pickup_company_name: t.warehouse_name || 'Warehouse',
+        pickup_warehouse_id: t.warehouse_id || null,
+        warehouse_address_name: t.pickup_address || '',
+        ship_to_address_id: t.ship_to_address_id || null,
+        bill_to_same_as_ship_to: t.is_same_as_ship_to ?? true,
+        bill_to_address_id: t.bill_to_address_id || null,
+        use_sellers_truck: t.is_seller_truck || false,
+        truck_type_id: t.truck_type_id || null,
+        truck_type: t.truck_type || '',
+        truck_number_plate: t.truck_number_plate || '',
+        truck_capacity: t.truck_capacity_ton || null,
+        transporter_name: t.transporter_name || '',
+        transporter_contact: t.transporter_contact || '',
+        driver_name: t.driver_name || '',
+        driver_contact: t.driver_contact || '',
+        driver_license_number: t.driver_licence_number || '',
+        is_truck_loaded: t.state === 'loaded' || false,
+        status: t.state === 'loaded' ? BOOKING_STATUS.LOADED : t.state === 'cancelled' ? BOOKING_STATUS.CANCELLED : BOOKING_STATUS.PENDING,
+        products: mappedProducts,
+      };
+    }
+  } catch (err) {
+    console.error(`Failed to fetch truck detail for ID ${id}:`, err);
+  }
+
+  const booking = mockBookings.find((b) => b.id === id);
   return booking ? JSON.parse(JSON.stringify(booking)) : null;
 }
 
@@ -337,6 +437,7 @@ export async function saveBooking(payload: SaveBookingPayload): Promise<{ succes
   });
 
   const apiPayload = {
+    truck_id: payload.id || undefined,
     warehouse_id: payload.pickup_warehouse_id,
     ship_to_address_id: payload.ship_to_address_id,
     is_same_as_ship_to: payload.bill_to_same_as_ship_to,
@@ -362,45 +463,61 @@ export async function saveBooking(payload: SaveBookingPayload): Promise<{ succes
     );
 
     const { id: _ignoredId, ...restPayload } = payload;
-    const id = res.truck_id || (mockBookings.length + 1);
+    const id = payload.id || res.truck_id || (mockBookings.length + 1);
     const reference = `TRK-${new Date().getFullYear()}-${id.toString().padStart(4, '0')}`;
 
-    const newBooking: StoredBooking = {
-      ...restPayload,
-      id,
-      reference,
-      created_date: new Date().toISOString().split('T')[0],
-      customer_name: payload.customer_name || 'Customer',
-      pickup_company_name: 'Warehouse',
-      is_truck_loaded: false,
-      status: BOOKING_STATUS.PENDING
-    };
-
-    mockBookings.unshift(newBooking);
+    const existingIndex = mockBookings.findIndex((b) => b.id === id);
+    if (existingIndex !== -1) {
+      mockBookings[existingIndex] = {
+        ...mockBookings[existingIndex],
+        ...restPayload,
+        id,
+      };
+    } else {
+      const newBooking: StoredBooking = {
+        ...restPayload,
+        id,
+        reference,
+        created_date: new Date().toISOString().split('T')[0],
+        customer_name: payload.customer_name || 'Customer',
+        pickup_company_name: 'Warehouse',
+        is_truck_loaded: false,
+        status: BOOKING_STATUS.PENDING
+      };
+      mockBookings.unshift(newBooking);
+    }
 
     return {
       success: true,
       reference,
-      truck_id: res.truck_id
+      truck_id: id
     };
   } catch (error) {
     console.error('Failed to submit truck request to server:', error);
     const { id: _ignoredId, ...restPayload } = payload;
-    const id = mockBookings.length + 1;
+    const id = payload.id || (mockBookings.length + 1);
     const reference = `BKG-${new Date().getFullYear()}-${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`;
     
-    const newBooking: StoredBooking = {
-      ...restPayload,
-      id,
-      reference,
-      created_date: new Date().toISOString().split('T')[0],
-      customer_name: payload.customer_name || 'Acme Corp',
-      pickup_company_name: 'Main Warehouse',
-      is_truck_loaded: false,
-      status: BOOKING_STATUS.PENDING
-    };
-
-    mockBookings.unshift(newBooking);
+    const existingIndex = mockBookings.findIndex((b) => b.id === id);
+    if (existingIndex !== -1) {
+      mockBookings[existingIndex] = {
+        ...mockBookings[existingIndex],
+        ...restPayload,
+        id,
+      };
+    } else {
+      const newBooking: StoredBooking = {
+        ...restPayload,
+        id,
+        reference,
+        created_date: new Date().toISOString().split('T')[0],
+        customer_name: payload.customer_name || 'Acme Corp',
+        pickup_company_name: 'Main Warehouse',
+        is_truck_loaded: false,
+        status: BOOKING_STATUS.PENDING
+      };
+      mockBookings.unshift(newBooking);
+    }
 
     return {
       success: true,
@@ -410,23 +527,28 @@ export async function saveBooking(payload: SaveBookingPayload): Promise<{ succes
 }
 
 export async function updateBooking(id: number, payload: SaveBookingPayload): Promise<{ success: boolean }> {
-  await delay(1000);
-  const index = mockBookings.findIndex(b => b.id === id);
-  if (index !== -1) {
-    const { id: _payloadId, ...restPayload } = payload;
-    mockBookings[index] = {
-      ...mockBookings[index],
-      ...restPayload,
-      id
-    };
-    return { success: true };
-  }
-  return { success: false };
+  const result = await saveBooking({ ...payload, id });
+  return { success: result.success };
 }
 
 export async function cancelBooking(id: number): Promise<{ success: boolean }> {
-  await delay(600);
-  const index = mockBookings.findIndex(b => b.id === id);
+  try {
+    const res = await apiRequest<{ status: string; message?: string }>(
+      'POST',
+      `/booking/customer/trucks/${id}/cancel`
+    );
+    if (res && res.status === 'success') {
+      const index = mockBookings.findIndex((b) => b.id === id);
+      if (index !== -1) {
+        mockBookings[index].status = BOOKING_STATUS.CANCELLED;
+      }
+      return { success: true };
+    }
+  } catch (err) {
+    console.error(`Failed to cancel truck booking ${id}:`, err);
+  }
+
+  const index = mockBookings.findIndex((b) => b.id === id);
   if (index !== -1) {
     mockBookings[index].status = BOOKING_STATUS.CANCELLED;
     return { success: true };

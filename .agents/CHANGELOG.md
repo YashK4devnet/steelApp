@@ -326,6 +326,17 @@ This document logs the major architectural, feature, and design changes implemen
 - **Truck Route Matching**: Updated `getPageConfig()` in `src/app/router/index.tsx` to explicitly match truck routes (`/trucks/loaded`, `/trucks/outgoing`, `/trucks/loading`, `/trucks/report`, `/trucks/outgoing/report`, `/trucks/submit-bill`).
 - **Hierarchy Alignment**: Fixed bug where sub-pages like "Trucks to warehouse" (`/trucks/loaded`) and "Trucks from warehouse" (`/trucks/outgoing`) fell through `getPageConfig()` as fallback Level 0 routes. Pressing the native Android hardware back button on Level 1 pages now correctly steps back to `/dashboard` (Level 0) instead of prompting to exit the app.
 
+## Phase 44: Section 13, 14 & 15 Customer Trucks List, Details & Cancel API Integration
+- **Section 13 Customer Trucks List API**: Connected `getBookings()` in `bookingApi.ts` to `GET /booking/customer/trucks` via `apiRequest`. Maps backend truck state (`draft`, `accepted`, `rejected`, `loading`, `loaded`), `state_label`, `can_cancel`, `truck_type`, `truck_number_plate`, `warehouse_name`, `ship_to_address`, and `create_date` directly to the Bookings list view.
+- **Section 14 Customer Truck Details API**: Connected `getBookingById(id)` in `bookingApi.ts` to `GET /booking/customer/trucks/<id>` via `apiRequest`. Parses full truck state and `dia_details[]` array, populating View and Edit booking screens with real backend data.
+- **Section 15 Customer Truck Cancel API**: Connected `cancelBooking(id)` in `bookingApi.ts` and `useCancelBooking` hook to `POST /booking/customer/trucks/<id>/cancel` via `apiRequest`. Configured `BookingsPage.tsx` modal to respect `can_cancel` flags, display `state_label` badges, and show reject reasons.
+
+## Phase 45: Section 12 Booking Update API & Editable Status Restriction
+- **Section 12 Booking Update Payload**: Updated `saveBooking()` in `bookingApi.ts` to include `truck_id: payload.id` in `POST /booking/customer/truck-request` when editing an existing booking. Updated `updateBooking(id, payload)` to delegate directly to `saveBooking({ ...payload, id })`.
+- **Cancellable Editability Guard**: Updated `BookingsPage.tsx` to strictly restrict rendering the "Edit Booking" button to bookings where `can_cancel` is `true`. Non-cancellable or loaded/cancelled bookings now render "View Details" (Read-Only mode).
+
+
+
 
 
 

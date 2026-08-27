@@ -886,8 +886,9 @@ curl -X GET "http://<odoo-host>/booking/customer/shapes-weight-types" \
 
 ## 12. Submit Truck Request
 
-Use this API when the customer submits a new **Truck From Warehouse** request from the app.
+Use this API when the customer submits a new **Truck From Warehouse** request, or updates an existing booking in `draft`, `accepted`, or `rejected`.
 
+Send `truck_id` to update. Omit it to create a new booking. The same payload is used for both.
 
 **Endpoint**
 
@@ -910,20 +911,22 @@ Send JSON (`application/json`) or form fields.
 
 | Field                  | Type    | Required | Description |
 | ---------------------- | ------- | -------- | ----------- |
+| `truck_id`             | integer | No       | Existing booking `id` from the truck list / detail API. If sent, the same payload **updates** that booking (`draft`, `accepted`, or `rejected`). `id` is also accepted. |
+| `is_seller_truck`      | boolean | No       | `true` — seller arranges the truck and driver. Truck Details and Driver Details are **not** required and are stored empty. Default `false`. |
 | `warehouse_id`         | integer | Yes      | Selected warehouse `id` from `GET /booking/customer/master-data`. Company and pickup address are taken from this warehouse on the server. |
 | `ship_to_address_id`   | integer | Yes      | Selected Ship To address `id` from master data. |
 | `is_same_as_ship_to`   | boolean | Yes      | `true` — Bill To is the same as Ship To. `false` — send `bill_to_address_id`. |
 | `bill_to_address_id`   | integer | If `is_same_as_ship_to` is `false` | Selected Bill To address `id` from master data. |
-| `truck_number_plate`   | string  | Yes      | Truck number plate. |
-| `truck_capacity_ton`   | number  | Yes      | Truck capacity in ton. Uses the **Product Unit** decimal accuracy. |
-| `transporter_name`     | string  | No       | Transporter name. |
-| `transporter_contact`  | string  | No       | Transporter contact. |
-| `is_new_truck_type`    | boolean | Yes      | `false` — use an existing truck type (`truck_type_id`). `true` — enter a new truck type name. |
-| `truck_type_id`        | integer | If `is_new_truck_type` is `false` | Truck type `id` from master data. |
-| `truck_type`           | string  | If `is_new_truck_type` is `true` | New truck type name. `truck_type_name` is also accepted. If the name already exists, the existing record is reused. |
-| `driver_name`          | string  | Yes      | Driver name. |
-| `driver_contact`       | string  | Yes      | Driver contact. |
-| `driver_licence_number`| string  | No       | Driver license number. |
+| `truck_number_plate`   | string  | If `is_seller_truck` is `false` | Truck number plate. |
+| `truck_capacity_ton`   | number  | If `is_seller_truck` is `false` | Truck capacity in ton. Uses the **Product Unit** decimal accuracy. |
+| `transporter_name`     | string  | No       | Transporter name. Ignored when `is_seller_truck` is `true`. |
+| `transporter_contact`  | string  | No       | Transporter contact. Ignored when `is_seller_truck` is `true`. |
+| `is_new_truck_type`    | boolean | If `is_seller_truck` is `false` | `false` — use an existing truck type (`truck_type_id`). `true` — enter a new truck type name. |
+| `truck_type_id`        | integer | If `is_seller_truck` is `false` and `is_new_truck_type` is `false` | Truck type `id` from master data. |
+| `truck_type`           | string  | If `is_seller_truck` is `false` and `is_new_truck_type` is `true` | New truck type name. `truck_type_name` is also accepted. If the name already exists, the existing record is reused. |
+| `driver_name`          | string  | If `is_seller_truck` is `false` | Driver name. |
+| `driver_contact`       | string  | If `is_seller_truck` is `false` | Driver contact. |
+| `driver_licence_number`| string  | No       | Driver license number. Ignored when `is_seller_truck` is `true`. |
 | `dia_details`          | array   | Yes      | List of DIA detail lines. `dia_lines` is also accepted. At least one line is required. |
 
 **`dia_details[]`**
@@ -936,7 +939,7 @@ Send these fields in this order. Each object is one DIA line.
 | `shape_id`       | integer | Yes      | Shape `id` from `GET /booking/customer/shapes-weight-types`. |
 | `weight_type_id` | integer | Yes      | Weight type `id` from `GET /booking/customer/shapes-weight-types`. |
 | `uom_id`         | integer | Yes      | UOM `id` from `GET /booking/customer/master-data` (`uoms`). |
-| `qty_selection`  | string  | Yes      | API-only indicator. `by_weight` or `by_bundle`. Not stored on the record. |
+| `qty_selection`  | string  | Yes      | `by_weight` or `by_bundle`. Stored on the DIA line (not shown in the Odoo form). |
 | `weight`         | number  | If `qty_selection` is `by_weight` | Quantity in the selected UOM. Stored in `quantity`. Uses the **Product Unit** decimal accuracy. |
 | `bundle_qty`     | number  | If `qty_selection` is `by_bundle` | Bundle quantity. Stored in `bundle_qty`. `weight` is also accepted for this value. Uses the **Product Unit** decimal accuracy. |
 
@@ -945,9 +948,11 @@ Send these fields in this order. Each object is one DIA line.
 * Customer (`delivery_address_id`) is set from the logged-in Buyer’s partner.
 * From `warehouse_id`, the server sets pickup company, warehouse, and warehouse address.
 * When `is_same_as_ship_to` is `true`, Bill To is stored as the same address as Ship To.
+* When `is_seller_truck` is `true`, Truck Details and Driver Details are cleared and not required.
 * Each `dia_details` line is created as a `truck.dia.lines` record on the truck.
-* If `qty_selection` is `by_weight`, `weight` is stored in `quantity` and `bundle_qty` is left empty. `qty_selection` itself is not stored.
-* If `qty_selection` is `by_bundle`, the value is stored in `bundle_qty` and `quantity` is left empty. `qty_selection` itself is not stored.
+* If `qty_selection` is `by_weight`, `weight` is stored in `quantity` and `bundle_qty` is left empty.
+* If `qty_selection` is `by_bundle`, the value is stored in `bundle_qty` and `quantity` is left empty.
+* If `truck_id` is sent, the booking must belong to the logged-in customer and must be in `draft`, `accepted`, or `rejected`. DIA lines are replaced with the new list.
 
 **Example request**
 
@@ -957,6 +962,7 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
   -H "X-Odoo-Database: mydb" \
   -H "Content-Type: application/json" \
   -d '{
+    "is_seller_truck": false,
     "warehouse_id": 1,
     "ship_to_address_id": 40,
     "is_same_as_ship_to": true,
@@ -1012,6 +1018,257 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
 
 ---
 
+## 13. Customer Trucks List
+
+Returns the logged-in customer's truck bookings for the mobile list screen.
+
+**Endpoint**
+
+```text
+GET /booking/customer/trucks
+```
+
+**Authentication**
+
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
+
+**Who can call it**
+
+* **Buyer** only.
+* Other roles (including Admin) receive `403 Forbidden`.
+
+**Behaviour**
+
+* Returns `truck.from.warehouse` records where `delivery_address_id` is the logged-in customer's partner.
+* Cancelled bookings are excluded (`state != cancelled`).
+* No pagination. State filters may be added later.
+
+**`trucks[]`**
+
+| Field                 | Type    | Meaning |
+| --------------------- | ------- | ------- |
+| `id`                  | integer | Booking ID. Send this to the detail, update, and cancel APIs. |
+| `state`               | string  | Booking state (`draft`, `accepted`, `rejected`, `loading`, `loaded`). |
+| `state_label`         | string  | Display label for `state`. |
+| `is_seller_truck`     | boolean | `true` if the seller arranges the truck. |
+| `can_cancel`          | boolean | `true` when the app can show Cancel (`draft`, `accepted`, `rejected`, `loading`). |
+| `truck_type_id`       | integer or `false` | Truck type ID. |
+| `truck_type`          | string  | Truck type name. Empty for seller trucks. |
+| `truck_number_plate`  | string  | Truck number plate. Empty for seller trucks. |
+| `warehouse_id`        | integer | Pickup warehouse ID. |
+| `warehouse_name`      | string  | Pickup warehouse name. |
+| `pickup_address_id`   | integer | Pickup address ID. |
+| `pickup_address`      | string  | Pickup contact address. |
+| `ship_to_address_id`  | integer | Ship To address ID. |
+| `ship_to_address`     | string  | Ship To contact address. |
+| `bill_to_address_id`  | integer | Bill To address ID. |
+| `bill_to_address`     | string  | Bill To contact address. |
+| `driver_name`         | string  | Driver name. Empty for seller trucks. |
+| `is_reported`         | boolean | `true` if the truck has been reported. |
+| `rejected_reason`     | string  | Reject reason. Empty unless the booking is `rejected`. |
+| `create_date`         | string  | Booking create datetime (`YYYY-MM-DD HH:MM:SS`). |
+
+**Example request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/customer/trucks" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example success response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 1,
+  "trucks": [
+    {
+      "id": 55,
+      "state": "draft",
+      "state_label": "Draft",
+      "is_seller_truck": false,
+      "can_cancel": true,
+      "truck_type_id": 7,
+      "truck_type": "20 Ft Container",
+      "truck_number_plate": "KA-01-AB-1234",
+      "warehouse_id": 1,
+      "warehouse_name": "Main Warehouse",
+      "pickup_address_id": 12,
+      "pickup_address": "Main Warehouse, 123 Industrial Area, Bangalore 560001",
+      "ship_to_address_id": 40,
+      "ship_to_address": "Customer D, Lucknow",
+      "bill_to_address_id": 40,
+      "bill_to_address": "Customer D, Lucknow",
+      "driver_name": "Rajesh Kumar",
+      "is_reported": false,
+      "rejected_reason": "",
+      "create_date": "2026-08-27 10:15:00"
+    }
+  ]
+}
+```
+
+---
+
+## 14. Customer Truck Details
+
+Returns the full booking that the customer submitted through `POST /booking/customer/truck-request`, including DIA details.
+
+**Endpoint**
+
+```text
+GET /booking/customer/trucks/<truck_id>
+```
+
+**Authentication**
+
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
+
+**Who can call it**
+
+* **Buyer** only, and only for their own bookings.
+* Other roles (including Admin) receive `403 Forbidden`.
+* A booking that does not belong to the customer returns `404`.
+
+**What it returns**
+
+The list fields from section 13, plus:
+
+| Field                   | Type    | Meaning |
+| ----------------------- | ------- | ------- |
+| `customer_id`           | integer | Customer partner ID. |
+| `customer_name`         | string  | Customer name. |
+| `is_same_as_ship_to`    | boolean | Bill To same as Ship To. |
+| `truck_capacity_ton`    | number  | Truck capacity. |
+| `transporter_name`      | string  | Transporter name. |
+| `transporter_contact`   | string  | Transporter contact. |
+| `driver_contact`        | string  | Driver contact. |
+| `driver_licence_number` | string  | Driver license number. |
+| `dia_details`           | array   | DIA lines from the original request. |
+
+**`dia_details[]`**
+
+| Field            | Type    | Meaning |
+| ---------------- | ------- | ------- |
+| `id`             | integer | DIA line ID. |
+| `dia`            | string  | DIA value (for example `12mm`). |
+| `shape_id`       | integer | Shape ID. |
+| `shape`          | string  | Shape name. |
+| `weight_type_id` | integer | Weight type ID. |
+| `weight_type`    | string  | Weight type name. |
+| `uom_id`         | integer | UOM ID. |
+| `uom`            | string  | UOM name. |
+| `qty_selection`  | string  | `by_weight` or `by_bundle`. |
+| `quantity`       | number  | Stored quantity (used when `by_weight`). |
+| `bundle_qty`     | number  | Stored bundle qty (used when `by_bundle`). |
+| `weight`         | number or `false` | Same as `quantity` when `qty_selection` is `by_weight`, otherwise `false`. Send this back as `weight` when updating a `by_weight` line. |
+
+Use this payload to fill the edit screen, then POST the same fields to `/booking/customer/truck-request` with `truck_id`.
+
+**Example request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/customer/trucks/55" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example success response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "truck": {
+    "id": 55,
+    "state": "draft",
+    "is_seller_truck": false,
+    "can_cancel": true,
+    "warehouse_id": 1,
+    "ship_to_address_id": 40,
+    "is_same_as_ship_to": true,
+    "truck_type_id": 7,
+    "truck_number_plate": "KA-01-AB-1234",
+    "truck_capacity_ton": 16.5,
+    "driver_name": "Rajesh Kumar",
+    "driver_contact": "+91 91234 56789",
+    "dia_details": [
+      {
+        "id": 10,
+        "dia": "12mm",
+        "shape_id": 1,
+        "shape": "Round",
+        "weight_type_id": 3,
+        "weight_type": "Standard",
+        "uom_id": 1,
+        "uom": "kg",
+        "qty_selection": "by_weight",
+        "quantity": 10.5,
+        "bundle_qty": 0.0,
+        "weight": 10.5
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 15. Cancel Customer Truck
+
+Cancels the customer's own truck booking.
+
+**Endpoint**
+
+```text
+POST /booking/customer/trucks/<truck_id>/cancel
+```
+
+**Authentication**
+
+Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidden`.
+
+**Who can call it**
+
+* **Buyer** only, and only for their own bookings.
+* A booking that does not belong to the customer returns `404`.
+
+**Allowed states**
+
+Cancellation is allowed only when the booking is `draft`, `accepted`, `rejected`, or `loading`.
+
+Use `can_cancel` from the list/detail APIs to show or hide the Cancel button.
+
+**Example request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example success response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Truck booking cancelled successfully.",
+  "truck_id": 55,
+  "state": "cancelled"
+}
+```
+
+**Example error response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "This truck cannot be cancelled in the current state (Loaded)."
+}
+```
+
+---
+
 ## HTTP Status Codes
 
 | Code | Meaning                                                            |
@@ -1039,7 +1296,10 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
    - Call `GET /booking/customer/master-data` to fill warehouse, ship-to, bill-to, UOM, and truck type dropdowns.
    - Call `GET /booking/customer/products` to list products, images, and bundles for DIA selection (for a later step).
    - Call `GET /booking/customer/shapes-weight-types` for shape and weight-type lists.
-   - Call `POST /booking/customer/truck-request` to submit the truck request with `dia_details`.
+   - Call `POST /booking/customer/truck-request` to create a truck request (`is_seller_truck` and `dia_details`). Send `truck_id` on the same API to update a booking in `draft`, `accepted`, or `rejected`.
+   - Call `GET /booking/customer/trucks` to list the customer's bookings.
+   - Call `GET /booking/customer/trucks/<truck_id>` to show full details (including DIA lines).
+   - Call `POST /booking/customer/trucks/<truck_id>/cancel` when `can_cancel` is `true`.
 5. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.

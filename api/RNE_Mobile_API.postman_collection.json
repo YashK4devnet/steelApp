@@ -440,7 +440,7 @@
                         "master-data"
                     ]
                 },
-                "description": "Buyer/Admin: dropdown data for the truck request screen (warehouses, ship-to, bill-to, UOMs, truck types). Other roles get 403."
+                "description": "Buyer only: dropdown data for the truck request screen (warehouses, ship-to, bill-to, UOMs, truck types). Admin and other roles get 403."
             },
             "response": []
         },
@@ -469,7 +469,164 @@
                         "products"
                     ]
                 },
-                "description": "Buyer/Admin: approved saleable products with image_128 (base64) and bundle options for DIA selection. Other roles get 403."
+                "description": "Buyer only: approved saleable products with image_128 (base64) and bundle options for DIA selection. Admin and other roles get 403."
+            },
+            "response": []
+        },
+        {
+            "name": "11. Submit Truck Request",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.status === 'success' && jsonData.truck_id) {",
+                            "    pm.collectionVariables.set('customer_truck_id', jsonData.truck_id);",
+                            "    console.log('Customer truck ID set to:', jsonData.truck_id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"is_seller_truck\": false,\n  \"warehouse_id\": 1,\n  \"ship_to_address_id\": 40,\n  \"is_same_as_ship_to\": true,\n  \"truck_number_plate\": \"KA-01-AB-1234\",\n  \"truck_capacity_ton\": 16.5,\n  \"is_new_truck_type\": false,\n  \"truck_type_id\": 7,\n  \"driver_name\": \"Rajesh Kumar\",\n  \"driver_contact\": \"+91 91234 56789\",\n  \"dia_details\": [\n    {\n      \"dia\": \"12mm\",\n      \"shape_id\": 1,\n      \"weight_type_id\": 3,\n      \"uom_id\": 1,\n      \"qty_selection\": \"by_weight\",\n      \"weight\": 10.5\n    }\n  ]\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/customer/truck-request",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "customer",
+                        "truck-request"
+                    ]
+                },
+                "description": "Buyer only: create a truck booking, or update a booking in draft, accepted, or rejected by sending truck_id. When is_seller_truck is true, truck and driver fields are not required. Saves truck_id to customer_truck_id."
+            },
+            "response": []
+        },
+        {
+            "name": "12. Customer Trucks List",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.trucks && jsonData.trucks.length > 0) {",
+                            "    pm.collectionVariables.set('customer_truck_id', jsonData.trucks[0].id);",
+                            "    console.log('Customer truck ID set to:', jsonData.trucks[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/customer/trucks",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "customer",
+                        "trucks"
+                    ]
+                },
+                "description": "Buyer only: list the customer's truck.from.warehouse bookings (state != cancelled). The first truck id is saved to customer_truck_id."
+            },
+            "response": []
+        },
+        {
+            "name": "13. Customer Truck Details",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/customer/trucks/{{customer_truck_id}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "customer",
+                        "trucks",
+                        "{{customer_truck_id}}"
+                    ]
+                },
+                "description": "Buyer only: full details of one customer truck booking, including dia_details and qty_selection. Use this payload to edit, then POST /booking/customer/truck-request with truck_id."
+            },
+            "response": []
+        },
+        {
+            "name": "14. Cancel Customer Truck",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/customer/trucks/{{customer_truck_id}}/cancel",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "customer",
+                        "trucks",
+                        "{{customer_truck_id}}",
+                        "cancel"
+                    ]
+                },
+                "description": "Buyer only: cancel own truck booking when state is draft, accepted, rejected, or loading."
             },
             "response": []
         }
@@ -514,6 +671,11 @@
             "key": "outgoing_truck_id",
             "value": "",
             "description": "Filled automatically by the Outgoing Trucks request (first unreported truck)."
+        },
+        {
+            "key": "customer_truck_id",
+            "value": "",
+            "description": "Filled automatically by Submit Truck Request or Customer Trucks List."
         }
     ]
 }

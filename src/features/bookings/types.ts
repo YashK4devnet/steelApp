@@ -106,6 +106,13 @@ export interface Booking {
   pickup_warehouse_name: string;
   is_truck_loaded: boolean;
   status?: BookingStatus;
+  state_label?: string;
+  can_cancel?: boolean;
+  is_seller_truck?: boolean;
+  truck_type?: string;
+  truck_number_plate?: string;
+  ship_to_address?: string;
+  rejected_reason?: string;
   products?: SelectedProduct[];
 }
 
