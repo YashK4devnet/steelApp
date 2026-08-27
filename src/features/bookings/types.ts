@@ -31,6 +31,17 @@ export interface TruckType {
   name: string;
 }
 
+export interface ShapeOption {
+  id: number;
+  name: string;
+}
+
+export interface WeightTypeOption {
+  id: number;
+  name: string;
+  code?: string;
+}
+
 export interface DIABundle {
   id: number;
   name: string;
@@ -56,7 +67,9 @@ export interface SelectedProduct {
   // Configurations
   dia?: string;
   shape?: string;
+  shape_id?: number;
   weight_option?: string;
+  weight_type_id?: number;
   
   // Order Type Choice
   order_type?: 'weight' | 'bundle';
@@ -73,6 +86,16 @@ export interface SelectedProduct {
   
   // Derived Fields
   calculated_weight?: number;
+}
+
+export interface DiaDetailPayload {
+  dia: string;
+  shape_id: number;
+  weight_type_id: number;
+  uom_id: number;
+  qty_selection: 'by_weight' | 'by_bundle';
+  weight?: number;
+  bundle_qty?: number;
 }
 
 export interface Booking {

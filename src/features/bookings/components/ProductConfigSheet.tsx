@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import type { DIAProduct, SelectedProduct, UOM } from '../types';
+import type { DIAProduct, SelectedProduct, UOM, ShapeOption, WeightTypeOption } from '../types';
 import { DIA_OPTIONS, SHAPE_OPTIONS, WEIGHT_TYPE_OPTIONS } from '../constants';
-import { getUOMs } from '../services/bookingApi';
+import { getUOMs, getShapesAndWeightTypes } from '../services/bookingApi';
 import { Select } from '../../../components/ui/Select';
 import { Input } from '../../../components/ui/Input';
 import { Toggle } from '../../../components/ui/Toggle';
@@ -24,16 +24,20 @@ const CloseIcon = () => (
 export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSave }: ProductConfigSheetProps) {
   const [isClosing, setIsClosing] = useState(false);
   
-  // Master data UOMs
+  // Master data state
   const [masterUOMs, setMasterUOMs] = useState<UOM[]>([]);
+  const [masterShapes, setMasterShapes] = useState<ShapeOption[]>([]);
+  const [masterWeightTypes, setMasterWeightTypes] = useState<WeightTypeOption[]>([]);
 
   // Toggle for bundle vs custom weight
   const [useBundle, setUseBundle] = useState<boolean>(true);
   
-  // New configuration dropdown states
+  // Configuration dropdown states
   const [dia, setDia] = useState<string>('12');
-  const [shape, setShape] = useState<string>('U');
-  const [weightOption, setWeightOption] = useState<string>('BIS');
+  const [shape, setShape] = useState<string>('Round');
+  const [shapeId, setShapeId] = useState<number>(1);
+  const [weightOption, setWeightOption] = useState<string>('Standard');
+  const [weightTypeId, setWeightTypeId] = useState<number>(3);
   
   // Normal form state
   const [weight, setWeight] = useState<string>('');
@@ -48,16 +52,25 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
 
   useEffect(() => {
     if (isOpen && product) {
-      const loadUOMs = async () => {
+      const loadMasterData = async () => {
         try {
-          const list = await getUOMs();
-          setMasterUOMs(list);
+          const [uomList, shapesWeightTypes] = await Promise.all([
+            getUOMs(),
+            getShapesAndWeightTypes(),
+          ]);
+          setMasterUOMs(uomList);
+          if (shapesWeightTypes.shapes.length > 0) {
+            setMasterShapes(shapesWeightTypes.shapes);
+          }
+          if (shapesWeightTypes.weight_types.length > 0) {
+            setMasterWeightTypes(shapesWeightTypes.weight_types);
+          }
         } catch (e) {
-          console.error('Failed to load UOMs', e);
+          console.error('Failed to load master data for DIA product config', e);
         }
       };
 
-      loadUOMs();
+      loadMasterData();
 
       const defaultUomName = (product.uom_options && product.uom_options.length > 0)
         ? product.uom_options[0]
@@ -71,8 +84,10 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setBundleQuantity(initialData.bundle_quantity || 1);
         setUseBundle(product.has_bundles && initialData.order_type === 'bundle');
         setDia(initialData.dia || '12');
-        setShape(initialData.shape || 'U');
-        setWeightOption(initialData.weight_option || 'BIS');
+        setShape(initialData.shape || 'Round');
+        setShapeId(initialData.shape_id || 1);
+        setWeightOption(initialData.weight_option || 'Standard');
+        setWeightTypeId(initialData.weight_type_id || 3);
       } else {
         setWeight('');
         setUom(defaultUomName);
@@ -81,8 +96,10 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setBundleQuantity(1);
         setUseBundle(product.has_bundles);
         setDia('12');
-        setShape('U');
-        setWeightOption('BIS');
+        setShape('Round');
+        setShapeId(1);
+        setWeightOption('Standard');
+        setWeightTypeId(3);
       }
       setError('');
     }
@@ -103,6 +120,28 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
     ? masterUOMs.map((u) => ({ value: u.name, label: u.name.toUpperCase() }))
     : (product.uom_options && product.uom_options.length > 0 ? product.uom_options : ['TON', 'KG']).map((opt) => ({ value: opt, label: opt }));
 
+  const shapeSelectOptions = masterShapes.length > 0
+    ? masterShapes.map((s) => ({ value: s.id.toString(), label: s.name }))
+    : SHAPE_OPTIONS.map((opt, idx) => ({ value: (idx + 1).toString(), label: opt }));
+
+  const weightTypeSelectOptions = masterWeightTypes.length > 0
+    ? masterWeightTypes.map((w) => ({ value: w.id.toString(), label: w.name }))
+    : WEIGHT_TYPE_OPTIONS.map((opt, idx) => ({ value: (idx + 1).toString(), label: opt }));
+
+  const handleShapeChange = (valueStr: string) => {
+    const sId = Number(valueStr);
+    const found = masterShapes.find((s) => s.id === sId);
+    setShapeId(sId);
+    setShape(found ? found.name : valueStr);
+  };
+
+  const handleWeightTypeChange = (valueStr: string) => {
+    const wId = Number(valueStr);
+    const found = masterWeightTypes.find((w) => w.id === wId);
+    setWeightTypeId(wId);
+    setWeightOption(found ? found.name : valueStr);
+  };
+
   const handleSave = () => {
     setError('');
     
@@ -115,9 +154,12 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
       return;
     }
     if (!weightOption) {
-      setError('Please select Weight');
+      setError('Please select Weight Type');
       return;
     }
+
+    const matchedUom = masterUOMs.find((m) => m.name.toLowerCase() === uom.toLowerCase());
+    const effectiveUomId = matchedUom ? matchedUom.id : (uomId || 1);
 
     if (useBundle) {
       if (!selectedBundleId) {
@@ -137,7 +179,11 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         product,
         dia,
         shape,
+        shape_id: shapeId,
         weight_option: weightOption,
+        weight_type_id: weightTypeId,
+        uom: uom || 'kg',
+        uom_id: effectiveUomId,
         order_type: 'bundle',
         selected_bundle_id: selectedBundleId,
         bundle_quantity: bundleQuantity,
@@ -155,18 +201,18 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         return;
       }
 
-      const matchedMaster = masterUOMs.find((m) => m.name.toLowerCase() === uom.toLowerCase());
-      
       onSave({
         local_id: initialData?.local_id || Date.now().toString(),
         product,
         dia,
         shape,
+        shape_id: shapeId,
         weight_option: weightOption,
+        weight_type_id: weightTypeId,
         order_type: 'weight',
         weight: weightNum,
         uom,
-        uom_id: matchedMaster ? matchedMaster.id : uomId,
+        uom_id: effectiveUomId,
       });
     }
     
@@ -198,7 +244,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
               {product.name}
             </h3>
             <p className="text-[13px] font-medium text-text-secondary mt-1">
-              Configure parameters and quantities
+              Configure DIA parameters and quantities
             </p>
           </div>
           <button 
@@ -214,27 +260,27 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden pb-4">
           <div className="flex flex-col gap-5">
-            {/* Redesigned Dropdowns */}
+            {/* Dropdowns */}
             <div className="grid grid-cols-2 gap-4">
               <Select 
                 label="Select DIA"
                 value={dia}
                 onChange={(e) => setDia(e.target.value)}
-                options={DIA_OPTIONS.map((val) => ({ value: val, label: val }))}
+                options={DIA_OPTIONS.map((val) => ({ value: val, label: `${val}mm` }))}
               />
               <Select 
                 label="Select Shape"
-                value={shape}
-                onChange={(e) => setShape(e.target.value)}
-                options={SHAPE_OPTIONS.map((val) => ({ value: val, label: val }))}
+                value={shapeId.toString()}
+                onChange={(e) => handleShapeChange(e.target.value)}
+                options={shapeSelectOptions}
               />
             </div>
 
             <Select 
               label="Select Weight Type"
-              value={weightOption}
-              onChange={(e) => setWeightOption(e.target.value)}
-              options={WEIGHT_TYPE_OPTIONS.map((val) => ({ value: val, label: val }))}
+              value={weightTypeId.toString()}
+              onChange={(e) => handleWeightTypeChange(e.target.value)}
+              options={weightTypeSelectOptions}
             />
 
             <Toggle 

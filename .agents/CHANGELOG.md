@@ -315,4 +315,17 @@ This document logs the major architectural, feature, and design changes implemen
 - **Section 12 API Payload**: Connected `saveBooking()` in `bookingApi.ts` to execute `POST /booking/customer/truck-request` formatted with Section 12 parameters (`warehouse_id`, `ship_to_address_id`, `is_same_as_ship_to`, `bill_to_address_id`, `truck_number_plate`, `truck_capacity_ton`, `transporter_name`, `transporter_contact`, `is_new_truck_type`, `truck_type_id` / `truck_type`, `driver_name`, `driver_contact`, `driver_licence_number`).
 - **Custom Truck Type Option**: Updated `TruckDetailsSection.tsx` and `useCreateBookingStep1.ts` to support both selecting existing master data truck types (`is_new_truck_type: false`) and entering a new custom truck type (`is_new_truck_type: true`).
 
+## Phase 42: Buyer Dashboard Booking Creation DIA Details API Integration
+- **Buyer Dashboard Booking Creation Flow**: Integrated DIA detail lines configured on Step 2 of the Buyer Dashboard truck request creation flow directly into the backend API submission payload.
+- **Shapes & Weight Types API**: Added `getShapesAndWeightTypes()` in `bookingApi.ts` calling `GET /booking/customer/shapes-weight-types`.
+- **Dynamic Dropdowns & Product Lines**: Updated `ProductConfigSheet.tsx` to fetch shapes and weight types dynamically from backend master data and attach `shape_id`, `weight_type_id`, and `uom_id` to configured product lines.
+- **`dia_details` Payload Formatting**: Formatted selected product lines in `saveBooking()` into the exact `dia_details` array (`dia`, `shape_id`, `weight_type_id`, `uom_id`, `qty_selection`, `weight` / `bundle_qty`) sent to `POST /booking/customer/truck-request`.
+- **Validation**: Enforced at least 1 DIA detail line requirement before request submission in `useCreateBookingStep2.ts`.
+
+## Phase 43: Android Native Back Button Routing & Security Dashboard Level 1 Hierarchy Fix
+- **Truck Route Matching**: Updated `getPageConfig()` in `src/app/router/index.tsx` to explicitly match truck routes (`/trucks/loaded`, `/trucks/outgoing`, `/trucks/loading`, `/trucks/report`, `/trucks/outgoing/report`, `/trucks/submit-bill`).
+- **Hierarchy Alignment**: Fixed bug where sub-pages like "Trucks to warehouse" (`/trucks/loaded`) and "Trucks from warehouse" (`/trucks/outgoing`) fell through `getPageConfig()` as fallback Level 0 routes. Pressing the native Android hardware back button on Level 1 pages now correctly steps back to `/dashboard` (Level 0) instead of prompting to exit the app.
+
+
+
 

@@ -7,7 +7,9 @@ import {
   type DIAProduct,
   type SaveBookingPayload,
   type UOM,
-  type TruckType
+  type TruckType,
+  type ShapeOption,
+  type WeightTypeOption
 } from '../types';
 import { BOOKING_STATUS } from '../constants';
 import { apiRequest } from '../../../lib/api';
@@ -21,33 +23,45 @@ export interface StoredBooking extends SaveBookingPayload {
   customer_name: string;
   pickup_company_name: string;
   is_truck_loaded: boolean;
-  status: typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS];
+  status?: typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS];
 }
 
-const mockBookings: StoredBooking[] = [
+export async function syncMasterData(): Promise<void> {
+  try {
+    const res = await apiRequest<Record<string, unknown>>('GET', '/booking/customer/master-data');
+    if (res && res.status === 'success') {
+      localStorage.setItem('masterData', JSON.stringify(res));
+    }
+  } catch (error) {
+    console.error('Failed to sync customer master data:', error);
+  }
+}
+
+let mockBookings: StoredBooking[] = [
   {
     id: 1,
     reference: 'BKG-2026-0001',
     created_date: '2026-08-20',
     customer_name: 'Acme Corp',
-    pickup_company_name: 'Logistics Hub A',
+    pickup_company_name: 'Main Warehouse',
     is_truck_loaded: true,
     status: BOOKING_STATUS.LOADED,
-    pickup_warehouse_id: 201,
-    warehouse_address_name: '123 Alpha St, Cityville',
-    customer_id: 901,
-    ship_to_address_id: 401,
+    pickup_warehouse_id: 1,
+    warehouse_address_name: 'Main Warehouse, 123 Industrial Area, Bangalore 560001',
+    customer_id: 40,
+    ship_to_address_id: 40,
     bill_to_same_as_ship_to: true,
-    bill_to_address_id: 401,
-    use_sellers_truck: true,
-    truck_type: '',
-    truck_number_plate: '',
-    truck_capacity: null,
-    transporter_name: '',
-    transporter_contact: '',
-    driver_name: '',
-    driver_contact: '',
-    driver_license_number: '',
+    bill_to_address_id: 40,
+    use_sellers_truck: false,
+    truck_type: '20 Ft Container',
+    truck_type_id: 7,
+    truck_number_plate: 'KA-01-AB-1234',
+    truck_capacity: 16.5,
+    transporter_name: 'ABC Transport',
+    transporter_contact: '+91 98765 43210',
+    driver_name: 'Rajesh Kumar',
+    driver_contact: '+91 91234 56789',
+    driver_license_number: 'DL-1234567890',
     products: [
       {
         local_id: 'prod-1',
@@ -66,8 +80,8 @@ const mockBookings: StoredBooking[] = [
         shape: 'U',
         weight_option: 'BIS',
         order_type: 'weight',
-        weight: 15,
-        uom: 'TON'
+        weight: 1500,
+        uom: 'KG'
       },
       {
         local_id: 'prod-2',
@@ -135,27 +149,6 @@ const mockBookings: StoredBooking[] = [
         order_type: 'weight',
         weight: 500,
         uom: 'KG'
-      },
-      {
-        local_id: 'prod-4',
-        product: {
-          id: 2,
-          name: 'Construction Steel',
-          dia_shape: 'Section',
-          dia_weight_type: 'Theoretical',
-          has_bundles: true,
-          bundles: [
-            { id: 201, name: 'Standard Bundle (1T)', items: ['Standard bundle x1'], preset_weight_kg: 1000 },
-            { id: 202, name: 'Heavy Bundle (2T)', items: ['Heavy bundle x1'], preset_weight_kg: 2000 },
-          ],
-        },
-        dia: '20',
-        shape: 'STRAIGHT',
-        weight_option: 'BIS',
-        order_type: 'bundle',
-        selected_bundle_id: 202,
-        bundle_quantity: 5,
-        calculated_weight: 10000
       }
     ]
   }
@@ -250,6 +243,37 @@ export async function getTruckTypes(): Promise<TruckType[]> {
   ];
 }
 
+export async function getShapesAndWeightTypes(): Promise<{ shapes: ShapeOption[]; weight_types: WeightTypeOption[] }> {
+  try {
+    const res = await apiRequest<{ status: string; shapes: ShapeOption[]; weight_types: WeightTypeOption[] }>(
+      'GET',
+      '/booking/customer/shapes-weight-types'
+    );
+    if (res && res.status === 'success') {
+      return {
+        shapes: res.shapes || [],
+        weight_types: res.weight_types || [],
+      };
+    }
+  } catch (err) {
+    console.error('Failed to fetch shapes and weight types:', err);
+  }
+
+  return {
+    shapes: [
+      { id: 1, name: 'Round' },
+      { id: 2, name: 'Straight' },
+      { id: 3, name: 'U' },
+    ],
+    weight_types: [
+      { id: 1, name: 'Super Light', code: 'SL' },
+      { id: 2, name: 'Light', code: 'L' },
+      { id: 3, name: 'Standard', code: 'S' },
+      { id: 4, name: 'BIS', code: 'BIS' },
+    ],
+  };
+}
+
 const mockProducts: DIAProduct[] = [
   {
     id: 1,
@@ -297,6 +321,21 @@ export async function getBookingById(id: number): Promise<StoredBooking | null> 
 export async function saveBooking(payload: SaveBookingPayload): Promise<{ success: boolean; reference: string; truck_id?: number }> {
   const isNewTruckType = !!payload.is_new_truck_type;
 
+  const dia_details = (payload.products || []).map((p) => {
+    const isBundle = p.order_type === 'bundle';
+    const rawDia = p.dia || '12';
+    const diaText = rawDia.toLowerCase().endsWith('mm') ? rawDia : `${rawDia}mm`;
+
+    return {
+      dia: diaText,
+      shape_id: p.shape_id || 1,
+      weight_type_id: p.weight_type_id || 3,
+      uom_id: p.uom_id || 1,
+      qty_selection: isBundle ? ('by_bundle' as const) : ('by_weight' as const),
+      ...(isBundle ? { bundle_qty: p.bundle_quantity || 1 } : { weight: p.weight || 0 }),
+    };
+  });
+
   const apiPayload = {
     warehouse_id: payload.pickup_warehouse_id,
     ship_to_address_id: payload.ship_to_address_id,
@@ -312,6 +351,7 @@ export async function saveBooking(payload: SaveBookingPayload): Promise<{ succes
     driver_name: payload.driver_name,
     driver_contact: payload.driver_contact,
     driver_licence_number: payload.driver_license_number || undefined,
+    dia_details,
   };
 
   try {
@@ -371,42 +411,25 @@ export async function saveBooking(payload: SaveBookingPayload): Promise<{ succes
 
 export async function updateBooking(id: number, payload: SaveBookingPayload): Promise<{ success: boolean }> {
   await delay(1000);
-  
-  const idx = mockBookings.findIndex(b => b.id === id);
-  if (idx !== -1) {
-    const { id: _ignoredId, ...restPayload } = payload;
-    mockBookings[idx] = {
-      ...mockBookings[idx],
-      ...restPayload
+  const index = mockBookings.findIndex(b => b.id === id);
+  if (index !== -1) {
+    const { id: _payloadId, ...restPayload } = payload;
+    mockBookings[index] = {
+      ...mockBookings[index],
+      ...restPayload,
+      id
     };
     return { success: true };
   }
-  throw new Error('Booking not found');
+  return { success: false };
 }
 
 export async function cancelBooking(id: number): Promise<{ success: boolean }> {
-  await delay(800);
-  const idx = mockBookings.findIndex(b => b.id === id);
-  if (idx !== -1) {
-    mockBookings[idx].status = BOOKING_STATUS.CANCELLED;
-    mockBookings[idx].is_truck_loaded = true;
+  await delay(600);
+  const index = mockBookings.findIndex(b => b.id === id);
+  if (index !== -1) {
+    mockBookings[index].status = BOOKING_STATUS.CANCELLED;
     return { success: true };
   }
-  throw new Error('Booking not found');
-}
-
-export async function syncMasterData(): Promise<void> {
-  try {
-    const response = await apiRequest<{ status: string }>('GET', '/booking/customer/master-data');
-    if (response && response.status === 'success') {
-      const currentCache = localStorage.getItem('masterData');
-      const newDataStr = JSON.stringify(response);
-      
-      if (currentCache !== newDataStr) {
-        localStorage.setItem('masterData', newDataStr);
-      }
-    }
-  } catch (error) {
-    console.error('[Master Data] Sync failed:', error);
-  }
+  return { success: false };
 }

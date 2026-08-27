@@ -888,7 +888,6 @@ curl -X GET "http://<odoo-host>/booking/customer/shapes-weight-types" \
 
 Use this API when the customer submits a new **Truck From Warehouse** request from the app.
 
-DIA / product line details are **not** part of this API yet. They will be added later.
 
 **Endpoint**
 
@@ -916,7 +915,7 @@ Send JSON (`application/json`) or form fields.
 | `is_same_as_ship_to`   | boolean | Yes      | `true` — Bill To is the same as Ship To. `false` — send `bill_to_address_id`. |
 | `bill_to_address_id`   | integer | If `is_same_as_ship_to` is `false` | Selected Bill To address `id` from master data. |
 | `truck_number_plate`   | string  | Yes      | Truck number plate. |
-| `truck_capacity_ton`   | number  | Yes      | Truck capacity in ton. Maximum **3 decimal places**. |
+| `truck_capacity_ton`   | number  | Yes      | Truck capacity in ton. Uses the **Product Unit** decimal accuracy. |
 | `transporter_name`     | string  | No       | Transporter name. |
 | `transporter_contact`  | string  | No       | Transporter contact. |
 | `is_new_truck_type`    | boolean | Yes      | `false` — use an existing truck type (`truck_type_id`). `true` — enter a new truck type name. |
@@ -925,12 +924,30 @@ Send JSON (`application/json`) or form fields.
 | `driver_name`          | string  | Yes      | Driver name. |
 | `driver_contact`       | string  | Yes      | Driver contact. |
 | `driver_licence_number`| string  | No       | Driver license number. |
+| `dia_details`          | array   | Yes      | List of DIA detail lines. `dia_lines` is also accepted. At least one line is required. |
+
+**`dia_details[]`**
+
+Send these fields in this order. Each object is one DIA line.
+
+| Field            | Type    | Required | Description |
+| ---------------- | ------- | -------- | ----------- |
+| `dia`            | string  | Yes      | DIA value as text. Send the `mm` prefix from the app (for example `12mm`). Stored as a Char field. |
+| `shape_id`       | integer | Yes      | Shape `id` from `GET /booking/customer/shapes-weight-types`. |
+| `weight_type_id` | integer | Yes      | Weight type `id` from `GET /booking/customer/shapes-weight-types`. |
+| `uom_id`         | integer | Yes      | UOM `id` from `GET /booking/customer/master-data` (`uoms`). |
+| `qty_selection`  | string  | Yes      | API-only indicator. `by_weight` or `by_bundle`. Not stored on the record. |
+| `weight`         | number  | If `qty_selection` is `by_weight` | Quantity in the selected UOM. Stored in `quantity`. Uses the **Product Unit** decimal accuracy. |
+| `bundle_qty`     | number  | If `qty_selection` is `by_bundle` | Bundle quantity. Stored in `bundle_qty`. `weight` is also accepted for this value. Uses the **Product Unit** decimal accuracy. |
 
 **Server-side behaviour (for reference)**
 
 * Customer (`delivery_address_id`) is set from the logged-in Buyer’s partner.
 * From `warehouse_id`, the server sets pickup company, warehouse, and warehouse address.
 * When `is_same_as_ship_to` is `true`, Bill To is stored as the same address as Ship To.
+* Each `dia_details` line is created as a `truck.dia.lines` record on the truck.
+* If `qty_selection` is `by_weight`, `weight` is stored in `quantity` and `bundle_qty` is left empty. `qty_selection` itself is not stored.
+* If `qty_selection` is `by_bundle`, the value is stored in `bundle_qty` and `quantity` is left empty. `qty_selection` itself is not stored.
 
 **Example request**
 
@@ -951,7 +968,25 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
     "truck_type_id": 7,
     "driver_name": "Rajesh Kumar",
     "driver_contact": "+91 91234 56789",
-    "driver_licence_number": "DL-1234567890"
+    "driver_licence_number": "DL-1234567890",
+    "dia_details": [
+      {
+        "dia": "12mm",
+        "shape_id": 1,
+        "weight_type_id": 3,
+        "uom_id": 1,
+        "qty_selection": "by_weight",
+        "weight": 10.5
+      },
+      {
+        "dia": "16mm",
+        "shape_id": 1,
+        "weight_type_id": 3,
+        "uom_id": 1,
+        "qty_selection": "by_bundle",
+        "bundle_qty": 4
+      }
+    ]
   }'
 ```
 
@@ -971,7 +1006,7 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
 ```json
 {
   "status": "error",
-  "message": "Truck Capacity must have at most 3 decimal places."
+  "message": "Truck Capacity is required."
 }
 ```
 
@@ -1004,7 +1039,7 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
    - Call `GET /booking/customer/master-data` to fill warehouse, ship-to, bill-to, UOM, and truck type dropdowns.
    - Call `GET /booking/customer/products` to list products, images, and bundles for DIA selection (for a later step).
    - Call `GET /booking/customer/shapes-weight-types` for shape and weight-type lists.
-   - Call `POST /booking/customer/truck-request` to submit the truck request (without DIA lines for now).
+   - Call `POST /booking/customer/truck-request` to submit the truck request with `dia_details`.
 5. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.

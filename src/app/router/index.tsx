@@ -40,6 +40,13 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.startsWith('/trucks/outgoing/report')) return PAGE_LEVEL_MAP['/trucks/outgoing/report'];
+  if (pathname.startsWith('/trucks/report')) return PAGE_LEVEL_MAP['/trucks/report'];
+  if (pathname.startsWith('/trucks/submit-bill')) return PAGE_LEVEL_MAP['/trucks/submit-bill'];
+  if (pathname.startsWith('/trucks/loaded')) return PAGE_LEVEL_MAP['/trucks/loaded'];
+  if (pathname.startsWith('/trucks/outgoing')) return PAGE_LEVEL_MAP['/trucks/outgoing'];
+  if (pathname.startsWith('/trucks/loading')) return PAGE_LEVEL_MAP['/trucks/loading'];
+
   if (pathname.match(/^\/bookings\/view\/\d+\/step2/)) {
     const id = pathname.split('/')[3];
     return { level: 3, parent: `/bookings/view/${id}` };
@@ -59,6 +66,8 @@ export function getPageConfig(pathname: string): PageLevelConfig {
   if (pathname.startsWith('/bookings')) return PAGE_LEVEL_MAP['/bookings'];
   if (pathname.startsWith('/profile')) return PAGE_LEVEL_MAP['/profile'];
   if (pathname.startsWith('/login')) return PAGE_LEVEL_MAP['/login'];
+  if (PAGE_LEVEL_MAP[pathname]) return PAGE_LEVEL_MAP[pathname];
+
   return PAGE_LEVEL_MAP['/dashboard'];
 }
 
