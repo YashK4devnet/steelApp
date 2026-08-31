@@ -13,10 +13,10 @@ const TruckIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
 
 interface QuoteCardProps {
   quote: QuoteItem;
-  onOpenQuoteModal?: (quote: QuoteItem) => void;
+  onSubmitQuote?: (quote: QuoteItem) => void;
 }
 
-export function QuoteCard({ quote, onOpenQuoteModal }: QuoteCardProps) {
+export function QuoteCard({ quote, onSubmitQuote }: QuoteCardProps) {
   const isPendingQuote = quote.status === 'pending_quote';
   const isAccepted = quote.status === 'accepted';
   const isRejected = quote.status === 'rejected';
@@ -62,7 +62,7 @@ export function QuoteCard({ quote, onOpenQuoteModal }: QuoteCardProps) {
           <span className="text-xs sm:text-sm font-semibold text-text-primary">{quote.materials_requested}</span>
         </div>
 
-        {/* Rates */}
+        {/* Rates & Trucks Required */}
         <div className="flex flex-wrap items-center justify-between gap-2 pt-1.5">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold text-text-secondary w-20 shrink-0">Asking Rate:</span>
@@ -70,6 +70,13 @@ export function QuoteCard({ quote, onOpenQuoteModal }: QuoteCardProps) {
               {quote.asking_rate}
             </span>
           </div>
+
+          {isPendingQuote && quote.trucks_required && (
+            <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+              <TruckIcon className="w-3.5 h-3.5" />
+              <span>{quote.trucks_required} Trucks Required</span>
+            </div>
+          )}
 
           {/* Proposed Rate (Quoted Section) */}
           {!isPendingQuote && quote.proposed_rate && (
@@ -103,11 +110,11 @@ export function QuoteCard({ quote, onOpenQuoteModal }: QuoteCardProps) {
       </div>
 
       {/* Action Row for Pending Quotes */}
-      {isPendingQuote && onOpenQuoteModal && (
+      {isPendingQuote && onSubmitQuote && (
         <div className="flex justify-end gap-2 pt-1">
           <button
             type="button"
-            onClick={() => onOpenQuoteModal(quote)}
+            onClick={() => onSubmitQuote(quote)}
             className="px-5 py-2.5 rounded-full bg-primary text-white hover:bg-primary/90 active:scale-95 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
           >
             Submit Quote

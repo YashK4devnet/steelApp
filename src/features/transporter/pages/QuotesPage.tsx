@@ -2,7 +2,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuotes } from '../hooks/useQuotes';
 import { QuoteCard } from '../components/QuoteCard';
-import { SubmitQuoteModal } from '../components/SubmitQuoteModal';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -30,17 +29,12 @@ export function QuotesPage() {
     pendingQuotes,
     alreadyQuotedQuotes,
     displayedList,
-    selectedQuoteToSubmit,
-    proposedRateInput,
-    setProposedRateInput,
-    trucksInput,
-    setTrucksInput,
-    isSubmittingQuote,
-    handleOpenQuoteModal,
-    handleCloseQuoteModal,
-    handleSubmitQuote,
     refreshQuotes,
   } = useQuotes();
+
+  const handleNavigateToSubmit = (quote: { id: string | number }) => {
+    navigate(`/transporter/quotes/submit/${quote.id}`);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
@@ -184,23 +178,11 @@ export function QuotesPage() {
             <QuoteCard
               key={quote.id}
               quote={quote}
-              onOpenQuoteModal={handleOpenQuoteModal}
+              onSubmitQuote={handleNavigateToSubmit}
             />
           ))
         )}
       </main>
-
-      {/* Submit Quote Dialog Modal */}
-      <SubmitQuoteModal
-        quote={selectedQuoteToSubmit}
-        proposedRateInput={proposedRateInput}
-        setProposedRateInput={setProposedRateInput}
-        trucksInput={trucksInput}
-        setTrucksInput={setTrucksInput}
-        isSubmittingQuote={isSubmittingQuote}
-        onClose={handleCloseQuoteModal}
-        onSubmit={handleSubmitQuote}
-      />
     </div>
   );
 }

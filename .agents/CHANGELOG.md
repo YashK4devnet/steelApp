@@ -372,6 +372,30 @@ This document logs the major architectural, feature, and design changes implemen
   - **Already Quoted**: Displays quote number, status badges (`Pending`, `Accepted`, `Rejected`), route, materials, asking rate, proposed rate, and trucks sent, plus rejection reasons when applicable.
 - **Router & Native Navigation Setup (`router/index.tsx`)**: Configured `/transporter/quotes` route with Level 1 page hierarchy mapped to `/dashboard` for native Android hardware back handling.
 
+## Phase 53: Dedicated Transporter Submit Quote Proposal Page
+- **Full Page Architecture (`SubmitQuotePage.tsx`)**: Transitioned quote proposal submission into a dedicated page (`/transporter/quotes/submit/:id`) with Level 2 hierarchy mapped to `/transporter/quotes`.
+- **Server Read-Only Summary (`ServerQuoteSummary.tsx`)**: Displays top quote number and date, heading route (`Origin ➔ Destination`) with directional arrow, materials requested, asking rate, and trucks required.
+- **Transporter Quote Proposal Form**:
+  - **Available Trucks Counter**: Validated input constrained to the required trucks ceiling (`available_trucks <= quote.trucks_required`).
+  - **Dynamic Truck Specifications (`TruckDetailFormCard.tsx`)**: Dynamically renders individual truck cards requesting Vehicle Type (dropdown), Capacity (TONs), and Pricing Base (`Per TON` vs `Per Truck`).
+  - **Proposed Rate & Sticky Submit Bar**: Bottom sticky bar with full-width submit button, validated and enabled only when all truck specifications and proposed rate are filled.
+
+## Phase 54: Quote-Level Pricing Base, Empty Initial Form State & Non-Restricting Validation
+- **Quote-Level Pricing Base**: Moved the pricing base selector out of individual truck cards and positioned it as a unified quote-level setting directly above the Proposed Rate input.
+- **Empty Initial Form State**: Initialized `availableTrucks`, `truckDetails`, and `proposedRate` as empty inputs on initial page load.
+- **Non-Restricting Validation & Warning Banner**: Allowed free numeric typing in the available trucks field without clamping user keystrokes; displays a dynamic warning banner below the field when the entered number exceeds the required truck count or is invalid, while keeping the submit button disabled until resolved.
+
+## Phase 55: Available Trucks Header Layout Alignment Fix
+- **Inline Header Alignment (`SubmitQuotePage.tsx`)**: Restored the Available Trucks card header layout to keep the `Max: N` count badge perfectly aligned in line using `shrink-0`, `whitespace-nowrap`, and `min-w-0` on the title container to prevent multi-line wrapping across mobile viewports.
+
+## Phase 56: Server-Driven Quote Rate Unit & Removed Manual Pricing Base Selector
+- **Removed Pricing Base Selector (`SubmitQuotePage.tsx`)**: Removed the manual pricing base selection section from the proposal form so the rate base is determined by the server's asking rate.
+- **Server-Driven Rate Unit (`useSubmitQuote.ts`)**: Automatically derived rate unit (`Ton` or `Truck`) directly from the server-sent `asking_rate` to maintain unit parity between the customer's asking rate and the transporter's proposed rate.
+
+
+
+
+
 
 
 

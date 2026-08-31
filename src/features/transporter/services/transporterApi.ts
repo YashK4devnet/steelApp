@@ -1,9 +1,9 @@
-import type { QuoteItem } from '../types';
+import type { QuoteItem, SubmitQuotePayload } from '../types';
 import { apiRequest } from '../../../lib/api';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const MOCK_QUOTES: QuoteItem[] = [
+let memoryQuotes: QuoteItem[] = [
   // 1. Pending to be Quoted Requests
   {
     id: 1,
@@ -13,6 +13,7 @@ const MOCK_QUOTES: QuoteItem[] = [
     to_location: 'Shillong Bypass Construction Site',
     materials_requested: 'TMT Bars 12mm & 16mm (28 Tons)',
     asking_rate: '₹2,400 / Ton',
+    trucks_required: 3,
     status: 'pending_quote',
     state_label: 'Pending Quote',
   },
@@ -24,6 +25,7 @@ const MOCK_QUOTES: QuoteItem[] = [
     to_location: 'Tezpur Central Warehouse',
     materials_requested: 'Construction Steel Sections (18 Tons)',
     asking_rate: '₹2,850 / Ton',
+    trucks_required: 2,
     status: 'pending_quote',
     state_label: 'Pending Quote',
   },
@@ -35,6 +37,7 @@ const MOCK_QUOTES: QuoteItem[] = [
     to_location: 'Agartala Infrastructure Project',
     materials_requested: 'TMT 20mm & 25mm (32 Tons)',
     asking_rate: '₹3,100 / Ton',
+    trucks_required: 4,
     status: 'pending_quote',
     state_label: 'Pending Quote',
   },
@@ -48,8 +51,10 @@ const MOCK_QUOTES: QuoteItem[] = [
     to_location: 'Jorhat Flyover Site Delivery',
     materials_requested: 'TMT 16mm (25 Tons)',
     asking_rate: '₹2,500 / Ton',
+    trucks_required: 2,
+    available_trucks: 2,
     proposed_rate: '₹2,450 / Ton',
-    trucks_sent: '2 Trucks (AS-01-EA-2345, AS-01-EA-6789)',
+    trucks_sent: '2 Trucks (12 Wheeler, 14 Wheeler)',
     status: 'accepted',
     state_label: 'Accepted',
   },
@@ -61,8 +66,10 @@ const MOCK_QUOTES: QuoteItem[] = [
     to_location: 'Tinsukia Industrial Yard',
     materials_requested: 'TMT 10mm (15 Tons)',
     asking_rate: '₹2,100 / Ton',
+    trucks_required: 2,
+    available_trucks: 1,
     proposed_rate: '₹2,200 / Ton',
-    trucks_sent: '1 Truck (NL-02-X-9012)',
+    trucks_sent: '1 Truck (10 Wheeler)',
     status: 'pending',
     state_label: 'Pending Approval',
   },
@@ -74,6 +81,8 @@ const MOCK_QUOTES: QuoteItem[] = [
     to_location: 'Dimapur Steel Depot',
     materials_requested: 'Heavy Structurals (40 Tons)',
     asking_rate: '₹3,500 / Ton',
+    trucks_required: 4,
+    available_trucks: 0,
     proposed_rate: '₹3,800 / Ton',
     trucks_sent: '0 Trucks (Not Assigned)',
     status: 'rejected',
@@ -89,8 +98,58 @@ export async function getQuotes(): Promise<QuoteItem[]> {
       return res.quotes;
     }
   } catch {
-    // Fallback to mock data for development
+    // Fallback to memory quotes for development
   }
-  await delay(250);
-  return MOCK_QUOTES;
+  await delay(200);
+  return memoryQuotes;
+}
+
+export async function getQuoteById(id: number | string): Promise<QuoteItem | null> {
+  try {
+    const res = await apiRequest<{ status: string; quote?: QuoteItem }>('GET', `/booking/transporter/quotes/${id}`);
+    if (res && res.status === 'success' && res.quote) {
+      return res.quote;
+    }
+  } catch {
+    // Fallback
+  }
+  await delay(200);
+  const found = memoryQuotes.find((q) => q.id.toString() === id.toString());
+  return found || null;
+}
+
+export async function submitQuoteProposal(payload: SubmitQuotePayload): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await apiRequest<{ status: string; message?: string }>('POST', '/booking/transporter/quotes/submit', payload);
+    if (res && res.status === 'success') {
+      return { success: true };
+    }
+  } catch {
+    // Fallback simulation
+  }
+
+  await delay(400);
+  const baseLabel = payload.pricing_base === 'per_truck' ? 'Truck' : 'Ton';
+  const formattedRate = payload.proposed_rate.startsWith('₹') ? payload.proposed_rate : `₹${payload.proposed_rate} / ${baseLabel}`;
+  const truckSummary = payload.truck_details.length > 0 
+    ? `${payload.truck_details.length} Truck${payload.truck_details.length > 1 ? 's' : ''} (${payload.truck_details.map(t => t.vehicle_type.split(' ')[0] || t.vehicle_type).join(', ')})`
+    : `${payload.available_trucks} Trucks`;
+
+  memoryQuotes = memoryQuotes.map((q) => {
+    if (q.id.toString() === payload.quote_id.toString()) {
+      return {
+        ...q,
+        status: 'pending',
+        state_label: 'Pending Approval',
+        available_trucks: payload.available_trucks,
+        pricing_base: payload.pricing_base,
+        proposed_rate: formattedRate,
+        trucks_sent: truckSummary,
+        truck_details: payload.truck_details,
+      };
+    }
+    return q;
+  });
+
+  return { success: true };
 }
