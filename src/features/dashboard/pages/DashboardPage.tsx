@@ -6,13 +6,18 @@ import { SecurityDashboard } from '../components/SecurityDashboard';
 import { ManagerDashboard } from '../components/ManagerDashboard';
 import { SellerDashboard } from '../components/SellerDashboard';
 import { CustomerDashboard } from '../components/CustomerDashboard';
+import { TransporterDashboard } from '../components/TransporterDashboard';
 import { LogoutModal } from '../../../components/ui/LogoutModal';
+
+// Temporary override to force Transporter Dashboard while developing without backend role
+const FORCE_TRANSPORTER_DASHBOARD = true;
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const userRole = user?.role?.toLowerCase() || '';
+  const isTransporter = FORCE_TRANSPORTER_DASHBOARD || userRole.includes('transporter');
   const isSecurity = userRole === 'security';
   const isAdmin = userRole === 'admin';
   const isSeller = userRole.includes('seller') || userRole.includes('vendor');
@@ -87,7 +92,9 @@ export function DashboardPage() {
           </div>
 
           {/* Role Content */}
-          {isSecurity ? (
+          {isTransporter ? (
+            <TransporterDashboard />
+          ) : isSecurity ? (
             <SecurityDashboard />
           ) : isAdmin ? (
             <ManagerDashboard />

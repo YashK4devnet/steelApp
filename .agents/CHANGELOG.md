@@ -360,6 +360,20 @@ This document logs the major architectural, feature, and design changes implemen
 - **Full Pickup Warehouse Address Integration**: Mapped full warehouse address (`pickup_warehouse_address`) from API and cached master data warehouses.
 - **Bookings Card Update (`BookingsPage.tsx`)**: Updated booking cards to cleanly render the customer's name under "Customer" and the full warehouse address under "Pickup".
 
+## Phase 51: Transporter Role Dashboard & Development Force Override
+- **Transporter Dashboard Component (`TransporterDashboard.tsx`)**: Created `src/features/dashboard/components/TransporterDashboard.tsx` with a modern 2-column action grid matching the RNE design system, featuring primary action tiles for **Upload Bill Tick** and **Quotes**.
+- **Icon Set Additions (`Icons.tsx`)**: Added `BillCheckIcon` and `QuoteIcon` to `src/features/dashboard/components/Icons.tsx`.
+- **Development Force Override (`DashboardPage.tsx`)**: Added `FORCE_TRANSPORTER_DASHBOARD` development bypass flag in `DashboardPage.tsx` to automatically render the Transporter dashboard during active development prior to backend role configuration.
+
+## Phase 52: Transporter Quotes Management Feature
+- **Quotes Domain Types (`types.ts`) & Service (`transporterApi.ts`)**: Defined `QuoteItem` and `QuoteStatus` structures supporting pending quote requests and quoted/completed orders with realistic transport orders across Northeast routes.
+- **Quotes Page (`QuotesPage.tsx`)**: Created two distinct sections via segmented controls:
+  - **Pending to Quote**: Displays quote number, from and where to locations, materials requested, asking rate, and interactive "Submit Quote" modal.
+  - **Already Quoted**: Displays quote number, status badges (`Pending`, `Accepted`, `Rejected`), route, materials, asking rate, proposed rate, and trucks sent, plus rejection reasons when applicable.
+- **Router & Native Navigation Setup (`router/index.tsx`)**: Configured `/transporter/quotes` route with Level 1 page hierarchy mapped to `/dashboard` for native Android hardware back handling.
+
+
+
 
 
 
