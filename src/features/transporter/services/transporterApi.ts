@@ -1,4 +1,4 @@
-import type { QuoteItem, SubmitQuotePayload } from '../types';
+import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload } from '../types';
 import { apiRequest } from '../../../lib/api';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -55,6 +55,11 @@ let memoryQuotes: QuoteItem[] = [
     available_trucks: 2,
     proposed_rate: '₹2,450 / Ton',
     trucks_sent: '2 Trucks (12 Wheeler, 14 Wheeler)',
+    truck_details: [
+      { id: 'truck-1', vehicle_type: '12 Wheeler (21-25 MT)', capacity_tons: 25, truck_number_plate: '', driver_name: '', driver_contact: '', driver_license_number: '' },
+      { id: 'truck-2', vehicle_type: '14 Wheeler (26-30 MT)', capacity_tons: 30, truck_number_plate: '', driver_name: '', driver_contact: '', driver_license_number: '' },
+    ],
+    drivers_assigned: false,
     status: 'accepted',
     state_label: 'Accepted',
   },
@@ -70,6 +75,10 @@ let memoryQuotes: QuoteItem[] = [
     available_trucks: 1,
     proposed_rate: '₹2,200 / Ton',
     trucks_sent: '1 Truck (10 Wheeler)',
+    truck_details: [
+      { id: 'truck-1', vehicle_type: '10 Wheeler (16-20 MT)', capacity_tons: 20 },
+    ],
+    drivers_assigned: false,
     status: 'pending',
     state_label: 'Pending Approval',
   },
@@ -129,8 +138,20 @@ export async function submitQuoteProposal(payload: SubmitQuotePayload): Promise<
   }
 
   await delay(400);
-  const baseLabel = payload.pricing_base === 'per_truck' ? 'Truck' : 'Ton';
-  const formattedRate = payload.proposed_rate.startsWith('₹') ? payload.proposed_rate : `₹${payload.proposed_rate} / ${baseLabel}`;
+  let formattedRate = '₹2,450 / Ton';
+  if (payload.truck_details && payload.truck_details.length > 0) {
+    const rates = payload.truck_details.map((t) => {
+      const baseLabel = t.pricing_base === 'per_truck' ? 'Truck' : 'Ton';
+      const rateVal = String(t.proposed_rate).startsWith('₹') ? t.proposed_rate : `₹${t.proposed_rate}`;
+      return `${rateVal} / ${baseLabel}`;
+    });
+    // If all trucks have the same rate & base, display one concise rate
+    const uniqueRates = Array.from(new Set(rates));
+    formattedRate = uniqueRates.join(', ');
+  } else if (payload.proposed_rate) {
+    formattedRate = payload.proposed_rate.startsWith('₹') ? payload.proposed_rate : `₹${payload.proposed_rate} / Ton`;
+  }
+
   const truckSummary = payload.truck_details.length > 0 
     ? `${payload.truck_details.length} Truck${payload.truck_details.length > 1 ? 's' : ''} (${payload.truck_details.map(t => t.vehicle_type.split(' ')[0] || t.vehicle_type).join(', ')})`
     : `${payload.available_trucks} Trucks`;
@@ -142,10 +163,35 @@ export async function submitQuoteProposal(payload: SubmitQuotePayload): Promise<
         status: 'pending',
         state_label: 'Pending Approval',
         available_trucks: payload.available_trucks,
-        pricing_base: payload.pricing_base,
         proposed_rate: formattedRate,
         trucks_sent: truckSummary,
         truck_details: payload.truck_details,
+        drivers_assigned: false,
+      };
+    }
+    return q;
+  });
+
+  return { success: true };
+}
+
+export async function saveQuoteDriverDetails(payload: SubmitDriverDetailsPayload): Promise<{ success: boolean; message?: string }> {
+  try {
+    const res = await apiRequest<{ status: string; message?: string }>('POST', `/booking/transporter/quotes/${payload.quote_id}/drivers`, payload);
+    if (res && res.status === 'success') {
+      return { success: true };
+    }
+  } catch {
+    // Fallback simulation
+  }
+
+  await delay(400);
+  memoryQuotes = memoryQuotes.map((q) => {
+    if (q.id.toString() === payload.quote_id.toString()) {
+      return {
+        ...q,
+        truck_details: payload.truck_details,
+        drivers_assigned: true,
       };
     }
     return q;

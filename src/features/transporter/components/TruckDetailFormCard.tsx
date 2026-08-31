@@ -1,6 +1,6 @@
 import React from 'react';
-import type { ProposedTruckDetail } from '../types';
-import { VEHICLE_TYPE_OPTIONS } from '../constants';
+import type { ProposedTruckDetail, PricingBase } from '../types';
+import { VEHICLE_TYPE_OPTIONS, PRICING_BASE_OPTIONS } from '../constants';
 
 const ChevronDownIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 pointer-events-none">
@@ -15,20 +15,24 @@ interface TruckDetailFormCardProps {
 }
 
 export function TruckDetailFormCard({ index, truck, onUpdate }: TruckDetailFormCardProps) {
+  const currentPricingBase = truck.pricing_base || 'per_ton';
+  const unitLabel = currentPricingBase === 'per_truck' ? 'Truck' : 'TON';
+
   return (
-    <div className="bg-white rounded-[20px] p-4 sm:p-5 shadow-[0_4px_16px_rgba(15,23,42,0.03)] border border-slate-900/5 flex flex-col gap-3.5 transition-all">
-      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="w-6 h-6 rounded-full bg-primary/10 text-primary font-extrabold text-xs flex items-center justify-center">
+    <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-4 transition-all">
+      {/* Truck Card Header */}
+      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="flex items-center gap-2.5">
+          <span className="w-7 h-7 rounded-full bg-primary/10 text-primary font-extrabold text-xs flex items-center justify-center border border-primary/20">
             {index + 1}
           </span>
-          <h4 className="font-bold text-text-primary text-[14px]">
-            Truck #{index + 1} Specifications
+          <h4 className="font-bold text-text-primary text-[15px] leading-tight">
+            Truck #{index + 1} Details & Rate
           </h4>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="flex flex-col gap-3.5">
         {/* 1. Vehicle Type Dropdown */}
         <div className="flex flex-col gap-1">
           <label className="text-[12px] font-bold text-text-primary">
@@ -53,23 +57,74 @@ export function TruckDetailFormCard({ index, truck, onUpdate }: TruckDetailFormC
           </div>
         </div>
 
-        {/* 2. Capacity (in TONs) */}
+        {/* 2. Capacity & 3. Pricing Base Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Capacity (in TONs) */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[12px] font-bold text-text-primary">
+              Capacity (TONs) *
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                min="0.1"
+                step="0.1"
+                placeholder="e.g. 25"
+                value={truck.capacity_tons}
+                onChange={(e) => onUpdate(index, 'capacity_tons', e.target.value)}
+                className="w-full h-11 pl-3.5 pr-14 bg-slate-50 border border-slate-200 rounded-[12px] outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-semibold text-text-primary transition-all"
+              />
+              <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-text-secondary pointer-events-none">
+                TON
+              </span>
+            </div>
+          </div>
+
+          {/* Pricing Base Toggle (By TON vs By Truck) */}
+          <div className="flex flex-col gap-1">
+            <label className="text-[12px] font-bold text-text-primary">
+              Pricing Base *
+            </label>
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100/90 rounded-[12px] border border-slate-200/60 h-11 items-center">
+              {PRICING_BASE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onUpdate(index, 'pricing_base', opt.value as PricingBase)}
+                  className={`h-full rounded-[9px] text-[11px] font-bold transition-all flex items-center justify-center ${
+                    currentPricingBase === opt.value
+                      ? 'bg-white text-primary shadow-sm'
+                      : 'text-text-secondary hover:text-text-primary'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* 4. Proposed Rate for this Truck */}
         <div className="flex flex-col gap-1">
           <label className="text-[12px] font-bold text-text-primary">
-            Capacity (TONs) *
+            Proposed Rate ({currentPricingBase === 'per_truck' ? 'Per Truck' : 'Per TON'}) *
           </label>
           <div className="relative">
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-extrabold text-primary">
+              ₹
+            </span>
             <input
               type="number"
-              min="0.1"
-              step="0.1"
-              placeholder="Enter capacity in TONs"
-              value={truck.capacity_tons}
-              onChange={(e) => onUpdate(index, 'capacity_tons', e.target.value)}
-              className="w-full h-11 pl-3.5 pr-14 bg-slate-50 border border-slate-200 rounded-[12px] outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-semibold text-text-primary transition-all"
+              min="1"
+              step="any"
+              required
+              placeholder={`Enter rate per ${unitLabel.toLowerCase()}`}
+              value={truck.proposed_rate}
+              onChange={(e) => onUpdate(index, 'proposed_rate', e.target.value)}
+              className="w-full h-11 pl-8 pr-20 bg-slate-50 border border-slate-200 rounded-[12px] outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-bold text-text-primary transition-all"
             />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-text-secondary pointer-events-none">
-              TON
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-text-secondary uppercase">
+              / {unitLabel}
             </span>
           </div>
         </div>

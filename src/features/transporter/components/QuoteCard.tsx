@@ -14,9 +14,10 @@ const TruckIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
 interface QuoteCardProps {
   quote: QuoteItem;
   onSubmitQuote?: (quote: QuoteItem) => void;
+  onAssignDrivers?: (quote: QuoteItem) => void;
 }
 
-export function QuoteCard({ quote, onSubmitQuote }: QuoteCardProps) {
+export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardProps) {
   const isPendingQuote = quote.status === 'pending_quote';
   const isAccepted = quote.status === 'accepted';
   const isRejected = quote.status === 'rejected';
@@ -29,8 +30,19 @@ export function QuoteCard({ quote, onSubmitQuote }: QuoteCardProps) {
     ? 'bg-red-50 text-red-700 border-red-200/50'
     : 'bg-amber-50 text-amber-700 border-amber-200/50';
 
+  const handleCardClick = () => {
+    if (isAccepted && onAssignDrivers) {
+      onAssignDrivers(quote);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3.5 relative overflow-hidden">
+    <div 
+      onClick={handleCardClick}
+      className={`bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3.5 relative overflow-hidden transition-all ${
+        isAccepted ? 'cursor-pointer hover:border-emerald-200 hover:shadow-[0_12px_28px_rgba(16,185,129,0.08)]' : ''
+      }`}
+    >
       {/* Header Row: Quote No & Status */}
       <div className="flex justify-between items-start gap-2">
         <div>
@@ -114,10 +126,33 @@ export function QuoteCard({ quote, onSubmitQuote }: QuoteCardProps) {
         <div className="flex justify-end gap-2 pt-1">
           <button
             type="button"
-            onClick={() => onSubmitQuote(quote)}
-            className="px-5 py-2.5 rounded-full bg-primary text-white hover:bg-primary/90 active:scale-95 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSubmitQuote(quote);
+            }}
+            className="px-5 py-2.5 rounded-full bg-primary text-white hover:bg-primary/90 active:scale-95 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
           >
             Submit Quote
+          </button>
+        </div>
+      )}
+
+      {/* Action Row for Accepted Quotes (Enter / Edit Driver Details) */}
+      {!isPendingQuote && isAccepted && onAssignDrivers && (
+        <div className="flex justify-between items-center gap-2 pt-1">
+          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            {quote.drivers_assigned ? '✓ Drivers Assigned' : 'Action Required'}
+          </span>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAssignDrivers(quote);
+            }}
+            className="px-5 py-2.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <TruckIcon className="w-3.5 h-3.5" />
+            <span>{quote.drivers_assigned ? 'Edit Driver Details' : 'Enter Driver Details'}</span>
           </button>
         </div>
       )}

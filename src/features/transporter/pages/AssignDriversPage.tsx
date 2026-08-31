@@ -1,7 +1,7 @@
 import React from 'react';
-import { useSubmitQuote } from '../hooks/useSubmitQuote';
+import { useAssignDrivers } from '../hooks/useAssignDrivers';
 import { ServerQuoteSummary } from '../components/ServerQuoteSummary';
-import { TruckDetailFormCard } from '../components/TruckDetailFormCard';
+import { DriverAssignmentCard } from '../components/DriverAssignmentCard';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -10,22 +10,19 @@ const ArrowLeftIcon = () => (
   </svg>
 );
 
-export function SubmitQuotePage() {
+export function AssignDriversPage() {
   const {
     quote,
     loading,
     error,
-    availableTrucks,
-    handleAvailableTrucksChange,
-    availableTrucksWarning,
-    truckDetails,
-    handleUpdateTruck,
+    trucks,
+    handleUpdateDriver,
     isValid,
-    submitting,
-    submitError,
+    saving,
+    saveError,
     handleSubmit,
     navigateBack,
-  } = useSubmitQuote();
+  } = useAssignDrivers();
 
   if (loading) {
     return (
@@ -71,115 +68,69 @@ export function SubmitQuotePage() {
             </button>
             <div className="flex flex-col">
               <h1 className="text-[22px] sm:text-[24px] font-bold text-text-primary tracking-tight leading-none h-10 flex items-center">
-                Submit Quote
+                Driver Details
               </h1>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Main Content Form */}
+      {/* Main Content */}
       <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-5">
-        {/* 1. Server-Sent Read-Only Summary */}
+        {/* Read-Only Server Summary */}
         <ServerQuoteSummary quote={quote} />
 
-        {/* 2. Transporter Proposal Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-          {/* Section: Available Trucks Input */}
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <h3 className="font-bold text-text-primary text-[16px] leading-tight">
-                  Available Trucks
-                </h3>
-                <p className="text-xs font-medium text-text-secondary mt-0.5">
-                  How many trucks can you allocate for this shipment?
-                </p>
-              </div>
-              <span className="text-[11px] font-extrabold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 shrink-0 whitespace-nowrap">
-                Max: {quote.trucks_required}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-3 mt-1">
-              <input
-                type="number"
-                value={availableTrucks}
-                onChange={(e) => handleAvailableTrucksChange(e.target.value)}
-                placeholder={`Enter available trucks (Max: ${quote.trucks_required})`}
-                className={`w-full h-12 px-4 bg-slate-50 border rounded-[14px] outline-none text-base font-bold text-text-primary transition-all ${
-                  availableTrucksWarning
-                    ? 'border-red-300 focus:border-red-500 bg-red-50/30'
-                    : 'border-slate-200 focus:border-primary focus:bg-white'
-                }`}
-              />
-            </div>
-
-            {/* Validation Warning Message */}
-            {availableTrucksWarning && (
-              <div className="p-3 bg-red-50 rounded-[12px] border border-red-100 flex items-start gap-2 animate-fade-in">
-                <span className="text-red-500 font-bold text-sm leading-none">⚠️</span>
-                <span className="text-xs font-semibold text-red-700 leading-tight">
-                  {availableTrucksWarning}
-                </span>
-              </div>
-            )}
+        {/* Form for Driver Details */}
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="font-bold text-text-primary text-[16px] tracking-tight">
+              Assigned Trucks ({trucks.length})
+            </h3>
+            <span className="text-xs font-semibold text-text-secondary">
+              Fill driver information for each truck
+            </span>
           </div>
 
-          {/* Section: Individual Truck Specification & Rate Cards */}
-          {truckDetails.length > 0 && (
-            <div className="flex flex-col gap-3.5 animate-fade-in">
-              <div className="flex items-center justify-between px-1">
-                <h3 className="font-bold text-text-primary text-[15px] tracking-tight">
-                  Truck Details & Proposed Rates ({truckDetails.length})
-                </h3>
-                <span className="text-[11px] font-semibold text-text-secondary">
-                  Specify vehicle type, capacity, pricing base & rate
-                </span>
-              </div>
+          {trucks.map((truck, idx) => (
+            <DriverAssignmentCard
+              key={truck.id || idx}
+              index={idx}
+              truck={truck}
+              onUpdate={handleUpdateDriver}
+            />
+          ))}
 
-              {truckDetails.map((truck, idx) => (
-                <TruckDetailFormCard
-                  key={truck.id || idx}
-                  index={idx}
-                  truck={truck}
-                  onUpdate={handleUpdateTruck}
-                />
-              ))}
-            </div>
-          )}
-
-          {submitError && (
+          {saveError && (
             <div className="p-3 bg-red-50 rounded-[14px] border border-red-200 text-xs font-bold text-red-600 text-center">
-              {submitError}
+              {saveError}
             </div>
           )}
         </form>
       </main>
 
-      {/* Sticky Bottom Full-Width Submit Action Bar */}
+      {/* Sticky Bottom Submit Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-900/10 px-4 sm:px-6 lg:px-8 py-3.5 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]">
         <div className="max-w-[1200px] mx-auto flex items-center gap-3">
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!isValid || submitting}
+            disabled={!isValid || saving}
             className={`w-full h-12 rounded-[16px] text-white text-sm font-bold shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.99] ${
-              isValid && !submitting
-                ? 'bg-primary hover:bg-primary/90 shadow-primary/20 cursor-pointer'
+              isValid && !saving
+                ? 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20 cursor-pointer'
                 : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'
             }`}
           >
-            {submitting ? (
+            {saving ? (
               <>
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
-                <span>Submitting Quote Proposal...</span>
+                <span>Saving Driver Details...</span>
               </>
             ) : (
-              <span>Submit Quote Proposal</span>
+              <span>Save Driver Details</span>
             )}
           </button>
         </div>

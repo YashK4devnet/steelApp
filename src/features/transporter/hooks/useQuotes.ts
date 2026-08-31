@@ -9,11 +9,9 @@ export function useQuotes() {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
   
-  // Submit Quote Modal State
-  const [selectedQuoteToSubmit, setSelectedQuoteToSubmit] = useState<QuoteItem | null>(null);
-  const [proposedRateInput, setProposedRateInput] = useState<string>('');
-  const [trucksInput, setTrucksInput] = useState<string>('1 Truck');
-  const [isSubmittingQuote, setIsSubmittingQuote] = useState<boolean>(false);
+  // Date filter state
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
 
   const fetchQuotes = useCallback(async () => {
     setLoading(true);
@@ -34,6 +32,10 @@ export function useQuotes() {
     fetchQuotes();
   }, [fetchQuotes]);
 
+  const availableDates = useMemo(() => {
+    return Array.from(new Set(quotes.map((q) => q.created_date).filter(Boolean)));
+  }, [quotes]);
+
   const pendingQuotes = useMemo(() => {
     return quotes.filter((q) => q.status === 'pending_quote');
   }, [quotes]);
@@ -44,57 +46,28 @@ export function useQuotes() {
 
   const displayedList = useMemo(() => {
     const list = activeTab === 'pending' ? pendingQuotes : alreadyQuotedQuotes;
-    if (!searchQuery.trim()) return list;
-    const q = searchQuery.toLowerCase().trim();
-    return list.filter((item) => 
-      item.quote_no.toLowerCase().includes(q) ||
-      item.from_location.toLowerCase().includes(q) ||
-      item.to_location.toLowerCase().includes(q) ||
-      item.materials_requested.toLowerCase().includes(q) ||
-      item.asking_rate.toLowerCase().includes(q) ||
-      (item.proposed_rate && item.proposed_rate.toLowerCase().includes(q)) ||
-      (item.state_label && item.state_label.toLowerCase().includes(q))
-    );
-  }, [activeTab, pendingQuotes, alreadyQuotedQuotes, searchQuery]);
+    return list.filter((item) => {
+      // Date filter
+      if (selectedDate && item.created_date !== selectedDate) {
+        return false;
+      }
 
-  const handleOpenQuoteModal = (quote: QuoteItem) => {
-    setSelectedQuoteToSubmit(quote);
-    setProposedRateInput(quote.asking_rate ? quote.asking_rate.replace(/[^\d]/g, '') : '');
-    setTrucksInput('1 Truck');
-  };
+      // Search query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchQuoteNo = item.quote_no.toLowerCase().includes(q);
+        const matchFrom = item.from_location.toLowerCase().includes(q);
+        const matchTo = item.to_location.toLowerCase().includes(q);
+        const matchMaterials = item.materials_requested.toLowerCase().includes(q);
+        const matchAsking = item.asking_rate.toLowerCase().includes(q);
+        const matchProposed = item.proposed_rate ? item.proposed_rate.toLowerCase().includes(q) : false;
+        const matchState = item.state_label ? item.state_label.toLowerCase().includes(q) : false;
+        return matchQuoteNo || matchFrom || matchTo || matchMaterials || matchAsking || matchProposed || matchState;
+      }
 
-  const handleCloseQuoteModal = () => {
-    setSelectedQuoteToSubmit(null);
-    setProposedRateInput('');
-    setTrucksInput('1 Truck');
-  };
-
-  const handleSubmitQuote = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedQuoteToSubmit) return;
-    setIsSubmittingQuote(true);
-
-    setTimeout(() => {
-      const formattedRate = proposedRateInput.startsWith('₹') ? proposedRateInput : `₹${proposedRateInput} / Ton`;
-      setQuotes((prev) => 
-        prev.map((item) => {
-          if (item.id === selectedQuoteToSubmit.id) {
-            return {
-              ...item,
-              status: 'pending',
-              state_label: 'Pending Approval',
-              proposed_rate: formattedRate,
-              trucks_sent: trucksInput || '1 Truck',
-            };
-          }
-          return item;
-        })
-      );
-      setIsSubmittingQuote(false);
-      setSelectedQuoteToSubmit(null);
-      setActiveTab('quoted');
-    }, 400);
-  };
+      return true;
+    });
+  }, [activeTab, pendingQuotes, alreadyQuotedQuotes, selectedDate, searchQuery]);
 
   return {
     activeTab,
@@ -104,18 +77,14 @@ export function useQuotes() {
     error,
     searchQuery,
     setSearchQuery,
+    selectedDate,
+    setSelectedDate,
+    isCalendarOpen,
+    setIsCalendarOpen,
+    availableDates,
     pendingQuotes,
     alreadyQuotedQuotes,
     displayedList,
-    selectedQuoteToSubmit,
-    proposedRateInput,
-    setProposedRateInput,
-    trucksInput,
-    setTrucksInput,
-    isSubmittingQuote,
-    handleOpenQuoteModal,
-    handleCloseQuoteModal,
-    handleSubmitQuote,
     refreshQuotes: fetchQuotes,
   };
 }

@@ -392,6 +392,30 @@ This document logs the major architectural, feature, and design changes implemen
 - **Removed Pricing Base Selector (`SubmitQuotePage.tsx`)**: Removed the manual pricing base selection section from the proposal form so the rate base is determined by the server's asking rate.
 - **Server-Driven Rate Unit (`useSubmitQuote.ts`)**: Automatically derived rate unit (`Ton` or `Truck`) directly from the server-sent `asking_rate` to maintain unit parity between the customer's asking rate and the transporter's proposed rate.
 
+## Phase 57: Transporter Bottom Nav Concealment & Approved Quote Driver Details Assignment
+- **Bottom Navigation Concealment (`MainLayout.tsx`)**: Configured `/transporter/quotes/submit` and `/transporter/quotes/assign-drivers` routes to hide the bottom navigation bar, offering full vertical screen real estate for form entry.
+- **Approved Quote Driver Assignment Navigation (`QuotesPage.tsx`, `QuoteCard.tsx`)**: For quotes with `accepted`/approved status in the "Already Quoted" tab, rendered an "Enter Driver Details" action button and enabled card click navigation to `/transporter/quotes/assign-drivers/:id`.
+- **Driver Assignment Workflow (`AssignDriversPage.tsx`, `DriverAssignmentCard.tsx`, `useAssignDrivers.ts`)**: Created the driver assignment page to capture Truck Number Plate, Driver Name, Driver Contact Number, and Driver License Number for each allocated truck, mirroring the fields used in the booking component.
+
+## Phase 58: Transporter Quotes Date Filter Integration & Shared Calendar Component
+- **Shared Calendar UI Component (`DateFilterCalendar.tsx`)**: Extracted and centralized `DateFilterCalendar` in `src/components/ui/DateFilterCalendar.tsx` as a shared component accessible across Bookings and Transporter features.
+- **Quotes Page Date Filtering (`QuotesPage.tsx`, `useQuotes.ts`)**:
+  - Integrated the calendar button alongside the search bar with active date pill indicator and expand/collapse trigger.
+  - Implemented multi-criteria filtering combining search text and selected date filtering with active filter badges and quick clear triggers.
+
+## Phase 59: Dedicated `transport/transport` Mock Login Bypass & Clean Role Resolution
+- **Removed Hardcoded Override (`DashboardPage.tsx`)**: Eliminated `FORCE_TRANSPORTER_DASHBOARD` constant; dashboard role display is now derived strictly from the authenticated user's assigned role.
+- **Authentication Bypass for Development (`AuthProvider.tsx`)**: Configured `login()` in `AuthProvider` to intercept credentials matching `transport / transport` (or `transporter / transporter`), bypassing the backend API call to establish a simulated Transporter role session (`role: 'transporter'`) and route directly to the Transporter dashboard.
+
+## Phase 60: Individual Per-Truck Proposed Rate & Pricing Base Configuration
+- **Per-Truck Rate & Base Formulation (`TruckDetailFormCard.tsx`)**: Re-integrated the Pricing Base selector (`Per TON` vs `Per Truck`) and dedicated Proposed Rate input (`₹ / Unit`) directly inside each individual truck specification card.
+- **Removed Standalone Quote Rate Card (`SubmitQuotePage.tsx`)**: Removed the separate global rate section from the submit page; each truck card now encapsulates its own vehicle type, capacity, pricing base, and proposed rate.
+- **Multi-Truck Rate Aggregation & Validation (`useSubmitQuote.ts`, `transporterApi.ts`)**: Form submission validates that each allocated truck possesses a valid rate and pricing base, and computes formatted rate summaries for multi-truck proposals.
+
+
+
+
+
 
 
 

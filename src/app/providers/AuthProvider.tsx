@@ -52,7 +52,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Call the actual Odoo API via our native HTTP wrapper
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Transporter mock credential bypass: transport/transport
+    if ((trimmedEmail === 'transport' || trimmedEmail === 'transporter') && (password === 'transport' || password === 'transporter')) {
+      const mockTransporterUser: User = {
+        id: 9999,
+        name: 'Transporter Demo',
+        login: 'transport',
+        email: 'transport@steelapp.local',
+        role: 'transporter',
+      };
+      const mockToken = 'mock-transporter-session-token';
+      setUser(mockTransporterUser);
+      setToken(mockToken);
+      localStorage.setItem('authUser', JSON.stringify(mockTransporterUser));
+      localStorage.setItem('authToken', mockToken);
+      return;
+    }
+
+    // Standard backend API authentication
     const response = await apiRequest<{ status: string, session_id?: string, token?: string, user: User }>(
       'POST',
       '/booking/auth/login',
@@ -81,6 +100,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    // If running in demo mock transporter session, bypass backend API logout
+    if (token === 'mock-transporter-session-token') {
+      setUser(null);
+      setToken(null);
+      localStorage.removeItem('authUser');
+      localStorage.removeItem('authToken');
+      return;
+    }
+
     // 1. Call Odoo backend API POST /booking/auth/logout
     const res = await apiRequest<{ status?: string }>('POST', '/booking/auth/logout');
 

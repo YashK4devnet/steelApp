@@ -14,17 +14,8 @@ export function useSubmitQuote() {
   // Form State - Starts empty as requested
   const [availableTrucks, setAvailableTrucks] = useState<string>('');
   const [truckDetails, setTruckDetails] = useState<ProposedTruckDetail[]>([]);
-  const [proposedRate, setProposedRate] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Derive rate unit from server asking rate (e.g. Ton or Truck)
-  const rateUnit = useMemo(() => {
-    if (!quote?.asking_rate) return 'Ton';
-    const lower = quote.asking_rate.toLowerCase();
-    if (lower.includes('truck')) return 'Truck';
-    return 'Ton';
-  }, [quote?.asking_rate]);
 
   // Load quote details
   useEffect(() => {
@@ -42,7 +33,6 @@ export function useSubmitQuote() {
           // Initial form state is empty
           setAvailableTrucks('');
           setTruckDetails([]);
-          setProposedRate('');
         } else {
           setError('Quote not found');
         }
@@ -81,6 +71,8 @@ export function useSubmitQuote() {
               id: `truck-${prev.length + idx + 1}`,
               vehicle_type: '',
               capacity_tons: '',
+              pricing_base: 'per_ton',
+              proposed_rate: '',
             })
           );
           return [...prev, ...added];
@@ -137,20 +129,15 @@ export function useSubmitQuote() {
       return false;
     }
 
-    // Every truck must have vehicle_type selected and positive capacity
+    // Every truck must have vehicle_type selected, positive capacity, pricing_base, and positive proposed_rate
     const allTrucksValid = truckDetails.every((t) => {
-      const cap = typeof t.capacity_tons === 'number' ? t.capacity_tons : parseFloat(t.capacity_tons);
-      return Boolean(t.vehicle_type) && !isNaN(cap) && cap > 0;
+      const cap = typeof t.capacity_tons === 'number' ? t.capacity_tons : parseFloat(String(t.capacity_tons || ''));
+      const rate = typeof t.proposed_rate === 'number' ? t.proposed_rate : parseFloat(String(t.proposed_rate || ''));
+      return Boolean(t.vehicle_type) && !isNaN(cap) && cap > 0 && Boolean(t.pricing_base) && !isNaN(rate) && rate > 0;
     });
 
-    if (!allTrucksValid) return false;
-
-    // Proposed rate must be a valid positive number
-    const rate = parseFloat(proposedRate);
-    if (isNaN(rate) || rate <= 0) return false;
-
-    return true;
-  }, [quote, availableTrucks, truckDetails, proposedRate]);
+    return allTrucksValid;
+  }, [quote, availableTrucks, truckDetails]);
 
   // Submit quote handler
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,7 +152,6 @@ export function useSubmitQuote() {
         quote_id: quote.id,
         available_trucks: parseInt(availableTrucks, 10),
         truck_details: truckDetails,
-        proposed_rate: proposedRate,
       };
 
       const res = await submitQuoteProposal(payload);
@@ -186,14 +172,11 @@ export function useSubmitQuote() {
     quote,
     loading,
     error,
-    rateUnit,
     availableTrucks,
     handleAvailableTrucksChange,
     availableTrucksWarning,
     truckDetails,
     handleUpdateTruck,
-    proposedRate,
-    setProposedRate,
     isValid,
     submitting,
     submitError,

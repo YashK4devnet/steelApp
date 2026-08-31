@@ -16,6 +16,7 @@ import { CreateBookingStep1Page } from '../../features/bookings/pages/CreateBook
 import { CreateBookingStep2Page } from '../../features/bookings/pages/CreateBookingStep2Page';
 import { QuotesPage } from '../../features/transporter/pages/QuotesPage';
 import { SubmitQuotePage } from '../../features/transporter/pages/SubmitQuotePage';
+import { AssignDriversPage } from '../../features/transporter/pages/AssignDriversPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
@@ -41,9 +42,11 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/trucks/outgoing/report': { level: 2, parent: '/trucks/outgoing' },
   '/transporter/quotes': { level: 1, parent: '/dashboard' },
   '/transporter/quotes/submit': { level: 2, parent: '/transporter/quotes' },
+  '/transporter/quotes/assign-drivers': { level: 2, parent: '/transporter/quotes' },
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.startsWith('/transporter/quotes/assign-drivers')) return PAGE_LEVEL_MAP['/transporter/quotes/assign-drivers'];
   if (pathname.startsWith('/transporter/quotes/submit')) return PAGE_LEVEL_MAP['/transporter/quotes/submit'];
   if (pathname.startsWith('/transporter/quotes')) return PAGE_LEVEL_MAP['/transporter/quotes'];
   if (pathname.startsWith('/trucks/outgoing/report')) return PAGE_LEVEL_MAP['/trucks/outgoing/report'];
@@ -172,6 +175,7 @@ export function AppRouter() {
             <Route path="/bookings/view/:id/step2" element={<CreateBookingStep2Page />} />
             <Route path="/transporter/quotes" element={<QuotesPage />} />
             <Route path="/transporter/quotes/submit/:id" element={<SubmitQuotePage />} />
+            <Route path="/transporter/quotes/assign-drivers/:id" element={<AssignDriversPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

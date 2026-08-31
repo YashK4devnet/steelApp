@@ -24,7 +24,9 @@ export function MainLayout() {
     location.pathname.includes('/trucks/submit-bill') ||
     location.pathname.includes('/bookings/new') ||
     location.pathname.includes('/bookings/edit') ||
-    location.pathname.includes('/bookings/view');
+    location.pathname.includes('/bookings/view') ||
+    location.pathname.includes('/transporter/quotes/submit') ||
+    location.pathname.includes('/transporter/quotes/assign-drivers');
 
   return (
     <>
