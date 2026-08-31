@@ -91,17 +91,12 @@ export function SelectedProductCard({
                 <span className="font-bold text-text-primary">Predefined Bundle</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
-                <span className="text-text-secondary font-medium">Bundle Type:</span>
-                <span className="font-bold text-text-primary">{bundle?.name}</span>
+                <span className="text-text-secondary font-medium">Bundle:</span>
+                <span className="font-bold text-text-primary">{bundle?.name || 'Standard Bundle'}</span>
               </div>
               <div className="flex justify-between items-center text-[13px]">
                 <span className="text-text-secondary font-medium">Quantity:</span>
-                <span className="font-bold text-text-primary">{item.bundle_quantity}</span>
-              </div>
-              <div className="w-full h-[1px] bg-slate-200 my-0.5" />
-              <div className="flex justify-between items-center text-[13px]">
-                <span className="text-primary font-bold">Calculated Weight:</span>
-                <span className="font-bold text-primary">{item.calculated_weight?.toLocaleString()} KG</span>
+                <span className="font-bold text-text-primary">{item.bundle_quantity} Bundles</span>
               </div>
             </div>
           ) : (

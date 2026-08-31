@@ -34,6 +34,8 @@ export function TruckDetailsSection({
         {form.is_new_truck_type ? (
           <div className="flex flex-col gap-2">
             <Input
+              id="truck_type"
+              name="truck_type"
               label="New Truck Type Name *"
               placeholder="e.g. 24 Ft Open Body, Modular Trailer"
               value={form.truck_type}
@@ -54,6 +56,8 @@ export function TruckDetailsSection({
         ) : (
           <div className="flex flex-col gap-2">
             <Select
+              id="truck_type"
+              name="truck_type"
               label="Truck Type *"
               placeholder="Select Truck Type"
               value={form.truck_type_id?.toString() || ''}
@@ -82,6 +86,8 @@ export function TruckDetailsSection({
         )}
 
         <Input
+          id="truck_number_plate"
+          name="truck_number_plate"
           label="Truck Number Plate *"
           placeholder="e.g. MH-12-AB-1234"
           value={form.truck_number_plate}
@@ -91,6 +97,8 @@ export function TruckDetailsSection({
         />
 
         <Input
+          id="truck_capacity"
+          name="truck_capacity"
           label="Truck Capacity (Tons)"
           type="number"
           placeholder="e.g. 25"
@@ -100,6 +108,8 @@ export function TruckDetailsSection({
         />
 
         <Input
+          id="transporter_name"
+          name="transporter_name"
           label="Transporter Name *"
           placeholder="Enter transporter name"
           value={form.transporter_name}

@@ -335,6 +335,35 @@ This document logs the major architectural, feature, and design changes implemen
 - **Section 12 Booking Update Payload**: Updated `saveBooking()` in `bookingApi.ts` to include `truck_id: payload.id` in `POST /booking/customer/truck-request` when editing an existing booking. Updated `updateBooking(id, payload)` to delegate directly to `saveBooking({ ...payload, id })`.
 - **Cancellable Editability Guard**: Updated `BookingsPage.tsx` to strictly restrict rendering the "Edit Booking" button to bookings where `can_cancel` is `true`. Non-cancellable or loaded/cancelled bookings now render "View Details" (Read-Only mode).
 
+## Phase 46: Login Password Visibility Toggle
+- **Input Component Enhancement (`Input.tsx`)**: Added support for an optional `rightElement` prop rendered inside the input container.
+- **Eye & EyeOff Icons (`src/features/auth/components/Icons.tsx`)**: Created reusable SVG icon components for password visibility states with consistent 2px stroke width matching the design system.
+- **Login Password Toggle (`LoginPage.tsx`)**: Added stateful `showPassword` toggle button inside the password input field allowing users to toggle between obscured and visible password text with accessible `aria-label` tags and interactive hover/focus styling.
+
+## Phase 47: Customer Bookings Search & Expandable Date Filter
+- **Date Filter Calendar Component (`DateFilterCalendar.tsx`)**: Created a custom interactive mobile-friendly calendar component at `src/features/bookings/components/DateFilterCalendar.tsx` featuring month navigation, days grid, today indicators, activity dots highlighting dates with active bookings, and quick actions ("Today", "Yesterday", "Clear", "Done").
+- **Search Bar Integration (`BookingsPage.tsx`)**: Added a search bar filtering across booking reference, customer name, pickup warehouse, truck number plate, truck type, and status state labels in real time.
+- **Calendar Filter Button & Popover**: Placed an expandable calendar button on the right side of the search bar. When toggled, it smoothly reveals the calendar picker to filter bookings by creation date.
+- **Active Filter Chips & Clear Actions**: Rendered dismissible badge chips for active date and search query filters, along with a "Clear all" action and friendly empty state views when no matching records are found.
+
+## Phase 48: Create Booking Step 1 Validation Missing Field Scroll Focus
+- **Form Field Identity Alignment**: Added `id` and `name` attributes to all inputs and select dropdowns across `PickupSection.tsx`, `DeliverySection.tsx`, `TruckDetailsSection.tsx`, and `DriverDetailsSection.tsx`.
+- **Targeted Scroll & Focus on Validation Failure (`useCreateBookingStep1.ts`)**: Updated validation and proceed handlers to determine the first missing required field in document order and smoothly scroll the viewport directly to that field with sticky header offset calculation and auto-focus instead of scrolling to the top of the page.
+
+## Phase 49: Step 2 Single Bundle Option & Default Weight Selection
+- **Default Ordering Mode by Weight (`ProductConfigSheet.tsx`)**: Updated product configuration initialization so that "Custom Weight" (`useBundle: false`) is the default selection instead of bundle mode.
+- **Simplified Single Bundle Option**: Consolidated bundle options across mock definitions, `useCreateBookingStep2.ts`, and `constants.ts` into a single option (`Standard Bundle`).
+- **Removed Bundle Weight Displays**: Removed preset weight references, calculated weight calculations, and summary weight boxes from the bundle configuration sheet and selected product cards.
+
+## Phase 50: Bookings Card Customer & Full Warehouse Pickup Address Display
+- **Customer Name Resolution (`bookingApi.ts`)**: Resolved `customer_name` directly from the customer object and master data without falling back to ship-to address strings.
+- **Full Pickup Warehouse Address Integration**: Mapped full warehouse address (`pickup_warehouse_address`) from API and cached master data warehouses.
+- **Bookings Card Update (`BookingsPage.tsx`)**: Updated booking cards to cleanly render the customer's name under "Customer" and the full warehouse address under "Pickup".
+
+
+
+
+
 
 
 

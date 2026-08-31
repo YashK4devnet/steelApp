@@ -10,8 +10,7 @@ const customDIAProduct: DIAProduct = {
   dia_weight_type: 'Custom',
   has_bundles: true,
   bundles: [
-    { id: 101, name: 'Standard Bundle (1T)', items: ['Standard bundle x1'], preset_weight_kg: 1000 },
-    { id: 102, name: 'Heavy Bundle (2T)', items: ['Heavy bundle x1'], preset_weight_kg: 2000 },
+    { id: 101, name: 'Standard Bundle', items: ['Standard bundle'], preset_weight_kg: 0 },
   ],
   uom_options: ['TON', 'KG'],
 };

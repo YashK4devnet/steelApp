@@ -104,6 +104,7 @@ export interface Booking {
   created_date: string;
   customer_name: string;
   pickup_warehouse_name: string;
+  pickup_warehouse_address?: string;
   is_truck_loaded: boolean;
   status?: BookingStatus;
   state_label?: string;

@@ -145,7 +145,33 @@ export function useCreateBookingStep1() {
     }
   };
 
-  const validate = (): boolean => {
+  const scrollToField = (fieldName: string) => {
+    setTimeout(() => {
+      const el =
+        document.getElementById(fieldName) ||
+        document.querySelector(`[name="${fieldName}"]`) ||
+        document.querySelector(`[data-field="${fieldName}"]`);
+
+      if (el) {
+        // Offset for safe area + sticky header breathing room
+        const headerOffset = 130;
+        const elementPosition = el.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+        window.scrollTo({
+          top: Math.max(0, offsetPosition),
+          behavior: 'smooth',
+        });
+
+        // Focus the input/select element if supported
+        if ('focus' in el && typeof (el as HTMLElement).focus === 'function') {
+          (el as HTMLElement).focus({ preventScroll: true });
+        }
+      }
+    }, 60);
+  };
+
+  const validate = (): { isValid: boolean; firstErrorField: string | null } => {
     const newErrors: Record<string, string> = {};
 
     if (!form.pickup_warehouse_id) newErrors.pickup_warehouse_id = 'Pickup warehouse is required';
@@ -171,7 +197,24 @@ export function useCreateBookingStep1() {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const FIELD_ORDER = [
+      'pickup_warehouse_id',
+      'ship_to_address_id',
+      'bill_to_address_id',
+      'truck_type',
+      'truck_number_plate',
+      'transporter_name',
+      'driver_name',
+      'driver_contact',
+    ];
+
+    const firstError = FIELD_ORDER.find((f) => newErrors[f]) || Object.keys(newErrors)[0] || null;
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      firstErrorField: firstError,
+    };
   };
 
   const handleProceed = () => {
@@ -185,15 +228,17 @@ export function useCreateBookingStep1() {
       return;
     }
 
-    if (validate()) {
+    const { isValid, firstErrorField } = validate();
+
+    if (isValid) {
       const target = bookingId ? `/bookings/edit/${bookingId}/step2` : '/bookings/new/step2';
       const navState: Step1LocationState = {
         step1Data: { ...form, id: bookingId },
         selectedProducts,
       };
       navigate(target, { state: navState });
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (firstErrorField) {
+      scrollToField(firstErrorField);
     }
   };
 

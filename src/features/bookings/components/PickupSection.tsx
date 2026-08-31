@@ -23,6 +23,8 @@ export function PickupSection({
     <Accordion title="Pickup Details" defaultExpanded={true}>
       <div className="flex flex-col gap-5 pb-2">
         <Select
+          id="pickup_warehouse_id"
+          name="pickup_warehouse_id"
           label="Pickup Warehouse *"
           placeholder="Select Warehouse"
           value={form.pickup_warehouse_id || ''}

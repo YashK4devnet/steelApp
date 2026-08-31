@@ -31,6 +31,8 @@ export function DeliverySection({
         />
 
         <Select
+          id="ship_to_address_id"
+          name="ship_to_address_id"
           label="Ship To Address *"
           placeholder="Select Ship To Address"
           value={form.ship_to_address_id || ''}
@@ -68,6 +70,8 @@ export function DeliverySection({
 
         {!form.bill_to_same_as_ship_to && (
           <Select
+            id="bill_to_address_id"
+            name="bill_to_address_id"
             label="Bill To Address *"
             placeholder="Select Bill To Address"
             value={form.bill_to_address_id || ''}

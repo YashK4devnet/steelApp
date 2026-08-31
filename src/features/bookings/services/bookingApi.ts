@@ -163,6 +163,17 @@ export async function getBookings(): Promise<Booking[]> {
       '/booking/customer/trucks'
     );
     if (res && res.status === 'success' && Array.isArray(res.trucks)) {
+      let masterWarehouses: Warehouse[] = [];
+      let defaultCustomerName = 'Customer';
+      try {
+        const data = localStorage.getItem('masterData');
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed.warehouses)) masterWarehouses = parsed.warehouses;
+          if (parsed.customer_name) defaultCustomerName = parsed.customer_name;
+        }
+      } catch {}
+
       return res.trucks.map((t) => {
         let statusText: BookingStatus = BOOKING_STATUS.PENDING;
         if (t.state === 'loaded') {
@@ -171,12 +182,16 @@ export async function getBookings(): Promise<Booking[]> {
           statusText = BOOKING_STATUS.CANCELLED;
         }
 
+        const matchedWh = masterWarehouses.find((w) => w.id === t.warehouse_id || w.name === t.warehouse_name);
+        const fullWarehouseAddress = t.pickup_address || t.warehouse_address_name || (matchedWh ? matchedWh.contact_address : '') || t.warehouse_name || 'Warehouse';
+
         return {
           id: t.id,
           reference: `TRK-${t.id}`,
           created_date: t.create_date ? t.create_date.split(' ')[0] : new Date().toISOString().split('T')[0],
-          customer_name: t.ship_to_address || 'Customer',
+          customer_name: t.customer_name || defaultCustomerName,
           pickup_warehouse_name: t.warehouse_name || 'Warehouse',
+          pickup_warehouse_address: fullWarehouseAddress,
           is_truck_loaded: t.state === 'loaded' || t.is_reported || false,
           status: statusText,
           state_label: t.state_label || t.state,
@@ -199,6 +214,7 @@ export async function getBookings(): Promise<Booking[]> {
     created_date: b.created_date,
     customer_name: b.customer_name,
     pickup_warehouse_name: b.pickup_company_name,
+    pickup_warehouse_address: b.warehouse_address_name || b.pickup_company_name,
     is_truck_loaded: b.is_truck_loaded,
     status: b.status,
     products: b.products,
@@ -319,8 +335,7 @@ const mockProducts: DIAProduct[] = [
     dia_weight_type: 'Actual',
     has_bundles: true,
     bundles: [
-      { id: 101, name: 'Standard Bundle (1T)', items: ['Standard bundle x1'], preset_weight_kg: 1000 },
-      { id: 102, name: 'Heavy Bundle (2T)', items: ['Heavy bundle x1'], preset_weight_kg: 2000 },
+      { id: 101, name: 'Standard Bundle', items: ['Standard bundle'], preset_weight_kg: 0 },
     ],
     uom_options: ['TON', 'KG'],
   },
@@ -331,8 +346,7 @@ const mockProducts: DIAProduct[] = [
     dia_weight_type: 'Theoretical',
     has_bundles: true,
     bundles: [
-      { id: 201, name: 'Standard Bundle (1T)', items: ['Standard bundle x1'], preset_weight_kg: 1000 },
-      { id: 202, name: 'Heavy Bundle (2T)', items: ['Heavy bundle x1'], preset_weight_kg: 2000 },
+      { id: 201, name: 'Standard Bundle', items: ['Standard bundle'], preset_weight_kg: 0 },
     ],
     uom_options: ['TON', 'KG'],
   }

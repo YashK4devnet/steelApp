@@ -29,8 +29,8 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
   const [masterShapes, setMasterShapes] = useState<ShapeOption[]>([]);
   const [masterWeightTypes, setMasterWeightTypes] = useState<WeightTypeOption[]>([]);
 
-  // Toggle for bundle vs custom weight
-  const [useBundle, setUseBundle] = useState<boolean>(true);
+  // Toggle for bundle vs custom weight (defaults to false = by weight)
+  const [useBundle, setUseBundle] = useState<boolean>(false);
   
   // Configuration dropdown states
   const [dia, setDia] = useState<string>('12');
@@ -82,7 +82,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setUomId(initialData.uom_id);
         setSelectedBundleId(initialData.selected_bundle_id || product.bundles?.[0]?.id || null);
         setBundleQuantity(initialData.bundle_quantity || 1);
-        setUseBundle(product.has_bundles && initialData.order_type === 'bundle');
+        setUseBundle(initialData.order_type === 'bundle');
         setDia(initialData.dia || '12');
         setShape(initialData.shape || 'Round');
         setShapeId(initialData.shape_id || 1);
@@ -94,7 +94,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setUomId(undefined);
         setSelectedBundleId(product.bundles?.[0]?.id || null);
         setBundleQuantity(1);
-        setUseBundle(product.has_bundles);
+        setUseBundle(false);
         setDia('12');
         setShape('Round');
         setShapeId(1);
@@ -170,10 +170,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         setError('Quantity must be greater than 0');
         return;
       }
-      
-      const selectedBundle = product.bundles?.find(b => b.id === selectedBundleId);
-      const calculatedWeight = selectedBundle ? selectedBundle.preset_weight_kg * bundleQuantity : 0;
-      
+
       onSave({
         local_id: initialData?.local_id || Date.now().toString(),
         product,
@@ -187,7 +184,6 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
         order_type: 'bundle',
         selected_bundle_id: selectedBundleId,
         bundle_quantity: bundleQuantity,
-        calculated_weight: calculatedWeight
       });
       
     } else {
@@ -218,9 +214,6 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
     
     handleClose();
   };
-
-  const activeBundle = product.bundles?.find(b => b.id === selectedBundleId);
-  const calculatedWeight = activeBundle ? activeBundle.preset_weight_kg * bundleQuantity : 0;
 
   return (
     <div 
@@ -299,20 +292,6 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
                   options={product.bundles?.map(b => ({ value: b.id, label: b.name })) || []}
                 />
                 
-                {activeBundle && (
-                  <div className="bg-slate-50 rounded-[16px] p-4 border border-slate-900/5">
-                    <p className="text-[12px] font-semibold text-text-secondary mb-2 uppercase tracking-wider">Bundle Includes</p>
-                    <ul className="list-disc pl-4 text-[14px] text-text-primary font-medium space-y-1">
-                      {activeBundle.items.map((item, idx) => (
-                        <li key={idx}>{item}</li>
-                      ))}
-                    </ul>
-                    <p className="text-[13px] text-text-secondary mt-3">
-                      Preset Weight: <span className="font-bold text-text-primary">{activeBundle.preset_weight_kg} KG</span>
-                    </p>
-                  </div>
-                )}
-                
                 <div>
                   <label className="block text-[13px] font-bold text-text-primary mb-1.5 ml-1">
                     Quantity
@@ -336,11 +315,6 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
                       +
                     </button>
                   </div>
-                </div>
-
-                <div className="bg-primary/5 rounded-[16px] p-4 flex justify-between items-center border border-primary/10">
-                  <span className="text-[14px] font-semibold text-primary">Total Weight</span>
-                  <span className="text-[18px] font-bold text-primary">{calculatedWeight.toLocaleString()} KG</span>
                 </div>
               </>
             ) : (
