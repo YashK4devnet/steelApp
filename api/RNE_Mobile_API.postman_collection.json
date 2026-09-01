@@ -1,7 +1,7 @@
 {
     "info": {
         "name": "Mobile API",
-        "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Buyer, Admin).",
+        "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Transporter, Buyer, Admin).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -302,6 +302,101 @@
                     ]
                 },
                 "description": "Submit vendor bill and optional E-Way Bill for a loading truck. Reuses the same fields and validation as the Odoo loading flow."
+            },
+            "response": []
+        },
+        {
+            "name": "7. Transporter Loading Trucks",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.trucks && jsonData.trucks.length > 0) {",
+                            "    const truck = jsonData.trucks.find(t => !t.is_bilty_submitted) || jsonData.trucks[0];",
+                            "    pm.collectionVariables.set('transporter_truck_line_id', truck.id);",
+                            "    console.log('Transporter truck line ID set to:', truck.id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/transporter/loading",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "transporter",
+                        "loading"
+                    ]
+                },
+                "description": "Transporter-only. Fetch the logged-in transporter's trucks currently in Loading state. is_bilty_submitted indicates whether the related loading record already has a bilty document. The first truck without a bilty is saved to 'transporter_truck_line_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "8. Submit Bilty",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "body": {
+                    "mode": "formdata",
+                    "formdata": [
+                        {
+                            "key": "truck_line_id",
+                            "value": "{{transporter_truck_line_id}}",
+                            "type": "text"
+                        },
+                        {
+                            "key": "bilty_document",
+                            "type": "file",
+                            "src": ""
+                        },
+                        {
+                            "key": "bilty_document_name",
+                            "value": "bilty.pdf",
+                            "type": "text"
+                        }
+                    ]
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/trucks/submit_bilty",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "trucks",
+                        "submit_bilty"
+                    ]
+                },
+                "description": "Transporter-only. Upload the bilty document for a loading truck assigned to the logged-in transporter. Saves to transport.loading bilty_document and bilty_document_name."
             },
             "response": []
         },
@@ -676,6 +771,11 @@
             "key": "customer_truck_id",
             "value": "",
             "description": "Filled automatically by Submit Truck Request or Customer Trucks List."
+        },
+        {
+            "key": "transporter_truck_line_id",
+            "value": "",
+            "description": "Filled automatically by Transporter Loading Trucks (first truck without a submitted bilty)."
         }
     ]
 }

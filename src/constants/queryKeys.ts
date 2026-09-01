@@ -5,4 +5,5 @@ export const QUERY_KEYS = {
   loadedTrucks: ['trucks', 'loaded'] as const,
   loadingTrucks: ['trucks', 'loading'] as const,
   outgoingTrucks: ['trucks', 'outgoing'] as const,
+  transporterLoadingTrucks: ['transporter', 'loadingTrucks'] as const,
 } as const;

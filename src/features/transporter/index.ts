@@ -11,3 +11,4 @@ export * from './components/DriverAssignmentCard';
 export * from './pages/QuotesPage';
 export * from './pages/SubmitQuotePage';
 export * from './pages/AssignDriversPage';
+export * from './pages/TransporterLoadingTrucksPage';

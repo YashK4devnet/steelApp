@@ -1,4 +1,5 @@
-import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload } from '../types';
+import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload, TransporterLoadingTruck } from '../types';
+import { apiRequest } from '../../../lib/api';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -164,3 +165,16 @@ export async function saveQuoteDriverDetails(payload: SubmitDriverDetailsPayload
 
   return { success: true };
 }
+
+/**
+ * Fetches the logged-in transporter's trucks currently in Loading state.
+ * Endpoint: GET /booking/trucks/transporter/loading
+ */
+export async function getTransporterLoadingTrucks(): Promise<TransporterLoadingTruck[]> {
+  const res = await apiRequest<{ status: string; count?: number; trucks: TransporterLoadingTruck[] }>(
+    'GET',
+    '/booking/trucks/transporter/loading'
+  );
+  return res.trucks || [];
+}
+

@@ -17,6 +17,7 @@ import { CreateBookingStep2Page } from '../../features/bookings/pages/CreateBook
 import { QuotesPage } from '../../features/transporter/pages/QuotesPage';
 import { SubmitQuotePage } from '../../features/transporter/pages/SubmitQuotePage';
 import { AssignDriversPage } from '../../features/transporter/pages/AssignDriversPage';
+import { TransporterLoadingTrucksPage } from '../../features/transporter/pages/TransporterLoadingTrucksPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
@@ -43,9 +44,11 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/transporter/quotes': { level: 1, parent: '/dashboard' },
   '/transporter/quotes/submit': { level: 2, parent: '/transporter/quotes' },
   '/transporter/quotes/assign-drivers': { level: 2, parent: '/transporter/quotes' },
+  '/transporter/upload-bilty': { level: 1, parent: '/dashboard' },
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.startsWith('/transporter/upload-bilty')) return PAGE_LEVEL_MAP['/transporter/upload-bilty'];
   if (pathname.startsWith('/transporter/quotes/assign-drivers')) return PAGE_LEVEL_MAP['/transporter/quotes/assign-drivers'];
   if (pathname.startsWith('/transporter/quotes/submit')) return PAGE_LEVEL_MAP['/transporter/quotes/submit'];
   if (pathname.startsWith('/transporter/quotes')) return PAGE_LEVEL_MAP['/transporter/quotes'];
@@ -176,6 +179,7 @@ export function AppRouter() {
             <Route path="/transporter/quotes" element={<QuotesPage />} />
             <Route path="/transporter/quotes/submit/:id" element={<SubmitQuotePage />} />
             <Route path="/transporter/quotes/assign-drivers/:id" element={<AssignDriversPage />} />
+            <Route path="/transporter/upload-bilty" element={<TransporterLoadingTrucksPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
         </Route>

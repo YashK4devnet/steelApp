@@ -429,6 +429,26 @@ This document logs the major architectural, feature, and design changes implemen
 - **Truck Mutation Hooks (`useTruckMutations.ts`)**: Created `useSubmitVendorBill`, `useReportTruckArrival`, and `useReportOutgoingTruckArrival` with automatic query cache invalidation on `loadingTrucks`, `loadedTrucks`, and `outgoingTrucks`.
 - **Integrated Pages (`ReportTruckPage.tsx`, `ReportOutgoingTruckPage.tsx`, `SubmitVendorBillPage.tsx`)**: Replaced direct API invocations with mutation hooks, ensuring that list queries automatically refresh upon successful reporting/bill submission without stale state or manual reloads.
 
+## Phase 64: Removed Transporter Mock Login & Renamed to Upload Bilty
+- **Removed Development Mock Authentication (`AuthProvider.tsx`)**: Eliminated the temporary `transport/transport` credential intercept and mock logout bypass; transporter authentication now passes directly through the live backend API (`POST /booking/auth/login`) with role `"Transporter"`.
+- **Dashboard Action Renamed (`TransporterDashboard.tsx`)**: Renamed the primary dashboard tile from "Upload Bill Tick" to **"Upload Bilty"** and updated the navigation route to `/transporter/upload-bilty`.
+
+## Phase 65: Transporter Loading Trucks API & List View Integration (Section 7)
+- **Data Model & Service (`types.ts`, `transporterApi.ts`)**: Defined `TransporterLoadingTruck` interface and added `getTransporterLoadingTrucks()` calling `GET /booking/trucks/transporter/loading` with Bearer auth.
+- **Dedicated Loading Trucks Screen (`TransporterLoadingTrucksPage.tsx`)**: Implemented the Transporter Loading Trucks list at `/transporter/upload-bilty` with TanStack `useQuery` (`QUERY_KEYS.transporterLoadingTrucks`), pull-to-refresh, real-time search filtering, loading skeletons, and truck cards showing number plate, driver name, vehicle type, pickup address, delivery destination, and `is_bilty_submitted` status badges.
+- **Routing & Hierarchy (`router/index.tsx`)**: Registered `/transporter/upload-bilty` as a Level 1 route with parent `/dashboard`.
+
+## Phase 66: Client-Side Document & Image Compression System
+- **Compression Utility (`fileCompression.ts`)**: Created `compressImage` and `processDocumentFile` functions.
+  - **Images**: Automatically downscales high-resolution camera photos (e.g. 12MP–48MP) to max 1600px dimensions and encodes with 0.82 JPEG quality via HTML5 Canvas, shrinking 10MB+ photos to ~250KB–400KB with sharp readability.
+  - **PDF Documents**: Preserves full vector/text structure without artificial file size limits, directly converting to Base64.
+- **Integrated Across Upload Features**:
+  - `ImageUpload.tsx`: Camera photo captures automatically pass through `compressImage`.
+  - `SubmitVendorBillPage.tsx`: Invoices and E-Way bills process through `processDocumentFile` before API submission.
+
+
+
+
 
 
 

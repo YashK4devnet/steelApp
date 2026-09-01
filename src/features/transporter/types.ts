@@ -47,3 +47,23 @@ export interface SubmitDriverDetailsPayload {
   quote_id: number | string;
   truck_details: ProposedTruckDetail[];
 }
+
+export interface TransporterLoadingTruck {
+  id: number;
+  truck_type_id?: number;
+  truck_type: string;
+  truck_number_plate: string;
+  driver_name: string;
+  state: string; // 'loading'
+  is_bilty_submitted: boolean;
+  pickup_location_id?: number;
+  pickup_location_name: string;
+  delivery_address_id?: number;
+  delivery_address_name: string;
+}
+
+export interface SubmitBiltyPayload {
+  truck_line_id: number;
+  bilty_document: string; // Base64 or File
+  bilty_document_name?: string;
+}

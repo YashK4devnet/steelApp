@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { compressImage } from '../../../lib/fileCompression';
 
 interface ImageUploadProps {
   label: string;
@@ -35,16 +36,22 @@ export function ImageUpload({ label, onImageSelected, required = false }: ImageU
 
     try {
       const image = await Camera.getPhoto({
-        quality: 70, // Reduced quality to avoid huge file sizes
-        width: 1024, // Resize the image width to 1024px maximum
+        quality: 85,
         allowEditing: false,
         resultType: CameraResultType.DataUrl,
-        source: CameraSource.Prompt, // Prompt user for Camera or Photos
+        source: CameraSource.Prompt,
       });
 
       if (image.dataUrl) {
-        setPreviewUrl(image.dataUrl);
-        onImageSelected(image.dataUrl);
+        // Run through client-side canvas compression to optimize dimensions & payload
+        const compressed = await compressImage(image.dataUrl, {
+          maxWidth: 1600,
+          maxHeight: 1600,
+          quality: 0.82,
+        });
+
+        setPreviewUrl(compressed.base64);
+        onImageSelected(compressed.base64);
       }
     } catch (error) {
       console.error('Error taking photo', error);

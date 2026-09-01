@@ -4,19 +4,7 @@ import { DocumentUpload } from '../components/DocumentUpload';
 import { useSubmitVendorBill } from '../hooks/useTruckMutations';
 import type { LoadingTruck, VendorBillFormState } from '../types';
 import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
-
-
-/**
- * Converts a File object into a Base64 Data URL string for backend API submission.
- */
-export function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-}
+import { processDocumentFile } from '../../../lib/fileCompression';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -123,16 +111,16 @@ export function SubmitVendorBillPage() {
     setSubmitting(true);
 
     try {
-      // 1. Convert uploaded vendor bill document to base64
-      const billDocBase64 = await fileToBase64(form.bill_document!);
+      // 1. Convert and smartly compress uploaded vendor bill document (PDFs pass through cleanly, images are compressed)
+      const processedBill = await processDocumentFile(form.bill_document!);
 
       // 2. Build backend API payload according to .agents/README.md Section 6
       const payload: any = {
         truck_line_id: form.truck_line_id,
         bill_number: form.bill_number.trim(),
         bill_date: form.bill_date,
-        bill_document: billDocBase64,
-        bill_document_name: form.bill_document_name || form.bill_document!.name || 'bill.pdf',
+        bill_document: processedBill.base64,
+        bill_document_name: form.bill_document_name || processedBill.fileName || 'bill.pdf',
         eway_bill_attached_with_bill: form.eway_bill_attached_with_bill
       };
 
@@ -142,8 +130,9 @@ export function SubmitVendorBillPage() {
           payload.eway_bill_number = form.eway_bill_number.trim();
         }
         if (form.eway_bill_document) {
-          payload.eway_bill_document = await fileToBase64(form.eway_bill_document);
-          payload.eway_bill_document_name = form.eway_bill_document_name || form.eway_bill_document.name || 'eway_bill.pdf';
+          const processedEway = await processDocumentFile(form.eway_bill_document);
+          payload.eway_bill_document = processedEway.base64;
+          payload.eway_bill_document_name = form.eway_bill_document_name || processedEway.fileName || 'eway_bill.pdf';
         }
       }
 

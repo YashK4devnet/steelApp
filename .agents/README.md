@@ -2,7 +2,7 @@
 
 This document describes the REST-style HTTP endpoints for the **RNE
 application**. There is one app: screens and data change by the logged-in
-user's **role** (for example Security, Seller / Vendor, Buyer, Admin).
+user's **role** (for example Security, Seller / Vendor, Transporter, Buyer, Admin).
 
 ## Authentication
 
@@ -475,7 +475,164 @@ curl -X POST "http://<odoo-host>/booking/trucks/submit_vendor_bill" \
 
 ---
 
-## 7. Outgoing Trucks
+## 7. Transporter Loading Trucks
+
+**Endpoint**
+
+```text
+GET /booking/trucks/transporter/loading
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Authorisation**
+
+* **Transporter users** (`group_role_transporter`) only.
+* Other roles receive `403 Forbidden` with `"Not authorized."`.
+
+**Behaviour**
+
+Returns the transporter's truck lines that are currently in `loading` state.
+
+`is_bilty_submitted` is `true` when the related `transport.loading` record
+(via vehicle allocation, `state = waiting_for_loading`) already has a
+`bilty_document` uploaded.
+
+**Response Data**
+
+| Field                    | Type    | Description                                              |
+| ------------------------ | ------- | -------------------------------------------------------- |
+| `id`                     | integer | Truck line record ID. Send this as `truck_line_id` when submitting the bilty. |
+| `truck_type_id`          | integer | ID of the truck type.                                    |
+| `truck_type`             | string  | Display name of the truck type.                          |
+| `truck_number_plate`     | string  | Number plate of the truck.                               |
+| `driver_name`            | string  | Name of the driver.                                      |
+| `state`                  | string  | Current state of the truck line (`loading`).             |
+| `is_bilty_submitted`     | boolean | `true` if the related loading record already has a bilty document. |
+| `pickup_location_id`     | integer | ID of the pickup location.                               |
+| `pickup_location_name`   | string  | Full contact address of the pickup location.             |
+| `delivery_address_id`    | integer | ID of the delivery location.                             |
+| `delivery_address_name`  | string  | Full contact address of the delivery location.           |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/trucks/transporter/loading" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 1,
+  "trucks": [
+    {
+      "id": 201,
+      "truck_type_id": 7,
+      "truck_type": "20 Ft Container",
+      "truck_number_plate": "KA-01-AB-1234",
+      "driver_name": "Rajesh Kumar",
+      "state": "loading",
+      "is_bilty_submitted": false,
+      "pickup_location_id": 32,
+      "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
+      "delivery_address_id": 45,
+      "delivery_address_name": "Main Warehouse, 123 Industrial Area, Bangalore 560001"
+    }
+  ]
+}
+```
+
+**Example Error Response** (`403 Forbidden`)
+
+```json
+{
+  "status": "error",
+  "message": "Not authorized."
+}
+```
+
+---
+
+## 8. Submit Bilty
+
+**Endpoint**
+
+```text
+POST /booking/trucks/submit_bilty
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Description**
+
+Allows a Transporter to upload the bilty document for a loading truck. The
+file is written to `bilty_document` and `bilty_document_name` on the related
+`transport.loading` record (the same fields used by the Odoo UI).
+
+**Authorisation**
+
+* **Transporter users** only. Other roles receive `403 Forbidden`.
+* The truck line's `transporter_id` must match the logged-in user's
+  `partner_id`. Otherwise the API returns `403` with
+  `"This truck is not assigned to you."`.
+
+**Request Format**
+
+The recommended upload format is `multipart/form-data`:
+
+| Field                  | Type    | Required | Description                                                                 |
+| ---------------------- | ------- | -------- | --------------------------------------------------------------------------- |
+| `truck_line_id`        | integer | Yes      | ID of the `transport.booking.truck.line` record.                            |
+| `bilty_document`       | file    | Yes      | Bilty PDF or image (maps to `bilty_document`).                              |
+| `bilty_document_name`  | string  | No       | Optional file name. Defaults to the uploaded file name or `bilty.pdf`.      |
+
+The truck must be in `loading` state and must have an active loading record
+(`transport.loading` in `waiting_for_loading` via vehicle allocation).
+
+Files can also be sent as base64 strings in JSON.
+
+**Example Request (multipart)**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/trucks/submit_bilty" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -F "truck_line_id=201" \
+  -F "bilty_document=@/path/to/bilty.pdf" \
+  -F "bilty_document_name=bilty.pdf"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Bilty document submitted successfully.",
+  "loading_id": 55,
+  "truck_line_id": 201
+}
+```
+
+**Example Error Response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "Bilty document is required."
+}
+```
+
+---
+
+## 9. Outgoing Trucks
 
 **Endpoint**
 
@@ -542,7 +699,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/outgoing" \
 
 ---
 
-## 8. Outgoing Truck Reporting
+## 10. Outgoing Truck Reporting
 
 **Endpoint**
 
@@ -606,7 +763,7 @@ Admin, Security, Seller, and other roles receive `403 Forbidden`.
 
 ---
 
-## 9. Customer Master Data
+## 11. Customer Master Data
 
 Use this API to fill the dropdowns on the **create truck request** screen
 (warehouse, ship-to, bill-to, UOM, truck type).
@@ -708,7 +865,7 @@ curl -X GET "http://<odoo-host>/booking/customer/master-data" \
 
 ---
 
-## 10. Customer Products
+## 12. Customer Products
 
 Use this API to list products the customer can pick for DIA / line details
 on the truck request screen.
@@ -818,7 +975,7 @@ curl -X GET "http://<odoo-host>/booking/customer/products" \
 
 ---
 
-## 11. Customer Shapes and Weight Types
+## 13. Customer Shapes and Weight Types
 
 Use this API to list product shapes and weight types for filters or DIA
 fields on the truck request screen.
@@ -884,7 +1041,7 @@ curl -X GET "http://<odoo-host>/booking/customer/shapes-weight-types" \
 
 ---
 
-## 12. Submit Truck Request
+## 14. Submit Truck Request
 
 Use this API when the customer submits a new **Truck From Warehouse** request, or updates an existing booking in `draft`, `accepted`, or `rejected`.
 
@@ -1018,7 +1175,7 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
 
 ---
 
-## 13. Customer Trucks List
+## 15. Customer Trucks List
 
 Returns the logged-in customer's truck bookings for the mobile list screen.
 
@@ -1111,7 +1268,7 @@ curl -X GET "http://<odoo-host>/booking/customer/trucks" \
 
 ---
 
-## 14. Customer Truck Details
+## 16. Customer Truck Details
 
 Returns the full booking that the customer submitted through `POST /booking/customer/truck-request`, including DIA details.
 
@@ -1214,7 +1371,7 @@ curl -X GET "http://<odoo-host>/booking/customer/trucks/55" \
 
 ---
 
-## 15. Cancel Customer Truck
+## 17. Cancel Customer Truck
 
 Cancels the customer's own truck booking.
 
@@ -1292,7 +1449,13 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
      header to list trucks in `loading` state assigned to your pickup location.
    - Call `POST /booking/trucks/submit_vendor_bill` with the selected truck line
      ID, bill number, bill date, bill document, and E-Way Bill details.
-4. **Buyer flow** (same RNE app; shown when login `role` is Buyer). Customer App APIs are Buyer-only.
+4. **Transporter flow** (shown when login `role` is Transporter)
+   - Call `GET /booking/trucks/transporter/loading` to list the transporter's
+     trucks currently in `loading` state. Use `is_bilty_submitted` to show
+     whether the bilty is already uploaded.
+   - Call `POST /booking/trucks/submit_bilty` with the selected `truck_line_id`
+     and `bilty_document`.
+5. **Buyer flow** (same RNE app; shown when login `role` is Buyer). Customer App APIs are Buyer-only.
    - Call `GET /booking/customer/master-data` to fill warehouse, ship-to, bill-to, UOM, and truck type dropdowns.
    - Call `GET /booking/customer/products` to list products, images, and bundles for DIA selection (for a later step).
    - Call `GET /booking/customer/shapes-weight-types` for shape and weight-type lists.
@@ -1300,7 +1463,7 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
    - Call `GET /booking/customer/trucks` to list the customer's bookings.
    - Call `GET /booking/customer/trucks/<truck_id>` to show full details (including DIA lines).
    - Call `POST /booking/customer/trucks/<truck_id>/cancel` when `can_cancel` is `true`.
-5. Call `POST /booking/auth/logout` with the token header when the user signs
+6. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.
 
