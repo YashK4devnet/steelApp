@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getTransporterLoadingTrucks } from '../services/transporterApi';
+import type { TransporterLoadingTruck } from '../types';
+import { UploadBiltyModal } from '../components/UploadBiltyModal';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
 
@@ -64,6 +66,7 @@ function TruckSkeleton() {
 export function TransporterLoadingTrucksPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTruckForBilty, setSelectedTruckForBilty] = useState<TransporterLoadingTruck | null>(null);
 
   const { data: trucks = [], isLoading: loading, isError, error, refetch } = useQuery({
     queryKey: QUERY_KEYS.transporterLoadingTrucks,
@@ -186,6 +189,7 @@ export function TransporterLoadingTrucksPage() {
                   <button 
                     type="button"
                     disabled={truck.is_bilty_submitted}
+                    onClick={() => !truck.is_bilty_submitted && setSelectedTruckForBilty(truck)}
                     className={`w-full sm:w-auto px-6 py-2.5 rounded-[12px] font-semibold text-[14px] transition-all ${
                       truck.is_bilty_submitted 
                         ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none' 
@@ -200,6 +204,13 @@ export function TransporterLoadingTrucksPage() {
           )}
         </main>
       </PullToRefresh>
+
+      {/* Upload Bilty Bottom Sheet Modal */}
+      <UploadBiltyModal 
+        isOpen={!!selectedTruckForBilty}
+        truck={selectedTruckForBilty}
+        onClose={() => setSelectedTruckForBilty(null)}
+      />
     </div>
   );
 }

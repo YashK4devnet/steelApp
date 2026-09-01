@@ -1,4 +1,4 @@
-import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload, TransporterLoadingTruck } from '../types';
+import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload, TransporterLoadingTruck, SubmitBiltyPayload } from '../types';
 import { apiRequest } from '../../../lib/api';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -177,4 +177,17 @@ export async function getTransporterLoadingTrucks(): Promise<TransporterLoadingT
   );
   return res.trucks || [];
 }
+
+/**
+ * Uploads a bilty document for a loading truck assigned to the logged-in transporter.
+ * Endpoint: POST /booking/trucks/submit_bilty
+ */
+export async function submitBilty(payload: SubmitBiltyPayload): Promise<{ status: string; message?: string; loading_id?: number; truck_line_id?: number }> {
+  return apiRequest<{ status: string; message?: string; loading_id?: number; truck_line_id?: number }>(
+    'POST',
+    '/booking/trucks/submit_bilty',
+    payload
+  );
+}
+
 

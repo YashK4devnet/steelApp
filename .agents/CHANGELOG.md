@@ -446,6 +446,23 @@ This document logs the major architectural, feature, and design changes implemen
   - `ImageUpload.tsx`: Camera photo captures automatically pass through `compressImage`.
   - `SubmitVendorBillPage.tsx`: Invoices and E-Way bills process through `processDocumentFile` before API submission.
 
+## Phase 67: Submit Bilty Bottom Sheet Modal & TanStack Mutation Integration (Section 8)
+- **Bilty Upload Service & Mutation (`transporterApi.ts`, `useBiltyMutations.ts`)**: Added `submitBilty()` endpoint calling `POST /booking/trucks/submit_bilty` with payload (`truck_line_id`, `bilty_document`, `bilty_document_name`) and created `useSubmitBilty()` with automatic cache invalidation on `QUERY_KEYS.transporterLoadingTrucks`.
+- **Streamlined Upload Modal (`UploadBiltyModal.tsx`)**: Created a bottom sheet modal that allows transporters to select and upload bilty documents (PDFs and compressed images) directly without leaving the list page.
+- **List Page Integration (`TransporterLoadingTrucksPage.tsx`)**: Wired the "Submit Bilty" action button to launch the modal with the selected truck context, providing instant optimistic/cache updates and success toasts upon completion.
+
+## Phase 68: Dynamic Navbar Concealment for Modal Overlays
+- **Overlay State Propagation (`MainLayout.tsx`)**: Added `toggle-modal-overlay` event handling to `MainLayout`'s `hideBottomNav` controller, ensuring the bottom navigation pill completely unmounts when any full-screen overlay or bottom sheet modal (like `UploadBiltyModal`) is active.
+- **Modal Layering & Safe Area (`UploadBiltyModal.tsx`)**: Upgraded modal z-index to `z-[100]` and added mobile safe-area bottom padding (`pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)]`) for unhindered button interactions.
+
+## Phase 69: Direct Camera Photo Capture in Upload Bilty Modal
+- **Camera Integration (`UploadBiltyModal.tsx`)**: Integrated `@capacitor/camera` `Camera.getPhoto` directly inside the modal with dual action choices:
+  - **Take Photo**: Launches device camera directly to photograph physical bilty receipts, automatically running photos through `compressImage` to produce compact ~250KB–400KB Base64 data URLs.
+  - **Choose Document**: Opens the system file selector for PDF documents and saved images.
+
+
+
+
 
 
 
