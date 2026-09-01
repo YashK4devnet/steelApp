@@ -460,6 +460,13 @@ This document logs the major architectural, feature, and design changes implemen
   - **Take Photo**: Launches device camera directly to photograph physical bilty receipts, automatically running photos through `compressImage` to produce compact ~250KB–400KB Base64 data URLs.
   - **Choose Document**: Opens the system file selector for PDF documents and saved images.
 
+## Phase 70: Accurate 401 Error Categorization for Login vs. Session Expiry
+- **Endpoint-Aware 401 Handling (`api.ts`)**: Updated `apiRequest` to differentiate between login credential rejections and authenticated session timeouts:
+  - When `401` occurs on `/booking/auth/login`, it extracts the server's message (`response.data?.message || 'Invalid username or password'`), suppresses the `auth-expired` modal event, and passes the error directly to the login form.
+  - When `401` occurs on authenticated endpoints, it dispatches `auth-expired` and triggers the session expired modal.
+- **Login Form Error Display (`LoginPage.tsx`)**: Displayed server-provided error messages directly within the inline error banner.
+
+
 
 
 

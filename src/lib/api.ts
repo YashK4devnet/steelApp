@@ -61,17 +61,28 @@ export async function apiRequest<T = any>(
     window.dispatchEvent(new CustomEvent('network-error', { detail: { isOffline: false } }));
     
     if (response.status === 401) {
+      const isLoginEndpoint = endpoint.includes('/auth/login');
+      const serverMessage = response.data?.message;
+
+      // 1. If 401 occurs during Login attempt -> Invalid credentials (not an expired session)
+      if (isLoginEndpoint) {
+        const errorMsg = serverMessage || 'Invalid username or password.';
+        throw new Error(errorMsg);
+      }
+
+      // 2. If 401 occurs during an authenticated session -> Token/Session has expired
       window.dispatchEvent(new CustomEvent('auth-expired'));
       
+      const sessionMsg = serverMessage || 'Your session has expired. Please log in again.';
       if (!options?.silentError) {
         dispatchGlobalToast({
           type: 'error',
           title: 'Session Expired',
-          message: 'Your session has expired. Please log in again.',
+          message: sessionMsg,
         });
       }
 
-      throw new Error('Session expired. Please log in again.');
+      throw new Error(sessionMsg);
     }
 
     // Odoo API returns 200 OK but sometimes indicates error in body

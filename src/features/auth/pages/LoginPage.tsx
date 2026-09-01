@@ -36,8 +36,9 @@ export function LoginPage() {
 
     try {
       await login(email, password);
-    } catch (err) {
-      setError('Invalid credentials. Please try again.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Invalid credentials. Please try again.';
+      setError(msg);
       setIsLoading(false);
     }
   };
