@@ -425,6 +425,11 @@ This document logs the major architectural, feature, and design changes implemen
   - Truck Arrival Reports (`ReportTruckPage.tsx`, `ReportOutgoingTruckPage.tsx`)
   - Transporter Quote & Driver Submissions (`useSubmitQuote.ts`, `useAssignDrivers.ts`)
 
+## Phase 63: Standardized TanStack Query Truck Mutations & Automatic Cache Invalidation
+- **Truck Mutation Hooks (`useTruckMutations.ts`)**: Created `useSubmitVendorBill`, `useReportTruckArrival`, and `useReportOutgoingTruckArrival` with automatic query cache invalidation on `loadingTrucks`, `loadedTrucks`, and `outgoingTrucks`.
+- **Integrated Pages (`ReportTruckPage.tsx`, `ReportOutgoingTruckPage.tsx`, `SubmitVendorBillPage.tsx`)**: Replaced direct API invocations with mutation hooks, ensuring that list queries automatically refresh upon successful reporting/bill submission without stale state or manual reloads.
+
+
 
 
 

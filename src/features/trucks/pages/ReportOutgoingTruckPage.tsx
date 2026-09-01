@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ImageUpload } from '../components/ImageUpload';
-import { reportOutgoingTruckArrival } from '../services/truckApi';
+import { useReportOutgoingTruckArrival } from '../hooks/useTruckMutations';
 import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 const ArrowLeftIcon = () => (
@@ -21,6 +21,7 @@ const CheckCircleIcon = () => (
 export function ReportOutgoingTruckPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const reportMutation = useReportOutgoingTruckArrival();
 
   // Reset scroll on mount
   useEffect(() => {
@@ -39,7 +40,6 @@ export function ReportOutgoingTruckPage() {
   const [image1, setImage1] = useState<string | undefined>();
   const [image2, setImage2] = useState<string | undefined>();
   const [image3, setImage3] = useState<string | undefined>();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
   const location = useLocation();
@@ -62,8 +62,6 @@ export function ReportOutgoingTruckPage() {
     }
     if (!id) return;
 
-    setIsSubmitting(true);
-
     try {
       const formattedTime = reportingDateTime.replace('T', ' ') + ':00';
       
@@ -76,7 +74,7 @@ export function ReportOutgoingTruckPage() {
       if (image2) payload.image_2 = image2;
       if (image3) payload.image_3 = image3;
 
-      await reportOutgoingTruckArrival(payload);
+      await reportMutation.mutateAsync(payload);
       
       setShowSuccess(true);
       dispatchGlobalToast({
@@ -94,8 +92,6 @@ export function ReportOutgoingTruckPage() {
     } catch {
       scrollToTop();
       // Error notifications are handled automatically by centralized apiRequest
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -187,14 +183,14 @@ export function ReportOutgoingTruckPage() {
             <div className="max-w-[1200px] mx-auto">
               <button 
                 type="submit"
-                disabled={isSubmitting || !image1}
+                disabled={reportMutation.isPending || !image1}
                 className={`w-full py-4 rounded-[16px] font-bold text-[16px] shadow-[0_4px_12px_rgba(10,46,99,0.15)] flex justify-center items-center transition-transform active:scale-[0.98] ${
-                  isSubmitting || !image1 
+                  reportMutation.isPending || !image1 
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' 
                     : 'bg-primary text-white hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)]'
                 }`}
               >
-                {isSubmitting ? (
+                {reportMutation.isPending ? (
                   <span className="flex items-center gap-2">
                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

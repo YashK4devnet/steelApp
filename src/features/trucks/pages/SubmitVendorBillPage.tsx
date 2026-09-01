@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { DocumentUpload } from '../components/DocumentUpload';
-import { submitVendorBill } from '../services/truckApi';
+import { useSubmitVendorBill } from '../hooks/useTruckMutations';
 import type { LoadingTruck, VendorBillFormState } from '../types';
 import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
@@ -46,6 +46,7 @@ export function SubmitVendorBillPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams<{ id: string }>();
+  const submitBillMutation = useSubmitVendorBill();
 
   // Extract truck info passed via location state or fallback
   const truck: LoadingTruck | undefined = location.state?.truck;
@@ -146,19 +147,8 @@ export function SubmitVendorBillPage() {
         }
       }
 
-      // 4. Send API Request POST /booking/trucks/submit_vendor_bill
-      try {
-        await submitVendorBill(payload);
-      } catch (err: any) {
-        console.warn('API POST /booking/trucks/submit_vendor_bill error:', err);
-        if (err.message && (err.message.includes('Failed to fetch') || err.message.includes('NetworkError') || err.message.includes('Network'))) {
-          throw new Error('Network error: Unable to connect to server. Please check your network connection and try again.');
-        } else if (err.message) {
-          throw new Error(err.message);
-        } else {
-          throw err;
-        }
-      }
+      // 4. Send API Request POST /booking/trucks/submit_vendor_bill via mutation
+      await submitBillMutation.mutateAsync(payload);
 
       setShowSuccess(true);
       dispatchGlobalToast({
