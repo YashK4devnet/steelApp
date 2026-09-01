@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { SelectedProduct, DIAProduct, Step1LocationState, SaveBookingPayload } from '../types';
 import { useSaveBooking } from './useBookingMutations';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 const customDIAProduct: DIAProduct = {
   id: 999,
@@ -54,7 +55,11 @@ export function useCreateBookingStep2() {
 
   const handleSaveOrder = async () => {
     if (selectedProducts.length === 0) {
-      alert('Please add at least one DIA request.');
+      dispatchGlobalToast({
+        type: 'warning',
+        title: 'Missing Materials',
+        message: 'Please add at least one DIA request before saving the order.',
+      });
       return;
     }
 
@@ -66,7 +71,11 @@ export function useCreateBookingStep2() {
     });
 
     if (invalidProduct) {
-      alert('Please configure the weight or bundle details for all entries.');
+      dispatchGlobalToast({
+        type: 'warning',
+        title: 'Incomplete Details',
+        message: 'Please configure the weight or bundle details for all entries.',
+      });
       return;
     }
 
@@ -83,11 +92,17 @@ export function useCreateBookingStep2() {
       const response = await saveMutation.mutateAsync({ id: bookingId, payload });
       if (response && (response.success || 'reference' in response)) {
         const ref = 'reference' in response ? response.reference : '';
-        alert(bookingId ? 'Booking updated successfully!' : `Booking created successfully! ${ref ? 'Reference: ' + ref : ''}`);
+        dispatchGlobalToast({
+          type: 'success',
+          title: bookingId ? 'Booking Updated' : 'Booking Created',
+          message: bookingId
+            ? 'Booking has been updated successfully.'
+            : `Booking created successfully! ${ref ? 'Ref: ' + ref : ''}`,
+        });
         navigate('/bookings', { replace: true });
       }
-    } catch (error) {
-      alert('Failed to save booking. Please try again.');
+    } catch {
+      // Error notifications are handled automatically by centralized apiRequest
     }
   };
 

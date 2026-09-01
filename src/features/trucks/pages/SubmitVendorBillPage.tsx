@@ -3,6 +3,7 @@ import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { DocumentUpload } from '../components/DocumentUpload';
 import { submitVendorBill } from '../services/truckApi';
 import type { LoadingTruck, VendorBillFormState } from '../types';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 
 /**
@@ -160,6 +161,11 @@ export function SubmitVendorBillPage() {
       }
 
       setShowSuccess(true);
+      dispatchGlobalToast({
+        type: 'success',
+        title: 'Bill Submitted',
+        message: 'Vendor bill details and documents have been recorded successfully.',
+      });
       setTimeout(() => {
         if (window.history.length > 1) {
           navigate(-1);

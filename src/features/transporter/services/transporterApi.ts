@@ -1,5 +1,4 @@
 import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload } from '../types';
-import { apiRequest } from '../../../lib/api';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -56,8 +55,8 @@ let memoryQuotes: QuoteItem[] = [
     proposed_rate: '₹2,450 / Ton',
     trucks_sent: '2 Trucks (12 Wheeler, 14 Wheeler)',
     truck_details: [
-      { id: 'truck-1', vehicle_type: '12 Wheeler (21-25 MT)', capacity_tons: 25, truck_number_plate: '', driver_name: '', driver_contact: '', driver_license_number: '' },
-      { id: 'truck-2', vehicle_type: '14 Wheeler (26-30 MT)', capacity_tons: 30, truck_number_plate: '', driver_name: '', driver_contact: '', driver_license_number: '' },
+      { id: 'truck-1', vehicle_type: '12 Wheeler (21-25 MT)', capacity_tons: 25, pricing_base: 'per_ton', proposed_rate: '2450', truck_number_plate: '', driver_name: '', driver_contact: '', driver_license_number: '' },
+      { id: 'truck-2', vehicle_type: '14 Wheeler (26-30 MT)', capacity_tons: 30, pricing_base: 'per_ton', proposed_rate: '2450', truck_number_plate: '', driver_name: '', driver_contact: '', driver_license_number: '' },
     ],
     drivers_assigned: false,
     status: 'accepted',
@@ -76,7 +75,7 @@ let memoryQuotes: QuoteItem[] = [
     proposed_rate: '₹2,200 / Ton',
     trucks_sent: '1 Truck (10 Wheeler)',
     truck_details: [
-      { id: 'truck-1', vehicle_type: '10 Wheeler (16-20 MT)', capacity_tons: 20 },
+      { id: 'truck-1', vehicle_type: '10 Wheeler (16-20 MT)', capacity_tons: 20, pricing_base: 'per_ton', proposed_rate: '2200' },
     ],
     drivers_assigned: false,
     status: 'pending',
@@ -101,43 +100,18 @@ let memoryQuotes: QuoteItem[] = [
 ];
 
 export async function getQuotes(): Promise<QuoteItem[]> {
-  try {
-    const res = await apiRequest<{ status: string; quotes?: QuoteItem[] }>('GET', '/booking/transporter/quotes');
-    if (res && res.status === 'success' && Array.isArray(res.quotes)) {
-      return res.quotes;
-    }
-  } catch {
-    // Fallback to memory quotes for development
-  }
-  await delay(200);
-  return memoryQuotes;
+  await delay(150);
+  return [...memoryQuotes];
 }
 
 export async function getQuoteById(id: number | string): Promise<QuoteItem | null> {
-  try {
-    const res = await apiRequest<{ status: string; quote?: QuoteItem }>('GET', `/booking/transporter/quotes/${id}`);
-    if (res && res.status === 'success' && res.quote) {
-      return res.quote;
-    }
-  } catch {
-    // Fallback
-  }
-  await delay(200);
+  await delay(150);
   const found = memoryQuotes.find((q) => q.id.toString() === id.toString());
-  return found || null;
+  return found ? { ...found } : null;
 }
 
 export async function submitQuoteProposal(payload: SubmitQuotePayload): Promise<{ success: boolean; message?: string }> {
-  try {
-    const res = await apiRequest<{ status: string; message?: string }>('POST', '/booking/transporter/quotes/submit', payload);
-    if (res && res.status === 'success') {
-      return { success: true };
-    }
-  } catch {
-    // Fallback simulation
-  }
-
-  await delay(400);
+  await delay(250);
   let formattedRate = '₹2,450 / Ton';
   if (payload.truck_details && payload.truck_details.length > 0) {
     const rates = payload.truck_details.map((t) => {
@@ -176,16 +150,7 @@ export async function submitQuoteProposal(payload: SubmitQuotePayload): Promise<
 }
 
 export async function saveQuoteDriverDetails(payload: SubmitDriverDetailsPayload): Promise<{ success: boolean; message?: string }> {
-  try {
-    const res = await apiRequest<{ status: string; message?: string }>('POST', `/booking/transporter/quotes/${payload.quote_id}/drivers`, payload);
-    if (res && res.status === 'success') {
-      return { success: true };
-    }
-  } catch {
-    // Fallback simulation
-  }
-
-  await delay(400);
+  await delay(250);
   memoryQuotes = memoryQuotes.map((q) => {
     if (q.id.toString() === payload.quote_id.toString()) {
       return {

@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { QuoteItem, ProposedTruckDetail } from '../types';
 import { getQuoteById, saveQuoteDriverDetails } from '../services/transporterApi';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 export function useAssignDrivers() {
   const { id } = useParams<{ id: string }>();
@@ -106,6 +107,11 @@ export function useAssignDrivers() {
       });
 
       if (res.success) {
+        dispatchGlobalToast({
+          type: 'success',
+          title: 'Driver Details Saved',
+          message: 'Driver and truck plate information has been saved successfully.',
+        });
         navigate('/transporter/quotes', { replace: true });
       } else {
         setSaveError(res.message || 'Failed to save driver details');

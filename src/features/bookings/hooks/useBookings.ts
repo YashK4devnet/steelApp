@@ -4,6 +4,7 @@ import type { Booking } from '../types';
 import { getBookings } from '../services/bookingApi';
 import { useCancelBooking } from './useBookingMutations';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 export function useBookings() {
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Loaded' | 'Cancelled'>('All');
@@ -25,9 +26,14 @@ export function useBookings() {
     if (!cancelModalBooking) return;
     try {
       await cancelMutation.mutateAsync(cancelModalBooking.id);
+      dispatchGlobalToast({
+        type: 'success',
+        title: 'Booking Cancelled',
+        message: `Booking ${cancelModalBooking.reference} has been cancelled successfully.`,
+      });
       setCancelModalBooking(null);
-    } catch (err) {
-      alert('Failed to cancel booking. Please try again.');
+    } catch {
+      // Handled centrally in apiRequest
     }
   };
 

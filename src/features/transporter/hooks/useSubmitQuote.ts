@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { QuoteItem, ProposedTruckDetail } from '../types';
 import { getQuoteById, submitQuoteProposal } from '../services/transporterApi';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 export function useSubmitQuote() {
   const { id } = useParams<{ id: string }>();
@@ -156,6 +157,11 @@ export function useSubmitQuote() {
 
       const res = await submitQuoteProposal(payload);
       if (res.success) {
+        dispatchGlobalToast({
+          type: 'success',
+          title: 'Quote Proposal Submitted',
+          message: 'Your quote proposal has been successfully submitted.',
+        });
         navigate('/transporter/quotes', { replace: true });
       } else {
         setSubmitError(res.message || 'Failed to submit quote');

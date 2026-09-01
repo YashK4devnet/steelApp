@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { ImageUpload } from '../components/ImageUpload';
 import { reportOutgoingTruckArrival } from '../services/truckApi';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -78,6 +79,11 @@ export function ReportOutgoingTruckPage() {
       await reportOutgoingTruckArrival(payload);
       
       setShowSuccess(true);
+      dispatchGlobalToast({
+        type: 'success',
+        title: 'Report Submitted',
+        message: 'The truck arrival has been successfully reported.',
+      });
       setTimeout(() => {
         if (window.history.length > 1) {
           navigate(-1);
@@ -85,9 +91,9 @@ export function ReportOutgoingTruckPage() {
           navigate('/trucks/outgoing', { replace: true });
         }
       }, 1500);
-    } catch (error: any) {
+    } catch {
       scrollToTop();
-      alert(error.message || 'Failed to submit report. Please try again.');
+      // Error notifications are handled automatically by centralized apiRequest
     } finally {
       setIsSubmitting(false);
     }

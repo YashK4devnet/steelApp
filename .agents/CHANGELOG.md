@@ -412,6 +412,21 @@ This document logs the major architectural, feature, and design changes implemen
 - **Removed Standalone Quote Rate Card (`SubmitQuotePage.tsx`)**: Removed the separate global rate section from the submit page; each truck card now encapsulates its own vehicle type, capacity, pricing base, and proposed rate.
 - **Multi-Truck Rate Aggregation & Validation (`useSubmitQuote.ts`, `transporterApi.ts`)**: Form submission validates that each allocated truck possesses a valid rate and pricing base, and computes formatted rate summaries for multi-truck proposals.
 
+## Phase 61: Standalone In-Memory Transporter State & Removed Quotes API Calls
+- **Removed Quotes API Endpoints (`transporterApi.ts`)**: Removed all remote HTTP `apiRequest` calls (`/booking/transporter/quotes*`), converting `getQuotes`, `getQuoteById`, `submitQuoteProposal`, and `saveQuoteDriverDetails` to operate directly on in-memory mock state with realistic async delays.
+
+## Phase 62: Centralized Toast Notification System & Automatic API Error Handling
+- **Centralized Toast System (`ToastProvider.tsx`, `App.tsx`)**: Created a root-level floating toast notification manager with slide-down animations, glassmorphism cards, status icons (Success, Error, Warning, Info), and automatic/manual dismiss capabilities. Supports both React context (`useToast()`) and decoupled non-React window event dispatching (`dispatchGlobalToast`).
+- **Universal API Error Interception (`api.ts`)**: Wired `apiRequest` to automatically intercept and display structured error toast notifications whenever network connections fail, sessions expire (401), or backend responses fail (status >= 400 or `{ status: 'error' }`), providing universal error feedback across every dashboard and feature.
+- **Integrated Action Success Feedback**: Integrated success toasts across key mutation flows:
+  - Create / Update Booking (`useCreateBookingStep2.ts`)
+  - Cancel Booking (`useBookings.ts`)
+  - Submit Vendor Bill (`SubmitVendorBillPage.tsx`)
+  - Truck Arrival Reports (`ReportTruckPage.tsx`, `ReportOutgoingTruckPage.tsx`)
+  - Transporter Quote & Driver Submissions (`useSubmitQuote.ts`, `useAssignDrivers.ts`)
+
+
+
 
 
 

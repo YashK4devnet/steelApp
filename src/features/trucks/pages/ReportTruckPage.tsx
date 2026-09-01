@@ -4,6 +4,7 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { ImageUpload } from '../components/ImageUpload';
 import { apiRequest } from '../../../lib/api';
+import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -80,6 +81,11 @@ export function ReportTruckPage() {
       await apiRequest('POST', '/booking/trucks/report', payload);
       
       setShowSuccess(true);
+      dispatchGlobalToast({
+        type: 'success',
+        title: 'Report Submitted',
+        message: 'The truck arrival has been successfully reported.',
+      });
       setTimeout(() => {
         if (window.history.length > 1) {
           navigate(-1);
@@ -87,9 +93,9 @@ export function ReportTruckPage() {
           navigate('/trucks/loaded', { replace: true });
         }
       }, 1500);
-    } catch (error: any) {
+    } catch {
       scrollToTop();
-      alert(error.message || 'Failed to submit report. Please try again.');
+      // Error notifications are handled automatically by centralized apiRequest
     } finally {
       setIsSubmitting(false);
     }
