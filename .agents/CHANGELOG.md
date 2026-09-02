@@ -503,6 +503,12 @@ This document logs the major architectural, feature, and design changes implemen
 - **Environment Template (`.env.example`)**: Added sanitized configuration template for developer onboarding.
 - **Untracked Local Environment (`git rm --cached .env`)**: Successfully untracked `.env` from Git index while safely preserving the local file on disk.
 
+## Phase 79: Customer Truck Bookings `can_edit` Integration
+- **Type Definitions (`types.ts`, `bookingApi.ts`)**: Added `can_edit?: boolean;` to `Booking` and `StoredBooking` types.
+- **API Mapping (`bookingApi.ts`)**: Extracted and mapped the `can_edit` boolean flag from the `/booking/customer/trucks` and `/booking/customer/trucks/<id>` responses.
+- **Dynamic Action & Badge Logic (`BookingsPage.tsx`)**: Updated booking card action buttons and status badges to respect `booking.can_edit`, conditionally rendering "Edit Booking" vs "View Details" based on server permissions.
+
+
 
 
 

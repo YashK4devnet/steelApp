@@ -109,6 +109,7 @@ export interface Booking {
   status?: BookingStatus;
   state_label?: string;
   can_cancel?: boolean;
+  can_edit?: boolean;
   is_seller_truck?: boolean;
   truck_type?: string;
   truck_number_plate?: string;

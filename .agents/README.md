@@ -574,7 +574,322 @@ curl -X GET "http://<odoo-host>/booking/transporter/quotations" \
 
 ---
 
-## 8. Transporter Loading Trucks
+## 8. Transporter Quotation Details
+
+**Endpoint**
+
+```text
+GET /booking/transporter/quotations/<quotation_line_id>
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Authorisation**
+
+* **Transporter users** (`group_role_transporter`) only.
+* Other roles receive `403 Forbidden` with `"Not authorized."`.
+* The quotation line must belong to the logged-in transporter. Cancelled quotations are not returned (`404`).
+
+**Behaviour**
+
+Returns the same quotation fields as `GET /booking/transporter/quotations`, plus the linked truck lines (`truck_lines`). Use the quotation line `id` from the list API.
+
+**`truck_lines[]`**
+
+| Field                        | Type    | Description                                              |
+| ---------------------------- | ------- | -------------------------------------------------------- |
+| `id`                         | integer | Truck line ID. Send this as `truck_line_id` on submit APIs. |
+| `proposal_rate`              | integer | Proposed rate for this truck. `0` if not yet submitted.  |
+| `proposed_truck_type_id`     | integer or `false` | Proposed truck type ID.                          |
+| `proposed_truck_type`        | string  | Proposed truck type name.                                |
+| `truck_number`               | string  | Truck number plate. Empty until driver details are submitted. |
+| `truck_capacity`             | number  | Truck capacity in tons.                                  |
+| `driver_name`                | string  | Driver name.                                             |
+| `driver_contact`             | string  | Driver contact.                                          |
+| `driver_license`             | string  | Driver license number.                                   |
+| `state`                      | string  | Truck line status.                                       |
+| `requested_truck_type_name`  | string  | Requested truck type from the booking.                   |
+
+**Truck line `state` values**
+
+| Value                           | Meaning                        |
+| ------------------------------- | ------------------------------ |
+| `waiting_team_approval`         | Waiting for Team Approval      |
+| `waiting_management_approval`   | Waiting for Management Approval |
+| `management_approved`           | Management Approved            |
+| `loading`                       | Loading                        |
+| `loaded`                        | Loaded                         |
+| `rejected`                      | Rejected                       |
+| `cancelled`                     | Cancelled                      |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/transporter/quotations/41" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "quotation": {
+    "id": 41,
+    "booking_number": "TB/2026/00012",
+    "pickup_location_id": 32,
+    "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
+    "delivery_address_id": 45,
+    "delivery_address_name": "Main Warehouse, 123 Industrial Area, Bangalore 560001",
+    "by_truck": true,
+    "asking_rate": 25000,
+    "requested_truck_count": 3,
+    "proposed_truck_count": 0,
+    "approved_truck_count": 0,
+    "state": "waiting_team_approval",
+    "truck_lines": [
+      {
+        "id": 201,
+        "proposal_rate": 0,
+        "proposed_truck_type_id": false,
+        "proposed_truck_type": "",
+        "truck_number": "",
+        "truck_capacity": 0.0,
+        "driver_name": "",
+        "driver_contact": "",
+        "driver_license": "",
+        "state": "waiting_team_approval",
+        "requested_truck_type_name": "20 Ft Container"
+      }
+    ]
+  }
+}
+```
+
+**Example Error Response** (`404 Not Found`)
+
+```json
+{
+  "status": "error",
+  "message": "Quotation not found."
+}
+```
+
+---
+
+## 9. Active Truck Types
+
+**Endpoint**
+
+```text
+GET /booking/transporter/truck-types
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Authorisation**
+
+* **Transporter users** only. Other roles receive `403 Forbidden`.
+
+**Behaviour**
+
+Returns active records from `truck.type`. Use this list when `new_truck_type` is `false` and send the selected `id` as `proposed_truck_type_id`.
+
+**Response Data**
+
+| Field  | Type    | Description        |
+| ------ | ------- | ------------------ |
+| `id`   | integer | Truck type ID.     |
+| `name` | string  | Truck type name.   |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/transporter/truck-types" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 2,
+  "truck_types": [
+    { "id": 7, "name": "20 Ft Container" },
+    { "id": 3, "name": "Open Body 16 Ton" }
+  ]
+}
+```
+
+---
+
+## 10. Submit Truck Quote Details
+
+**Endpoint**
+
+```text
+POST /booking/transporter/submit_truck_quote
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Description**
+
+Allows a Transporter to submit the initial quote for one truck line: proposed truck type, capacity in tons, and proposal rate. The truck line must belong to the logged-in transporter and must be in `waiting_team_approval`. After this, the existing Odoo approval flow continues for that truck line.
+
+**Authorisation**
+
+* **Transporter users** only. Other roles receive `403 Forbidden`.
+* The truck line's `transporter_id` must match the logged-in user's `partner_id`.
+
+**Request Format**
+
+Send JSON (`application/json`) or form fields.
+
+| Field                     | Type    | Required | Description |
+| ------------------------- | ------- | -------- | ----------- |
+| `truck_line_id`           | integer | Yes      | Truck line `id` from quotation details. |
+| `new_truck_type`          | boolean | No       | `false` — select an existing truck type. `true` — create from `truck_type_name`. Default `false`. |
+| `proposed_truck_type_id`  | integer | If `new_truck_type` is `false` | Active truck type `id` from `GET /booking/transporter/truck-types`. |
+| `truck_type_name`         | string  | If `new_truck_type` is `true` | New truck type name. If an active type with the same name already exists, it is reused. |
+| `truck_capacity`          | number  | Yes      | Truck capacity in **tons**. Uses the **Product Unit** decimal accuracy. |
+| `proposal_rate`           | integer | Yes      | Proposed rate. Whole numbers only (no decimals). |
+
+**Example Request (existing truck type)**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "truck_line_id": 201,
+    "new_truck_type": false,
+    "proposed_truck_type_id": 7,
+    "truck_capacity": 16.5,
+    "proposal_rate": 24000
+  }'
+```
+
+**Example Request (new truck type)**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "truck_line_id": 201,
+    "new_truck_type": true,
+    "truck_type_name": "32 Ft Container",
+    "truck_capacity": 20,
+    "proposal_rate": 24000
+  }'
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Truck quote details submitted successfully.",
+  "truck_line_id": 201,
+  "state": "waiting_team_approval"
+}
+```
+
+**Example Error Response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "Proposal Rate must be an integer."
+}
+```
+
+---
+
+## 11. Submit Truck and Driver Details
+
+**Endpoint**
+
+```text
+POST /booking/transporter/submit_truck_details
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Description**
+
+After the truck line is approved (`waiting_management_approval` or `management_approved`), the transporter submits the remaining truck and driver details.
+
+**Authorisation**
+
+* **Transporter users** only. Other roles receive `403 Forbidden`.
+* The truck line's `transporter_id` must match the logged-in user's `partner_id`.
+
+**Request Format**
+
+Send JSON (`application/json`) or form fields.
+
+| Field                   | Type    | Required | Description |
+| ----------------------- | ------- | -------- | ----------- |
+| `truck_line_id`         | integer | Yes      | Truck line `id` from quotation details. |
+| `truck_number`          | string  | Yes      | Truck number plate. `truck_number_plate` is also accepted. |
+| `driver_name`           | string  | Yes      | Driver name. |
+| `driver_contact`        | string  | Yes      | Driver contact. |
+| `driver_license_number` | string  | Yes      | Driver license number. `driver_licence_number` and `driver_license` are also accepted. |
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_details" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "truck_line_id": 201,
+    "truck_number": "KA-01-AB-1234",
+    "driver_name": "Rajesh Kumar",
+    "driver_contact": "+91 91234 56789",
+    "driver_license_number": "DL-1234567890"
+  }'
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Truck and driver details submitted successfully.",
+  "truck_line_id": 201,
+  "state": "management_approved"
+}
+```
+
+**Example Error Response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "Truck and driver details can only be submitted after the truck line is approved."
+}
+```
+
+---
+
+## 12. Transporter Loading Trucks
 
 **Endpoint**
 
@@ -658,7 +973,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/transporter/loading" \
 
 ---
 
-## 9. Submit Bilty
+## 13. Submit Bilty
 
 **Endpoint**
 
@@ -731,7 +1046,7 @@ curl -X POST "http://<odoo-host>/booking/trucks/submit_bilty" \
 
 ---
 
-## 10. Outgoing Trucks
+## 14. Outgoing Trucks
 
 **Endpoint**
 
@@ -798,7 +1113,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/outgoing" \
 
 ---
 
-## 11. Outgoing Truck Reporting
+## 15. Outgoing Truck Reporting
 
 **Endpoint**
 
@@ -862,7 +1177,7 @@ Admin, Security, Seller, and other roles receive `403 Forbidden`.
 
 ---
 
-## 12. Customer Master Data
+## 16. Customer Master Data
 
 Use this API to fill the dropdowns on the **create truck request** screen
 (warehouse, ship-to, bill-to, UOM, truck type).
@@ -964,7 +1279,7 @@ curl -X GET "http://<odoo-host>/booking/customer/master-data" \
 
 ---
 
-## 13. Customer Products
+## 17. Customer Products
 
 Use this API to list products the customer can pick for DIA / line details
 on the truck request screen.
@@ -1074,7 +1389,7 @@ curl -X GET "http://<odoo-host>/booking/customer/products" \
 
 ---
 
-## 14. Customer Shapes and Weight Types
+## 18. Customer Shapes and Weight Types
 
 Use this API to list product shapes and weight types for filters or DIA
 fields on the truck request screen.
@@ -1140,7 +1455,7 @@ curl -X GET "http://<odoo-host>/booking/customer/shapes-weight-types" \
 
 ---
 
-## 15. Submit Truck Request
+## 19. Submit Truck Request
 
 Use this API when the customer submits a new **Truck From Warehouse** request, or updates an existing booking in `draft`, `accepted`, or `rejected`.
 
@@ -1274,7 +1589,7 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
 
 ---
 
-## 16. Customer Trucks List
+## 20. Customer Trucks List
 
 Returns the logged-in customer's truck bookings for the mobile list screen.
 
@@ -1367,7 +1682,7 @@ curl -X GET "http://<odoo-host>/booking/customer/trucks" \
 
 ---
 
-## 17. Customer Truck Details
+## 21. Customer Truck Details
 
 Returns the full booking that the customer submitted through `POST /booking/customer/truck-request`, including DIA details.
 
@@ -1389,7 +1704,7 @@ Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidd
 
 **What it returns**
 
-The list fields from section 16, plus:
+The list fields from section 20, plus:
 
 | Field                   | Type    | Meaning |
 | ----------------------- | ------- | ------- |
@@ -1470,7 +1785,7 @@ curl -X GET "http://<odoo-host>/booking/customer/trucks/55" \
 
 ---
 
-## 18. Cancel Customer Truck
+## 22. Cancel Customer Truck
 
 Cancels the customer's own truck booking.
 
@@ -1552,6 +1867,15 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
    - Call `GET /booking/transporter/quotations` to list the transporter's
      quotation lines (excluding cancelled). Use the quotation line `id` when
      opening a quotation. Truck-line details are not returned in this list.
+   - Call `GET /booking/transporter/quotations/<quotation_line_id>` to show
+     quotation details with linked truck lines.
+   - Call `GET /booking/transporter/truck-types` to fill the proposed truck
+     type dropdown when submitting a truck quote.
+   - Call `POST /booking/transporter/submit_truck_quote` with `truck_line_id`,
+     proposed truck type, capacity (tons), and integer `proposal_rate`.
+   - After the truck line is approved, call
+     `POST /booking/transporter/submit_truck_details` with truck number and
+     driver details.
    - Call `GET /booking/trucks/transporter/loading` to list the transporter's
      trucks currently in `loading` state. Use `is_bilty_submitted` to show
      whether the bilty is already uploaded.

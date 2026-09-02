@@ -281,9 +281,9 @@ export function BookingsPage() {
         ) : (
           <div className="flex flex-col gap-4">
             {filteredBookings.map((booking) => {
-              const isCancelled = booking.status === BOOKING_STATUS.CANCELLED;
-              const isCancellable = booking.can_cancel ?? (!booking.is_truck_loaded && !isCancelled);
-              const canEdit = isCancellable && !isCancelled;
+              const isCancelled = booking.status === BOOKING_STATUS.CANCELLED || booking.state_label?.toLowerCase() === 'cancelled';
+              const isCancellable = (booking.can_cancel ?? (!booking.is_truck_loaded && !isCancelled)) && !isCancelled;
+              const canEdit = (booking.can_edit ?? isCancellable) && !isCancelled;
 
               return (
                 <div
@@ -299,7 +299,7 @@ export function BookingsPage() {
                       className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase ${
                         isCancelled
                           ? 'bg-red-50 text-red-700'
-                          : booking.is_truck_loaded || !canEdit
+                          : !canEdit
                             ? 'bg-blue-50 text-blue-700'
                             : 'bg-emerald-50 text-emerald-700'
                       }`}

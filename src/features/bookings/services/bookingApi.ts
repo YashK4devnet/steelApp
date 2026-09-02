@@ -26,6 +26,8 @@ export interface StoredBooking extends SaveBookingPayload {
   pickup_company_name: string;
   is_truck_loaded: boolean;
   status?: typeof BOOKING_STATUS[keyof typeof BOOKING_STATUS];
+  can_cancel?: boolean;
+  can_edit?: boolean;
 }
 
 export async function syncMasterData(): Promise<void> {
@@ -195,7 +197,8 @@ export async function getBookings(): Promise<Booking[]> {
           is_truck_loaded: t.state === 'loaded' || t.is_reported || false,
           status: statusText,
           state_label: t.state_label || t.state,
-          can_cancel: t.can_cancel ?? true,
+          can_cancel: t.can_cancel !== undefined ? Boolean(t.can_cancel) : (t.state !== 'loaded' && t.state !== 'cancelled'),
+          can_edit: t.can_edit !== undefined ? Boolean(t.can_edit) : (t.state !== 'loaded' && t.state !== 'cancelled'),
           is_seller_truck: t.is_seller_truck || false,
           truck_type: t.truck_type || '',
           truck_number_plate: t.truck_number_plate || '',
@@ -421,6 +424,8 @@ export async function getBookingById(id: number): Promise<StoredBooking | null> 
         driver_license_number: t.driver_licence_number || '',
         is_truck_loaded: t.state === 'loaded' || false,
         status: t.state === 'loaded' ? BOOKING_STATUS.LOADED : t.state === 'cancelled' ? BOOKING_STATUS.CANCELLED : BOOKING_STATUS.PENDING,
+        can_cancel: t.can_cancel !== undefined ? Boolean(t.can_cancel) : (t.state !== 'loaded' && t.state !== 'cancelled'),
+        can_edit: t.can_edit !== undefined ? Boolean(t.can_edit) : (t.state !== 'loaded' && t.state !== 'cancelled'),
         products: mappedProducts,
       };
     }

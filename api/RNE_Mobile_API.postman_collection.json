@@ -306,7 +306,214 @@
             "response": []
         },
         {
-            "name": "7. Transporter Loading Trucks",
+            "name": "7. Transporter Quotations",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.quotations && jsonData.quotations.length > 0) {",
+                            "    pm.collectionVariables.set('quotation_line_id', jsonData.quotations[0].id);",
+                            "    console.log('Quotation line ID set to:', jsonData.quotations[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/transporter/quotations",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "transporter",
+                        "quotations"
+                    ]
+                },
+                "description": "Transporter-only. List the logged-in transporter's quotation lines (excluding cancelled). Truck-line details are not included. The first quotation id is saved to 'quotation_line_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "8. Transporter Quotation Details",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.quotation && jsonData.quotation.truck_lines && jsonData.quotation.truck_lines.length > 0) {",
+                            "    pm.collectionVariables.set('quote_truck_line_id', jsonData.quotation.truck_lines[0].id);",
+                            "    console.log('Quote truck line ID set to:', jsonData.quotation.truck_lines[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/transporter/quotations/{{quotation_line_id}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "transporter",
+                        "quotations",
+                        "{{quotation_line_id}}"
+                    ]
+                },
+                "description": "Transporter-only. Full quotation details including linked truck lines. The first truck line id is saved to 'quote_truck_line_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "9. Active Truck Types",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.truck_types && jsonData.truck_types.length > 0) {",
+                            "    pm.collectionVariables.set('proposed_truck_type_id', jsonData.truck_types[0].id);",
+                            "    console.log('Proposed truck type ID set to:', jsonData.truck_types[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/transporter/truck-types",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "transporter",
+                        "truck-types"
+                    ]
+                },
+                "description": "Transporter-only. Active truck types for the proposed truck type dropdown. The first id is saved to 'proposed_truck_type_id'."
+            },
+            "response": []
+        },
+        {
+            "name": "10. Submit Truck Quote Details",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"truck_line_id\": {{quote_truck_line_id}},\n  \"new_truck_type\": false,\n  \"proposed_truck_type_id\": {{proposed_truck_type_id}},\n  \"truck_capacity\": 16.5,\n  \"proposal_rate\": 24000\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/transporter/submit_truck_quote",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "transporter",
+                        "submit_truck_quote"
+                    ]
+                },
+                "description": "Transporter-only. Submit proposed truck type, capacity in tons, and integer proposal rate for a truck line in waiting_team_approval. Set new_truck_type true and send truck_type_name instead of proposed_truck_type_id to create a new truck type."
+            },
+            "response": []
+        },
+        {
+            "name": "11. Submit Truck and Driver Details",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"truck_line_id\": {{quote_truck_line_id}},\n  \"truck_number\": \"KA-01-AB-1234\",\n  \"driver_name\": \"Rajesh Kumar\",\n  \"driver_contact\": \"+91 91234 56789\",\n  \"driver_license_number\": \"DL-1234567890\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/transporter/submit_truck_details",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "transporter",
+                        "submit_truck_details"
+                    ]
+                },
+                "description": "Transporter-only. After the truck line is approved, submit truck number and driver details."
+            },
+            "response": []
+        },
+        {
+            "name": "12. Transporter Loading Trucks",
             "event": [
                 {
                     "listen": "test",
@@ -352,7 +559,7 @@
             "response": []
         },
         {
-            "name": "8. Submit Bilty",
+            "name": "13. Submit Bilty",
             "request": {
                 "method": "POST",
                 "header": [
@@ -776,6 +983,21 @@
             "key": "transporter_truck_line_id",
             "value": "",
             "description": "Filled automatically by Transporter Loading Trucks (first truck without a submitted bilty)."
+        },
+        {
+            "key": "quotation_line_id",
+            "value": "",
+            "description": "Filled automatically by Transporter Quotations (first quotation line)."
+        },
+        {
+            "key": "quote_truck_line_id",
+            "value": "",
+            "description": "Filled automatically by Transporter Quotation Details (first truck line)."
+        },
+        {
+            "key": "proposed_truck_type_id",
+            "value": "",
+            "description": "Filled automatically by Active Truck Types (first truck type)."
         }
     ]
 }
