@@ -498,6 +498,12 @@ This document logs the major architectural, feature, and design changes implemen
 - **Hardware-Accelerated CSS Keyframes (`index.css`)**: Implemented `slideInFromRight` and `slideInFromLeft` transitions utilizing 3D transforms (`translate3d(±28px, 0, 0)`) and opacity easing on the GPU compositor thread with `will-change`.
 - **Directional Tab Animation (`QuotesPage.tsx`)**: Added directional slide tracking when switching between "Pending to Quote" and "Already Quoted", giving users a native 60 FPS mobile slide animation when alternating between quotation categories.
 
+## Phase 78: Environment Security & Git Tracking Cleanup
+- **Git Ignore Security (`.gitignore`)**: Added rules for `.env` and `.env.*` while explicitly whitelisting `.env.example`.
+- **Environment Template (`.env.example`)**: Added sanitized configuration template for developer onboarding.
+- **Untracked Local Environment (`git rm --cached .env`)**: Successfully untracked `.env` from Git index while safely preserving the local file on disk.
+
+
 
 
 
