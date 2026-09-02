@@ -112,7 +112,7 @@ export function useAssignDrivers() {
           title: 'Driver Details Saved',
           message: 'Driver and truck plate information has been saved successfully.',
         });
-        navigate('/transporter/quotes', { replace: true });
+        navigate('/transporter/quotes?tab=quoted', { replace: true });
       } else {
         setSaveError(res.message || 'Failed to save driver details');
       }
@@ -134,6 +134,6 @@ export function useAssignDrivers() {
     saving,
     saveError,
     handleSubmit,
-    navigateBack: () => navigate('/transporter/quotes', { replace: true }),
+    navigateBack: () => navigate('/transporter/quotes?tab=quoted', { replace: true }),
   };
 }

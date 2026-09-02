@@ -62,16 +62,20 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
 
   const submitMutation = useSubmitBilty();
 
-  // Reset state and notify layout when modal opens/closes
+  // Reset state, lock body scrolling, and notify layout when modal opens/closes
   useEffect(() => {
     if (isOpen) {
       setSelectedFile(null);
       setPreviewUrl(null);
       setError(null);
       setIsProcessing(false);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
     }
     window.dispatchEvent(new CustomEvent('toggle-modal-overlay', { detail: { open: isOpen } }));
     return () => {
+      document.body.style.overflow = '';
       window.dispatchEvent(new CustomEvent('toggle-modal-overlay', { detail: { open: false } }));
     };
   }, [isOpen]);
@@ -208,9 +212,17 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
   const isSubmitting = isProcessing || submitMutation.isPending;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div 
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in cursor-pointer"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && !isSubmitting) {
+          onClose();
+        }
+      }}
+    >
       <div 
-        className="w-full max-w-lg bg-white rounded-t-[28px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.25)] border border-slate-900/10 p-5 sm:p-6 pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)] sm:pb-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-lg bg-white rounded-t-[28px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.25)] border border-slate-900/10 p-5 sm:p-6 pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)] sm:pb-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto animate-slide-up cursor-default"
       >
         {/* Modal Header */}
         <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3.5">

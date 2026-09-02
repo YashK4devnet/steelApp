@@ -1,4 +1,11 @@
-import type { QuoteItem, SubmitQuotePayload, SubmitDriverDetailsPayload, TransporterLoadingTruck, SubmitBiltyPayload } from '../types';
+import type {
+  QuoteItem,
+  SubmitQuotePayload,
+  SubmitDriverDetailsPayload,
+  TransporterLoadingTruck,
+  SubmitBiltyPayload,
+  TransporterQuotation,
+} from '../types';
 import { apiRequest } from '../../../lib/api';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -106,7 +113,43 @@ export async function getQuotes(): Promise<QuoteItem[]> {
 }
 
 export async function getQuoteById(id: number | string): Promise<QuoteItem | null> {
-  await delay(150);
+  // 1. Check live backend quotations list
+  try {
+    const liveQuotes = await getTransporterQuotations();
+    const liveFound = liveQuotes.find((q) => q.id.toString() === id.toString());
+    if (liveFound) {
+      const isDraft = liveFound.state === 'draft';
+      const isDone = liveFound.state === 'done';
+      const isWaiting = liveFound.state === 'waiting_team_approval';
+      const isPartiallyCancelled = liveFound.state === 'partially_cancelled';
+
+      const rateLabel = typeof liveFound.asking_rate === 'number'
+        ? `₹${liveFound.asking_rate.toLocaleString('en-IN')} / ${liveFound.by_truck ? 'Truck' : 'Ton'}`
+        : `₹${liveFound.asking_rate} / ${liveFound.by_truck ? 'Truck' : 'Ton'}`;
+
+      return {
+        id: liveFound.id,
+        quote_no: liveFound.booking_number,
+        created_date: 'Active',
+        from_location: liveFound.pickup_location_name,
+        to_location: liveFound.delivery_address_name,
+        materials_requested: liveFound.by_truck ? 'Full Truck Load' : 'Bulk Steel Consignment',
+        asking_rate: rateLabel,
+        trucks_required: liveFound.requested_truck_count || 1,
+        status: isDraft ? 'pending_quote' : isDone ? 'accepted' : 'pending',
+        state_label: isDraft ? 'Pending Quote' : isDone ? 'All Approved' : isWaiting ? 'Waiting for Approval' : isPartiallyCancelled ? 'Partially Cancelled' : liveFound.state,
+        available_trucks: liveFound.proposed_truck_count || 0,
+        proposed_rate: rateLabel,
+        trucks_sent: `${liveFound.proposed_truck_count || 0} Trucks Proposed`,
+        drivers_assigned: false,
+      };
+    }
+  } catch (err) {
+    console.warn('Could not fetch from live quotations:', err);
+  }
+
+  // 2. Fallback to in-memory quotes
+  await delay(100);
   const found = memoryQuotes.find((q) => q.id.toString() === id.toString());
   return found ? { ...found } : null;
 }
@@ -189,5 +232,18 @@ export async function submitBilty(payload: SubmitBiltyPayload): Promise<{ status
     payload
   );
 }
+
+/**
+ * Fetches the logged-in transporter's quotation lines.
+ * Endpoint: GET /booking/transporter/quotations
+ */
+export async function getTransporterQuotations(): Promise<TransporterQuotation[]> {
+  const res = await apiRequest<{ status: string; count?: number; quotations: TransporterQuotation[] }>(
+    'GET',
+    '/booking/transporter/quotations'
+  );
+  return res.quotations || [];
+}
+
 
 

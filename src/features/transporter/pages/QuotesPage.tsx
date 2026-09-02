@@ -2,7 +2,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuotes } from '../hooks/useQuotes';
 import { QuoteCard } from '../components/QuoteCard';
-import { DateFilterCalendar } from '../../../components/ui/DateFilterCalendar';
+import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import type { TransporterQuotation } from '../types';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -18,29 +19,30 @@ const SearchIcon = () => (
   </svg>
 );
 
-const CalendarIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
-);
-
-function formatDateBadge(dateStr: string): string {
-  try {
-    const parts = dateStr.split('-');
-    if (parts.length === 3) {
-      const year = parts[0];
-      const monthIdx = parseInt(parts[1], 10) - 1;
-      const day = parseInt(parts[2], 10);
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${day} ${months[monthIdx]} ${year}`;
-    }
-  } catch {
-    // fallback
-  }
-  return dateStr;
+function QuoteSkeleton() {
+  return (
+    <div className="flex flex-col gap-4">
+      {[1, 2, 3].map((n) => (
+        <div 
+          key={n} 
+          className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3.5 animate-pulse"
+        >
+          <div className="flex justify-between items-start">
+            <div className="space-y-1.5">
+              <div className="h-5 bg-slate-200 rounded w-36" />
+              <div className="h-3.5 bg-slate-100 rounded w-24" />
+            </div>
+            <div className="h-6 bg-slate-200 rounded-full w-24" />
+          </div>
+          <div className="bg-slate-50 p-4 rounded-[16px] space-y-2">
+            <div className="h-4 bg-slate-200 rounded w-3/4" />
+            <div className="h-4 bg-slate-200 rounded w-2/3" />
+            <div className="h-4 bg-slate-200 rounded w-1/2 pt-1" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function QuotesPage() {
@@ -52,26 +54,25 @@ export function QuotesPage() {
     error,
     searchQuery,
     setSearchQuery,
-    selectedDate,
-    setSelectedDate,
-    isCalendarOpen,
-    setIsCalendarOpen,
-    availableDates,
     pendingQuotes,
     alreadyQuotedQuotes,
     displayedList,
     refreshQuotes,
   } = useQuotes();
 
-  const handleNavigateToSubmit = (quote: { id: string | number }) => {
+  const handleNavigateToSubmit = (quote: TransporterQuotation) => {
     navigate(`/transporter/quotes/submit/${quote.id}`);
   };
 
-  const handleNavigateToAssignDrivers = (quote: { id: string | number }) => {
+  const handleNavigateToAssignDrivers = (quote: TransporterQuotation) => {
     navigate(`/transporter/quotes/assign-drivers/${quote.id}`);
   };
 
-  const isFiltering = Boolean(selectedDate || searchQuery.trim());
+  const handleRefresh = async () => {
+    await refreshQuotes();
+  };
+
+  const isFiltering = Boolean(searchQuery.trim());
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
@@ -83,13 +84,13 @@ export function QuotesPage() {
               type="button"
               onClick={() => navigate('/dashboard', { replace: true })}
               aria-label="Back to dashboard"
-              className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+              className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
             <div className="flex flex-col">
               <h1 className="text-[24px] font-bold text-text-primary tracking-tight leading-none h-10 flex items-center">
-                Quotes
+                Quotations
               </h1>
             </div>
           </div>
@@ -101,7 +102,7 @@ export function QuotesPage() {
             <button
               type="button"
               onClick={() => setActiveTab('pending')}
-              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeTab === 'pending'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-text-primary hover:bg-slate-50'
@@ -118,7 +119,7 @@ export function QuotesPage() {
             <button
               type="button"
               onClick={() => setActiveTab('quoted')}
-              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                 activeTab === 'quoted'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-text-primary hover:bg-slate-50'
@@ -134,189 +135,91 @@ export function QuotesPage() {
           </div>
         </div>
 
-        {/* Search Bar & Date Filter Row */}
-        <div className="max-w-[1200px] mx-auto flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            {/* Search Input */}
-            <div className="relative flex-1">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                <SearchIcon />
-              </div>
-              <input
-                type="text"
-                placeholder={activeTab === 'pending' ? "Search quote no, location, materials..." : "Search quoted requests, proposed rate, status..."}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 pl-10 pr-9 bg-white rounded-[14px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-slate-400"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Clear search text"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-
-            {/* Calendar Expand Button */}
+        {/* Search Bar */}
+        <div className="max-w-[1200px] mx-auto relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+            <SearchIcon />
+          </div>
+          <input
+            type="text"
+            placeholder={activeTab === 'pending' ? "Search booking no, location, rate..." : "Search quotations, status, location..."}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full h-11 pl-10 pr-9 bg-white rounded-[14px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-slate-400"
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-              aria-label="Filter by date"
-              aria-expanded={isCalendarOpen}
-              className={`h-11 px-3 sm:px-3.5 rounded-[14px] flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-[0_4px_16px_rgba(15,23,42,0.04)] border shrink-0 ${
-                selectedDate
-                  ? 'bg-primary text-white border-primary shadow-primary/20'
-                  : isCalendarOpen
-                  ? 'bg-slate-100 text-primary border-primary/20'
-                  : 'bg-white text-slate-600 hover:text-primary border-slate-900/5 hover:bg-slate-50 active:scale-95'
-              }`}
+              onClick={() => setSearchQuery('')}
+              aria-label="Clear search text"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
             >
-              <CalendarIcon className="w-5 h-5" />
-              {selectedDate ? (
-                <span className="hidden sm:inline font-bold">
-                  {formatDateBadge(selectedDate)}
-                </span>
-              ) : null}
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
-          </div>
-
-          {/* Active Filters Row */}
-          {isFiltering && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-1 animate-fade-in">
-              <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wider mr-0.5">
-                Filters:
-              </span>
-
-              {selectedDate && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold shadow-xs">
-                  <CalendarIcon className="w-3.5 h-3.5" />
-                  <span>{formatDateBadge(selectedDate)}</span>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedDate(null)}
-                    aria-label="Remove date filter"
-                    className="hover:text-red-500 rounded-full p-0.5 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-
-              {searchQuery.trim() && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/80 text-text-primary border border-slate-300/60 text-xs font-semibold shadow-xs">
-                  <span>&ldquo;{searchQuery.trim()}&rdquo;</span>
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    aria-label="Clear search query"
-                    className="hover:text-red-500 rounded-full p-0.5 transition-colors"
-                  >
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </span>
-              )}
-
-              <button
-                type="button"
-                onClick={() => {
-                  setSelectedDate(null);
-                  setSearchQuery('');
-                }}
-                className="text-[11px] font-bold text-red-600 hover:text-red-700 underline px-1.5 py-0.5 ml-auto"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
-
-          {/* Expandable Calendar View */}
-          {isCalendarOpen && (
-            <div className="mt-1">
-              <DateFilterCalendar
-                selectedDate={selectedDate}
-                onSelectDate={(date) => {
-                  setSelectedDate(date);
-                  setIsCalendarOpen(false);
-                }}
-                availableDates={availableDates}
-                onClose={() => setIsCalendarOpen(false)}
-              />
-            </div>
           )}
         </div>
       </div>
 
-      {/* Main List View */}
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-4">
-        {loading ? (
-          <div className="flex justify-center p-12">
-            <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-        ) : error ? (
-          <div className="text-center py-10 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-red-100 flex flex-col items-center gap-3">
-            <p className="text-sm font-semibold text-red-600">{error}</p>
-            <button
-              type="button"
-              onClick={refreshQuotes}
-              className="px-4 py-2 bg-primary text-white font-bold text-xs rounded-full hover:bg-primary/90 transition-all"
-            >
-              Retry
-            </button>
-          </div>
-        ) : displayedList.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
-              <SearchIcon />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-text-primary">
-                {isFiltering ? 'No Matching Quotes Found' : activeTab === 'pending' ? 'No Pending Requests' : 'No Quoted Requests'}
-              </h3>
-              <p className="text-xs text-text-secondary mt-1">
-                {isFiltering 
-                  ? 'Try adjusting your search criteria or selected date.' 
-                  : activeTab === 'pending'
-                    ? 'All incoming quote requests have been processed.'
-                    : 'You have not submitted any quotes yet.'}
-              </p>
-            </div>
-            {isFiltering && (
+      {/* Main List View with PullToRefresh */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-4">
+          {loading ? (
+            <QuoteSkeleton />
+          ) : error ? (
+            <div className="text-center py-10 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-red-100 flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xl font-bold">
+                ⚠️
+              </div>
+              <p className="text-sm font-semibold text-red-600">{error}</p>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedDate(null);
-                  setSearchQuery('');
-                }}
-                className="px-4 py-2 bg-primary/10 text-primary font-bold text-xs rounded-full hover:bg-primary/20 transition-all mt-1"
+                onClick={handleRefresh}
+                className="px-5 py-2 bg-primary text-white font-bold text-xs rounded-full hover:bg-primary/90 transition-all cursor-pointer active:scale-95"
               >
-                Clear Filters
+                Try Again
               </button>
-            )}
-          </div>
-        ) : (
-          displayedList.map((quote) => (
-            <QuoteCard
-              key={quote.id}
-              quote={quote}
-              onSubmitQuote={handleNavigateToSubmit}
-              onAssignDrivers={handleNavigateToAssignDrivers}
-            />
-          ))
-        )}
-      </main>
+            </div>
+          ) : displayedList.length === 0 ? (
+            <div className="text-center py-12 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                <SearchIcon />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-text-primary">
+                  {isFiltering ? 'No Matching Quotes Found' : activeTab === 'pending' ? 'No Pending Requests' : 'No Quoted Requests'}
+                </h3>
+                <p className="text-xs text-text-secondary mt-1">
+                  {isFiltering 
+                    ? 'Try adjusting your search query.' 
+                    : activeTab === 'pending'
+                      ? 'All incoming quote requests have been processed.'
+                      : 'You have not submitted any quotes yet.'}
+                </p>
+              </div>
+              {isFiltering && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="px-4 py-2 bg-primary/10 text-primary font-bold text-xs rounded-full hover:bg-primary/20 transition-all mt-1 cursor-pointer"
+                >
+                  Clear Search
+                </button>
+              )}
+            </div>
+          ) : (
+            displayedList.map((quote) => (
+              <QuoteCard
+                key={quote.id}
+                quote={quote}
+                onSubmitQuote={handleNavigateToSubmit}
+                onAssignDrivers={handleNavigateToAssignDrivers}
+              />
+            ))
+          )}
+        </main>
+      </PullToRefresh>
     </div>
   );
 }

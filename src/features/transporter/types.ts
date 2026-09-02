@@ -1,3 +1,20 @@
+export type QuotationLineState = 'draft' | 'waiting_team_approval' | 'done' | 'partially_cancelled';
+
+export interface TransporterQuotation {
+  id: number;
+  booking_number: string;
+  pickup_location_id: number;
+  pickup_location_name: string;
+  delivery_address_id: number;
+  delivery_address_name: string;
+  by_truck: boolean;
+  asking_rate: number;
+  requested_truck_count: number;
+  proposed_truck_count: number;
+  approved_truck_count: number;
+  state: QuotationLineState | string;
+}
+
 export type QuoteStatus = 'pending_quote' | 'pending' | 'accepted' | 'rejected';
 
 export type PricingBase = 'per_ton' | 'per_truck';

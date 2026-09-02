@@ -1,90 +1,78 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import type { QuoteItem } from '../types';
-import { getQuotes } from '../services/transporterApi';
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import type { TransporterQuotation } from '../types';
+import { getTransporterQuotations } from '../services/transporterApi';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 export function useQuotes() {
-  const [activeTab, setActiveTab] = useState<'pending' | 'quoted'>('pending');
-  const [quotes, setQuotes] = useState<QuoteItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get('tab');
+  const activeTab: 'pending' | 'quoted' = tabParam === 'quoted' ? 'quoted' : 'pending';
   const [searchQuery, setSearchQuery] = useState<string>('');
-  
-  // Date filter state
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [isCalendarOpen, setIsCalendarOpen] = useState<boolean>(false);
 
-  const fetchQuotes = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const data = await getQuotes();
-      setQuotes(data);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to load quotes';
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const setActiveTab = (newTab: 'pending' | 'quoted') => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        if (newTab === 'quoted') {
+          next.set('tab', 'quoted');
+        } else {
+          next.delete('tab');
+        }
+        return next;
+      },
+      { replace: true }
+    );
+  };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    fetchQuotes();
-  }, [fetchQuotes]);
-
-  const availableDates = useMemo(() => {
-    return Array.from(new Set(quotes.map((q) => q.created_date).filter(Boolean)));
-  }, [quotes]);
+  const {
+    data: quotes = [],
+    isLoading: loading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<TransporterQuotation[]>({
+    queryKey: QUERY_KEYS.transporterQuotations,
+    queryFn: getTransporterQuotations,
+  });
 
   const pendingQuotes = useMemo(() => {
-    return quotes.filter((q) => q.status === 'pending_quote');
+    return quotes.filter((q) => q.state === 'draft');
   }, [quotes]);
 
   const alreadyQuotedQuotes = useMemo(() => {
-    return quotes.filter((q) => q.status !== 'pending_quote');
+    return quotes.filter((q) => q.state !== 'draft');
   }, [quotes]);
 
   const displayedList = useMemo(() => {
     const list = activeTab === 'pending' ? pendingQuotes : alreadyQuotedQuotes;
+    if (!searchQuery.trim()) return list;
+
+    const q = searchQuery.toLowerCase().trim();
     return list.filter((item) => {
-      // Date filter
-      if (selectedDate && item.created_date !== selectedDate) {
-        return false;
-      }
+      const matchBooking = (item.booking_number || '').toLowerCase().includes(q);
+      const matchFrom = (item.pickup_location_name || '').toLowerCase().includes(q);
+      const matchTo = (item.delivery_address_name || '').toLowerCase().includes(q);
+      const matchState = (item.state || '').toLowerCase().includes(q);
+      const matchRate = String(item.asking_rate || '').includes(q);
 
-      // Search query
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const matchQuoteNo = item.quote_no.toLowerCase().includes(q);
-        const matchFrom = item.from_location.toLowerCase().includes(q);
-        const matchTo = item.to_location.toLowerCase().includes(q);
-        const matchMaterials = item.materials_requested.toLowerCase().includes(q);
-        const matchAsking = item.asking_rate.toLowerCase().includes(q);
-        const matchProposed = item.proposed_rate ? item.proposed_rate.toLowerCase().includes(q) : false;
-        const matchState = item.state_label ? item.state_label.toLowerCase().includes(q) : false;
-        return matchQuoteNo || matchFrom || matchTo || matchMaterials || matchAsking || matchProposed || matchState;
-      }
-
-      return true;
+      return matchBooking || matchFrom || matchTo || matchState || matchRate;
     });
-  }, [activeTab, pendingQuotes, alreadyQuotedQuotes, selectedDate, searchQuery]);
+  }, [activeTab, pendingQuotes, alreadyQuotedQuotes, searchQuery]);
 
   return {
     activeTab,
     setActiveTab,
     quotes,
     loading,
-    error,
+    isError,
+    error: error instanceof Error ? error.message : isError ? 'Failed to load quotes' : null,
     searchQuery,
     setSearchQuery,
-    selectedDate,
-    setSelectedDate,
-    isCalendarOpen,
-    setIsCalendarOpen,
-    availableDates,
     pendingQuotes,
     alreadyQuotedQuotes,
     displayedList,
-    refreshQuotes: fetchQuotes,
+    refreshQuotes: refetch,
   };
 }

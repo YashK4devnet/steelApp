@@ -26,6 +26,7 @@ import { NetworkBanner } from '../../components/ui/NetworkBanner';
 export interface PageLevelConfig {
   level: number;
   parent: string;
+  state?: Record<string, any>;
 }
 
 export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
@@ -43,7 +44,7 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/trucks/outgoing/report': { level: 2, parent: '/trucks/outgoing' },
   '/transporter/quotes': { level: 1, parent: '/dashboard' },
   '/transporter/quotes/submit': { level: 2, parent: '/transporter/quotes' },
-  '/transporter/quotes/assign-drivers': { level: 2, parent: '/transporter/quotes' },
+  '/transporter/quotes/assign-drivers': { level: 2, parent: '/transporter/quotes?tab=quoted' },
   '/transporter/upload-bilty': { level: 1, parent: '/dashboard' },
 };
 
@@ -125,8 +126,8 @@ function CapacitorNativeSetup() {
           }, 2000);
         }
       } else {
-        // Sub-page (Level 1 or Level 2) -> navigate strictly to parent level replacing history
-        navigate(config.parent, { replace: true });
+        // Sub-page (Level 1 or Level 2) -> navigate strictly to parent level replacing history with state
+        navigate(config.parent, { replace: true, state: config.state });
       }
     });
 

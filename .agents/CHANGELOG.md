@@ -466,6 +466,40 @@ This document logs the major architectural, feature, and design changes implemen
   - When `401` occurs on authenticated endpoints, it dispatches `auth-expired` and triggers the session expired modal.
 - **Login Form Error Display (`LoginPage.tsx`)**: Displayed server-provided error messages directly within the inline error banner.
 
+## Phase 71: Transporter Quotations API Integration (Section 7)
+- **Data Model & Types (`types.ts`)**: Defined `TransporterQuotation` and `QuotationLineState` (`'draft'`, `'waiting_team_approval'`, `'done'`, `'partially_cancelled'`) matching Section 7 of `.agents/README.md`.
+- **API Service & Cache Keys (`transporterApi.ts`, `queryKeys.ts`)**: Added `getTransporterQuotations()` calling `GET /booking/transporter/quotations` with Bearer auth and registered `QUERY_KEYS.transporterQuotations`.
+- **Query Hook & Dynamic Filtering (`useQuotes.ts`)**: Wired TanStack `useQuery` to fetch quotations, partitioning data into "Pending to Quote" (`state === 'draft'`) and "Already Quoted" (`state !== 'draft'`), with search filter support for booking numbers, locations, rates, and states.
+- **Card & List UI (`QuoteCard.tsx`, `QuotesPage.tsx`)**: Updated quotation cards to display pickup/delivery locations, asking rates (per truck / per ton based on `by_truck`), requested truck count, proposed & approved counts, status badges, pull-to-refresh, loading skeletons, and role-based action triggers.
+
+## Phase 72: Seamless Quotation Details Resolution from Live Backend Data
+- **Dynamic Quote Details Resolution (`transporterApi.ts`)**: Updated `getQuoteById(id)` to check and synthesize quotation details dynamically from the live backend `GET /booking/transporter/quotations` response before falling back to in-memory mocks.
+- **Interactive Quotation Navigation (`QuoteCard.tsx`)**: Made entire quotation cards clickable so users can inspect the detailed booking summary, origin/destination routes, and asking rate breakdown for any quotation fetched from the backend.
+
+## Phase 73: Navigation History & Quotation Tab State Preservation
+- **Preserved Tab State on Back/Submit (`useAssignDrivers.ts`, `useSubmitQuote.ts`, `useQuotes.ts`)**: 
+  - When returning or submitting from `AssignDriversPage`, router state `{ tab: 'quoted' }` is dispatched, ensuring the user immediately lands on the **"Already Quoted"** tab instead of resetting to pending.
+  - When submitting a proposal from `SubmitQuotePage`, transitions to `{ tab: 'quoted' }`.
+- **Direct Parent Navigation on Level 1 Back Buttons (`QuotesPage.tsx`, `TransporterLoadingTrucksPage.tsx`, `LoadedTrucksPage.tsx`, `LoadingTrucksPage.tsx`, `OutgoingTrucksPage.tsx`)**:
+  - Replaced ambiguous `navigate(-1)` on all Level 1 pages with explicit `navigate('/dashboard', { replace: true })`, eliminating the double-tap glitch when exiting back to dashboard.
+
+## Phase 74: Native Android Back Button State Synchronization for Driver Assignment
+- **Native Android Hardware Back Button State (`router/index.tsx`)**: Extended `PageLevelConfig` with `state` payload support. Configured `/transporter/quotes/assign-drivers` with `state: { tab: 'quoted' }` so pressing the physical Android back button lands on the **"Already Quoted"** tab identically to the in-app back button.
+
+## Phase 75: URL Query Parameter Tab State Management
+- **URL-Driven Tab State (`useQuotes.ts`)**: Upgraded quotation tab switching to use `useSearchParams` (`?tab=quoted` and default pending). Switching tabs seamlessly updates the browser URL with `{ replace: true }`.
+- **Deep-Linkable Parent Navigation (`useAssignDrivers.ts`, `useSubmitQuote.ts`, `router/index.tsx`)**: Updated subpage exit actions and `PAGE_LEVEL_MAP` to target `/transporter/quotes?tab=quoted` directly via clean URL parameters, ensuring full persistence across app reloads, bookmarking, and hardware back buttons.
+
+## Phase 76: Upload Bilty Modal Body Scroll Lock & Backdrop Dismissal
+- **Background Scroll Locking (`UploadBiltyModal.tsx`)**: Configured body scroll lock (`document.body.style.overflow = 'hidden'`) upon modal open with automatic restoration on close/unmount, preventing unwanted background list scrolling while interacting with the modal.
+- **Outside Click Dismissal (`UploadBiltyModal.tsx`)**: Added backdrop overlay `onClick` dismissal while maintaining `e.stopPropagation()` on the modal container card, allowing users to dismiss the modal by tapping anywhere outside.
+
+
+
+
+
+
+
 
 
 

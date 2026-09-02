@@ -475,7 +475,106 @@ curl -X POST "http://<odoo-host>/booking/trucks/submit_vendor_bill" \
 
 ---
 
-## 7. Transporter Loading Trucks
+## 7. Transporter Quotations
+
+**Endpoint**
+
+```text
+GET /booking/transporter/quotations
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+**Authorisation**
+
+* **Transporter users** (`group_role_transporter`) only.
+* Other roles receive `403 Forbidden` with `"Not authorized."`.
+
+**Behaviour**
+
+Returns the logged-in transporter's quotation lines
+(`transport.booking.quotation.line`).
+
+* `transporter_id` matches the logged-in user's `partner_id`.
+* Cancelled quotation lines (`state = cancelled`) are excluded.
+* Truck-line details are **not** included. Use the quotation line `id` in a
+  later details API when the user opens one quotation.
+
+This list is meant for the transporter's booking / quotation screen.
+
+**Response Data**
+
+| Field                    | Type    | Description                                              |
+| ------------------------ | ------- | -------------------------------------------------------- |
+| `id`                     | integer | Quotation line ID. Send this when opening a quotation.   |
+| `booking_number`         | string  | Transport booking number.                                |
+| `pickup_location_id`     | integer | Pickup location partner ID.                              |
+| `pickup_location_name`   | string  | Full contact address of the pickup location.             |
+| `delivery_address_id`    | integer | Delivery location partner ID.                            |
+| `delivery_address_name`  | string  | Full contact address of the delivery location.           |
+| `by_truck`               | boolean | `true` if the booking is by truck count; `false` if by weight. |
+| `asking_rate`            | integer | Asking rate on the quotation line.                       |
+| `requested_truck_count`  | integer | Trucks requested on the booking.                         |
+| `proposed_truck_count`   | integer | Trucks proposed by this transporter (filled truck lines). |
+| `approved_truck_count`   | integer | Trucks already approved for this transporter.            |
+| `state`                  | string  | Quotation line state. See values below.                  |
+
+**Quotation line `state` values**
+
+| Value                     | Meaning                      |
+| ------------------------- | ---------------------------- |
+| `draft`                   | Draft                        |
+| `waiting_team_approval`   | Waiting for Approval         |
+| `done`                    | All Approved                 |
+| `partially_cancelled`     | Partially Cancelled          |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/transporter/quotations" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 2,
+  "quotations": [
+    {
+      "id": 41,
+      "booking_number": "TB/2026/00012",
+      "pickup_location_id": 32,
+      "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
+      "delivery_address_id": 45,
+      "delivery_address_name": "Main Warehouse, 123 Industrial Area, Bangalore 560001",
+      "by_truck": true,
+      "asking_rate": 25000,
+      "requested_truck_count": 3,
+      "proposed_truck_count": 0,
+      "approved_truck_count": 0,
+      "state": "waiting_team_approval"
+    }
+  ]
+}
+```
+
+**Example Error Response** (`403 Forbidden`)
+
+```json
+{
+  "status": "error",
+  "message": "Not authorized."
+}
+```
+
+---
+
+## 8. Transporter Loading Trucks
 
 **Endpoint**
 
@@ -559,7 +658,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/transporter/loading" \
 
 ---
 
-## 8. Submit Bilty
+## 9. Submit Bilty
 
 **Endpoint**
 
@@ -632,7 +731,7 @@ curl -X POST "http://<odoo-host>/booking/trucks/submit_bilty" \
 
 ---
 
-## 9. Outgoing Trucks
+## 10. Outgoing Trucks
 
 **Endpoint**
 
@@ -699,7 +798,7 @@ curl -X GET "http://<odoo-host>/booking/trucks/outgoing" \
 
 ---
 
-## 10. Outgoing Truck Reporting
+## 11. Outgoing Truck Reporting
 
 **Endpoint**
 
@@ -763,7 +862,7 @@ Admin, Security, Seller, and other roles receive `403 Forbidden`.
 
 ---
 
-## 11. Customer Master Data
+## 12. Customer Master Data
 
 Use this API to fill the dropdowns on the **create truck request** screen
 (warehouse, ship-to, bill-to, UOM, truck type).
@@ -865,7 +964,7 @@ curl -X GET "http://<odoo-host>/booking/customer/master-data" \
 
 ---
 
-## 12. Customer Products
+## 13. Customer Products
 
 Use this API to list products the customer can pick for DIA / line details
 on the truck request screen.
@@ -975,7 +1074,7 @@ curl -X GET "http://<odoo-host>/booking/customer/products" \
 
 ---
 
-## 13. Customer Shapes and Weight Types
+## 14. Customer Shapes and Weight Types
 
 Use this API to list product shapes and weight types for filters or DIA
 fields on the truck request screen.
@@ -1041,7 +1140,7 @@ curl -X GET "http://<odoo-host>/booking/customer/shapes-weight-types" \
 
 ---
 
-## 14. Submit Truck Request
+## 15. Submit Truck Request
 
 Use this API when the customer submits a new **Truck From Warehouse** request, or updates an existing booking in `draft`, `accepted`, or `rejected`.
 
@@ -1175,7 +1274,7 @@ curl -X POST "http://<odoo-host>/booking/customer/truck-request" \
 
 ---
 
-## 15. Customer Trucks List
+## 16. Customer Trucks List
 
 Returns the logged-in customer's truck bookings for the mobile list screen.
 
@@ -1268,7 +1367,7 @@ curl -X GET "http://<odoo-host>/booking/customer/trucks" \
 
 ---
 
-## 16. Customer Truck Details
+## 17. Customer Truck Details
 
 Returns the full booking that the customer submitted through `POST /booking/customer/truck-request`, including DIA details.
 
@@ -1290,7 +1389,7 @@ Bearer token from `login`. **Buyer role only.** Other roles receive `403 Forbidd
 
 **What it returns**
 
-The list fields from section 13, plus:
+The list fields from section 16, plus:
 
 | Field                   | Type    | Meaning |
 | ----------------------- | ------- | ------- |
@@ -1371,7 +1470,7 @@ curl -X GET "http://<odoo-host>/booking/customer/trucks/55" \
 
 ---
 
-## 17. Cancel Customer Truck
+## 18. Cancel Customer Truck
 
 Cancels the customer's own truck booking.
 
@@ -1450,6 +1549,9 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
    - Call `POST /booking/trucks/submit_vendor_bill` with the selected truck line
      ID, bill number, bill date, bill document, and E-Way Bill details.
 4. **Transporter flow** (shown when login `role` is Transporter)
+   - Call `GET /booking/transporter/quotations` to list the transporter's
+     quotation lines (excluding cancelled). Use the quotation line `id` when
+     opening a quotation. Truck-line details are not returned in this list.
    - Call `GET /booking/trucks/transporter/loading` to list the transporter's
      trucks currently in `loading` state. Use `is_bilty_submitted` to show
      whether the bilty is already uploaded.

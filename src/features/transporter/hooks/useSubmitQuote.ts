@@ -162,7 +162,7 @@ export function useSubmitQuote() {
           title: 'Quote Proposal Submitted',
           message: 'Your quote proposal has been successfully submitted.',
         });
-        navigate('/transporter/quotes', { replace: true });
+        navigate('/transporter/quotes?tab=quoted', { replace: true });
       } else {
         setSubmitError(res.message || 'Failed to submit quote');
       }

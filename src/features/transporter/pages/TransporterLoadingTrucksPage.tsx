@@ -93,9 +93,9 @@ export function TransporterLoadingTrucksPage() {
           <div className="flex items-center gap-4">
             <button 
               type="button"
-              onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/dashboard', { replace: true }))}
-              aria-label="Back"
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+              onClick={() => navigate('/dashboard', { replace: true })}
+              aria-label="Back to dashboard"
+              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
