@@ -508,6 +508,49 @@ This document logs the major architectural, feature, and design changes implemen
 - **API Mapping (`bookingApi.ts`)**: Extracted and mapped the `can_edit` boolean flag from the `/booking/customer/trucks` and `/booking/customer/trucks/<id>` responses.
 - **Dynamic Action & Badge Logic (`BookingsPage.tsx`)**: Updated booking card action buttons and status badges to respect `booking.can_edit`, conditionally rendering "Edit Booking" vs "View Details" based on server permissions.
 
+## Phase 80: Transporter Quotation Details & Quote Submission API Integration (Sections 8, 9, 10)
+- **Data Models & Types (`types.ts`)**: Defined `TransporterQuotationDetail`, `TransporterTruckLine`, `ActiveTruckType`, and `SubmitTruckQuotePayload` matching Sections 8, 9, and 10 of `.agents/README.md`.
+- **API Service Layer (`transporterApi.ts`, `queryKeys.ts`)**: Added `getQuotationDetail(id)`, `getTransporterTruckTypes()`, and `submitTruckQuote(payload)` services.
+- **Hook & Form Workflow (`useSubmitQuote.ts`, `TruckDetailFormCard.tsx`, `SubmitQuotePage.tsx`)**: Populated truck lines with real `truck_line_id` associations, active truck type dropdown with custom vehicle fallback, strict integer proposal rate validations, concurrent truck submission, and cache invalidation.
+
+## Phase 81: Transporter Submit Quote Truck Line ID Resolution Fix
+- **Live Server Truck Line Initialization (`useSubmitQuote.ts`)**: Pre-populated form cards directly from the server's `quotationDetail.truck_lines[]` with exact integer database `truck_line_id` values, eliminating `NaN`/`null` ID serialization failures.
+- **Strict ID Validation (`useSubmitQuote.ts`)**: Added pre-flight validation preventing submission if any truck card lacks a positive integer `truck_line_id`.
+
+## Phase 82: Available Trucks Count & Sequential Allocation Refinement
+- **Form State Initialization (`useSubmitQuote.ts`)**: Kept initial form input empty (`availableTrucks = ''`, `truckDetails = []`) allowing the transporter to enter their available capacity.
+- **Partial Truck Line Allocation**: Sequentially maps the first $K$ available server `truck_lines` (`quotationDetail.truck_lines.slice(0, K)`), preserving exact database line IDs per truck card.
+- **Validation Refinement (`useSubmitQuote.ts`, `TruckDetailFormCard.tsx`)**: Re-evaluated `isValid` to check for non-empty vehicle type, positive capacity, and rate, ensuring the Submit Quote button activates as soon as required fields are filled.
+
+## Phase 83: Quotation State Tab Partitioning & Draft Exclusions
+- **Draft Quotations Filtered Out (`useQuotes.ts`)**: Excluded `draft` state quotations from list views as draft lines do not have allocated truck lines yet.
+- **Pending to Quote Tab Alignment (`useQuotes.ts`, `QuoteCard.tsx`)**: Partitioned `waiting_team_approval` quotes with `proposed_truck_count === 0` into **Pending to Quote** with the active "Submit Quote" action, ensuring every opened quote is backed by actual truck lines from the server.
+- **Already Quoted Tab Alignment (`useQuotes.ts`, `QuoteCard.tsx`)**: Routed submitted proposals (`proposed_truck_count > 0`), approved quotes (`done`), and partially cancelled items to **Already Quoted**.
+
+## Phase 84: Transporter Driver Details API (Section 11) & Multi-Truck Status Cards
+- **Driver Details API (`types.ts`, `transporterApi.ts`)**: Implemented `submitTruckDriverDetails(payload)` calling `POST /booking/transporter/submit_truck_details` with `truck_line_id`, `truck_number`, `driver_name`, `driver_contact`, and `driver_license_number`.
+- **Driver Assignment Flow (`useAssignDrivers.ts`)**: Pre-populated assign drivers form with server truck line data, validating and submitting details per approved truck line.
+- **Multi-Truck Status Breakdown (`QuoteCard.tsx`)**: Removed top-level single global status badge. Dynamically renders individual status chips for each truck line (`Waiting Approval`, `Approved`, `Loading`, `Loaded`, `Rejected`, `Cancelled`), proposed rates, and driver info on both tabs.
+
+## Phase 85: Pending to Quote Card Display Simplification
+- **Streamlined Pending Cards (`QuoteCard.tsx`)**: Restricted the multi-truck status breakdown exclusively to the **Already Quoted** tab. Cards under **Pending to Quote** maintain a clean summary card layout focusing on shipment route, asking rate, requested truck count, and the "Submit Quote" call to action.
+
+## Phase 86: Driver Details Strict Management Approval Enforcement
+- **Read-Only Non-Approved Trucks (`DriverAssignmentCard.tsx`)**: Disabled input fields for trucks not in `management_approved` state with informative status badges and informational notices explaining that management approval is required.
+- **Selective API Dispatch (`useAssignDrivers.ts`)**: Filtered driver detail submissions to strictly dispatch `submitTruckDriverDetails` for trucks in `management_approved` state, ignoring unapproved or read-only trucks.
+- **Action Button Guard (`QuoteCard.tsx`)**: Guarded the "Enter Driver Details" action button on quotation cards to appear exclusively when at least one truck line has reached `management_approved` state.
+
+## Phase 87: Driver Details Assignment Extension for Waiting Management Approval
+- **Editable Driver Details Scope (`DriverAssignmentCard.tsx`, `useAssignDrivers.ts`, `QuoteCard.tsx`)**: Extended driver details editing and submission to allow truck lines in both `waiting_management_approval` and `management_approved` states, keeping other states (e.g. `waiting_team_approval`, `rejected`, `loading`) strictly read-only.
+
+
+
+
+
+
+
+
+
 
 
 

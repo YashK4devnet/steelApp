@@ -5,6 +5,10 @@ import type {
   TransporterLoadingTruck,
   SubmitBiltyPayload,
   TransporterQuotation,
+  TransporterQuotationDetail,
+  ActiveTruckType,
+  SubmitTruckQuotePayload,
+  SubmitTruckDriverDetailsPayload,
 } from '../types';
 import { apiRequest } from '../../../lib/api';
 
@@ -112,40 +116,120 @@ export async function getQuotes(): Promise<QuoteItem[]> {
   return [...memoryQuotes];
 }
 
-export async function getQuoteById(id: number | string): Promise<QuoteItem | null> {
-  // 1. Check live backend quotations list
-  try {
-    const liveQuotes = await getTransporterQuotations();
-    const liveFound = liveQuotes.find((q) => q.id.toString() === id.toString());
-    if (liveFound) {
-      const isDraft = liveFound.state === 'draft';
-      const isDone = liveFound.state === 'done';
-      const isWaiting = liveFound.state === 'waiting_team_approval';
-      const isPartiallyCancelled = liveFound.state === 'partially_cancelled';
+/**
+ * Fetches the detailed quotation including linked truck lines.
+ * Endpoint: GET /booking/transporter/quotations/<quotation_line_id>
+ */
+export async function getQuotationDetail(id: number | string): Promise<TransporterQuotationDetail> {
+  const res = await apiRequest<{ status: string; quotation: TransporterQuotationDetail }>(
+    'GET',
+    `/booking/transporter/quotations/${id}`
+  );
+  return res.quotation;
+}
 
-      const rateLabel = typeof liveFound.asking_rate === 'number'
-        ? `₹${liveFound.asking_rate.toLocaleString('en-IN')} / ${liveFound.by_truck ? 'Truck' : 'Ton'}`
-        : `₹${liveFound.asking_rate} / ${liveFound.by_truck ? 'Truck' : 'Ton'}`;
+/**
+ * Fetches active truck types for transporter quote proposals.
+ * Endpoint: GET /booking/transporter/truck-types
+ */
+export async function getTransporterTruckTypes(): Promise<ActiveTruckType[]> {
+  const res = await apiRequest<{ status: string; count?: number; truck_types: ActiveTruckType[] }>(
+    'GET',
+    '/booking/transporter/truck-types'
+  );
+  return res.truck_types || [];
+}
+
+/**
+ * Submits initial quote proposal details for one truck line.
+ * Endpoint: POST /booking/transporter/submit_truck_quote
+ */
+export async function submitTruckQuote(payload: SubmitTruckQuotePayload): Promise<{
+  status: string;
+  message?: string;
+  truck_line_id?: number;
+  state?: string;
+}> {
+  return apiRequest<{
+    status: string;
+    message?: string;
+    truck_line_id?: number;
+    state?: string;
+  }>(
+    'POST',
+    '/booking/transporter/submit_truck_quote',
+    payload
+  );
+}
+
+/**
+ * Submits driver and truck plate details for an approved truck line.
+ * Endpoint: POST /booking/transporter/submit_truck_details
+ */
+export async function submitTruckDriverDetails(payload: SubmitTruckDriverDetailsPayload): Promise<{
+  status: string;
+  message?: string;
+  truck_line_id?: number;
+  state?: string;
+}> {
+  return apiRequest<{
+    status: string;
+    message?: string;
+    truck_line_id?: number;
+    state?: string;
+  }>(
+    'POST',
+    '/booking/transporter/submit_truck_details',
+    payload
+  );
+}
+
+export async function getQuoteById(id: number | string): Promise<QuoteItem | null> {
+  // 1. Try fetching detailed quotation from backend API (Section 8)
+  try {
+    const detail = await getQuotationDetail(id);
+    if (detail) {
+      const isDraft = detail.state === 'draft';
+      const isDone = detail.state === 'done';
+      const isWaiting = detail.state === 'waiting_team_approval';
+      const isPartiallyCancelled = detail.state === 'partially_cancelled';
+
+      const rateLabel = typeof detail.asking_rate === 'number'
+        ? `₹${detail.asking_rate.toLocaleString('en-IN')} / ${detail.by_truck ? 'Truck' : 'Ton'}`
+        : `₹${detail.asking_rate} / ${detail.by_truck ? 'Truck' : 'Ton'}`;
+
+      const mappedTruckDetails = (detail.truck_lines || []).map((tl, index) => ({
+        id: String(tl.id || `truck-${index + 1}`),
+        vehicle_type: tl.proposed_truck_type || tl.requested_truck_type_name || '12 Wheeler (21-25 MT)',
+        capacity_tons: tl.truck_capacity || 20,
+        pricing_base: detail.by_truck ? ('per_truck' as const) : ('per_ton' as const),
+        proposed_rate: tl.proposal_rate ? String(tl.proposal_rate) : '',
+        truck_number_plate: tl.truck_number || '',
+        driver_name: tl.driver_name || '',
+        driver_contact: tl.driver_contact || '',
+        driver_license_number: tl.driver_license || '',
+      }));
 
       return {
-        id: liveFound.id,
-        quote_no: liveFound.booking_number,
+        id: detail.id,
+        quote_no: detail.booking_number,
         created_date: 'Active',
-        from_location: liveFound.pickup_location_name,
-        to_location: liveFound.delivery_address_name,
-        materials_requested: liveFound.by_truck ? 'Full Truck Load' : 'Bulk Steel Consignment',
+        from_location: detail.pickup_location_name,
+        to_location: detail.delivery_address_name,
+        materials_requested: detail.by_truck ? 'Full Truck Load' : 'Bulk Steel Consignment',
         asking_rate: rateLabel,
-        trucks_required: liveFound.requested_truck_count || 1,
+        trucks_required: detail.requested_truck_count || 1,
         status: isDraft ? 'pending_quote' : isDone ? 'accepted' : 'pending',
-        state_label: isDraft ? 'Pending Quote' : isDone ? 'All Approved' : isWaiting ? 'Waiting for Approval' : isPartiallyCancelled ? 'Partially Cancelled' : liveFound.state,
-        available_trucks: liveFound.proposed_truck_count || 0,
+        state_label: isDraft ? 'Pending Quote' : isDone ? 'All Approved' : isWaiting ? 'Waiting for Approval' : isPartiallyCancelled ? 'Partially Cancelled' : detail.state,
+        available_trucks: detail.proposed_truck_count || (detail.truck_lines?.length || 0),
         proposed_rate: rateLabel,
-        trucks_sent: `${liveFound.proposed_truck_count || 0} Trucks Proposed`,
-        drivers_assigned: false,
+        trucks_sent: `${detail.proposed_truck_count || 0} Trucks Proposed`,
+        truck_details: mappedTruckDetails,
+        drivers_assigned: (detail.truck_lines || []).some((tl) => Boolean(tl.truck_number && tl.driver_name)),
       };
     }
   } catch (err) {
-    console.warn('Could not fetch from live quotations:', err);
+    console.warn('Could not fetch quotation detail from API:', err);
   }
 
   // 2. Fallback to in-memory quotes

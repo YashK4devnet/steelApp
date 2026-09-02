@@ -13,6 +13,7 @@ const ArrowLeftIcon = () => (
 export function SubmitQuotePage() {
   const {
     quote,
+    truckTypes,
     loading,
     error,
     availableTrucks,
@@ -143,6 +144,7 @@ export function SubmitQuotePage() {
                   key={truck.id || idx}
                   index={idx}
                   truck={truck}
+                  truckTypes={truckTypes}
                   onUpdate={handleUpdateTruck}
                 />
               ))}

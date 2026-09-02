@@ -37,12 +37,19 @@ export function useQuotes() {
     queryFn: getTransporterQuotations,
   });
 
+  // Filter out draft quotes as they do not have truck lines assigned yet
   const pendingQuotes = useMemo(() => {
-    return quotes.filter((q) => q.state === 'draft');
+    return quotes.filter(
+      (q) => q.state === 'waiting_team_approval' && (q.proposed_truck_count || 0) === 0
+    );
   }, [quotes]);
 
   const alreadyQuotedQuotes = useMemo(() => {
-    return quotes.filter((q) => q.state !== 'draft');
+    return quotes.filter(
+      (q) =>
+        q.state !== 'draft' &&
+        ((q.proposed_truck_count || 0) > 0 || q.state === 'done' || q.state === 'partially_cancelled')
+    );
   }, [quotes]);
 
   const displayedList = useMemo(() => {

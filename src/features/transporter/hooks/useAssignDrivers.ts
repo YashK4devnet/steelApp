@@ -1,14 +1,18 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { QuoteItem, ProposedTruckDetail } from '../types';
-import { getQuoteById, saveQuoteDriverDetails } from '../services/transporterApi';
+import { useQueryClient } from '@tanstack/react-query';
+import type { QuoteItem, ProposedTruckDetail, TransporterQuotationDetail } from '../types';
+import { getQuoteById, getQuotationDetail, submitTruckDriverDetails } from '../services/transporterApi';
 import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 export function useAssignDrivers() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const [quote, setQuote] = useState<QuoteItem | null>(null);
+  const [quotationDetail, setQuotationDetail] = useState<TransporterQuotationDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [trucks, setTrucks] = useState<ProposedTruckDetail[]>([]);
@@ -24,36 +28,45 @@ export function useAssignDrivers() {
         return;
       }
       try {
-        const data = await getQuoteById(id);
-        if (data) {
-          setQuote(data);
-          
-          // Initialize truck driver details
-          if (data.truck_details && data.truck_details.length > 0) {
-            setTrucks(data.truck_details.map((t, idx) => ({
-              ...t,
-              id: t.id || `truck-${idx + 1}`,
-              vehicle_type: t.vehicle_type || '12 Wheeler (21-25 MT)',
-              capacity_tons: t.capacity_tons || 20,
-              truck_number_plate: t.truck_number_plate || '',
-              driver_name: t.driver_name || '',
-              driver_contact: t.driver_contact || '',
-              driver_license_number: t.driver_license_number || '',
-            })));
-          } else {
-            const count = data.available_trucks || data.trucks_required || 1;
-            const generated: ProposedTruckDetail[] = Array.from({ length: count }, (_, idx) => ({
-              id: `truck-${idx + 1}`,
-              vehicle_type: '12 Wheeler (21-25 MT)',
-              capacity_tons: 20,
-              pricing_base: 'per_ton',
-              proposed_rate: '',
-              truck_number_plate: '',
-              driver_name: '',
-              driver_contact: '',
-              driver_license_number: '',
-            }));
-            setTrucks(generated);
+        const [quoteData, detailData] = await Promise.all([
+          getQuoteById(id),
+          getQuotationDetail(id).catch(() => null),
+        ]);
+
+        if (quoteData) {
+          setQuote(quoteData);
+          if (detailData) setQuotationDetail(detailData);
+
+          const serverLines = detailData?.truck_lines || [];
+
+          if (serverLines.length > 0) {
+            setTrucks(
+              serverLines.map((tl, idx) => ({
+                id: String(tl.id || `truck-${idx + 1}`),
+                truck_line_id: tl.id,
+                vehicle_type: tl.proposed_truck_type || tl.requested_truck_type_name || '12 Wheeler (21-25 MT)',
+                capacity_tons: tl.truck_capacity || 20,
+                pricing_base: detailData?.by_truck ? 'per_truck' : 'per_ton',
+                proposed_rate: tl.proposal_rate ? String(tl.proposal_rate) : '',
+                truck_number_plate: tl.truck_number || '',
+                driver_name: tl.driver_name || '',
+                driver_contact: tl.driver_contact || '',
+                driver_license_number: tl.driver_license || '',
+                state: tl.state,
+              }))
+            );
+          } else if (quoteData.truck_details && quoteData.truck_details.length > 0) {
+            setTrucks(
+              quoteData.truck_details.map((t, idx) => ({
+                ...t,
+                id: t.id || `truck-${idx + 1}`,
+                truck_number_plate: t.truck_number_plate || '',
+                driver_name: t.driver_name || '',
+                driver_contact: t.driver_contact || '',
+                driver_license_number: t.driver_license_number || '',
+                state: t.state || 'management_approved',
+              }))
+            );
           }
         } else {
           setError('Quote not found');
@@ -82,16 +95,25 @@ export function useAssignDrivers() {
     });
   }, []);
 
-  const isValid = useMemo(() => {
-    if (!quote || trucks.length === 0) return false;
+  // Trucks with state 'management_approved' or 'waiting_management_approval' are editable and require input
+  const editableTrucks = useMemo(() => {
+    return trucks.filter(
+      (t) => t.state === 'management_approved' || t.state === 'waiting_management_approval'
+    );
+  }, [trucks]);
 
-    return trucks.every((t) => {
+  const isValid = useMemo(() => {
+    if (!quote || editableTrucks.length === 0) return false;
+
+    return editableTrucks.every((t) => {
+      const lineId = t.truck_line_id || Number(t.id);
+      const hasValidId = typeof lineId === 'number' && !isNaN(lineId) && lineId > 0;
       const hasPlate = Boolean(t.truck_number_plate?.trim());
       const hasName = Boolean(t.driver_name?.trim());
       const hasContact = Boolean(t.driver_contact?.trim());
-      return hasPlate && hasName && hasContact;
+      return hasValidId && hasPlate && hasName && hasContact;
     });
-  }, [quote, trucks]);
+  }, [quote, editableTrucks]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,23 +123,41 @@ export function useAssignDrivers() {
     setSaveError(null);
 
     try {
-      const res = await saveQuoteDriverDetails({
-        quote_id: quote.id,
-        truck_details: trucks,
+      // Only submit API request for trucks in approved or waiting management approval states
+      await Promise.all(
+        editableTrucks.map((t, idx) => {
+          const rawId = t.truck_line_id || Number(t.id);
+          const lineId = typeof rawId === 'number' && !isNaN(rawId) && rawId > 0 ? rawId : null;
+
+          if (!lineId) {
+            throw new Error(`Truck Line ID is missing for Truck #${idx + 1}.`);
+          }
+
+          return submitTruckDriverDetails({
+            truck_line_id: lineId,
+            truck_number: t.truck_number_plate?.trim() || '',
+            driver_name: t.driver_name?.trim() || '',
+            driver_contact: t.driver_contact?.trim() || '',
+            driver_license_number: t.driver_license_number?.trim() || '',
+          });
+        })
+      );
+
+      // Invalidate queries
+      await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transporterQuotations });
+      if (id) {
+        await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.transporterQuotationDetail(id) });
+      }
+
+      dispatchGlobalToast({
+        type: 'success',
+        title: 'Driver Details Submitted',
+        message: `Driver details submitted for ${editableTrucks.length} approved truck${editableTrucks.length > 1 ? 's' : ''}.`,
       });
 
-      if (res.success) {
-        dispatchGlobalToast({
-          type: 'success',
-          title: 'Driver Details Saved',
-          message: 'Driver and truck plate information has been saved successfully.',
-        });
-        navigate('/transporter/quotes?tab=quoted', { replace: true });
-      } else {
-        setSaveError(res.message || 'Failed to save driver details');
-      }
+      navigate('/transporter/quotes?tab=quoted', { replace: true });
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error saving driver details';
+      const msg = err instanceof Error ? err.message : 'Error submitting driver details';
       setSaveError(msg);
     } finally {
       setSaving(false);
@@ -126,9 +166,11 @@ export function useAssignDrivers() {
 
   return {
     quote,
+    quotationDetail,
     loading,
     error,
     trucks,
+    editableTrucks,
     handleUpdateDriver,
     isValid,
     saving,

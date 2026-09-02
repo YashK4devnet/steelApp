@@ -13,6 +13,47 @@ export interface TransporterQuotation {
   proposed_truck_count: number;
   approved_truck_count: number;
   state: QuotationLineState | string;
+  truck_lines?: TransporterTruckLine[];
+}
+
+export interface TransporterTruckLine {
+  id: number;
+  proposal_rate: number;
+  proposed_truck_type_id: number | false;
+  proposed_truck_type: string;
+  truck_number: string;
+  truck_capacity: number;
+  driver_name: string;
+  driver_contact: string;
+  driver_license: string;
+  state: string;
+  requested_truck_type_name: string;
+}
+
+export interface TransporterQuotationDetail extends TransporterQuotation {
+  truck_lines: TransporterTruckLine[];
+}
+
+export interface ActiveTruckType {
+  id: number;
+  name: string;
+}
+
+export interface SubmitTruckQuotePayload {
+  truck_line_id: number;
+  new_truck_type?: boolean;
+  proposed_truck_type_id?: number;
+  truck_type_name?: string;
+  truck_capacity: number;
+  proposal_rate: number;
+}
+
+export interface SubmitTruckDriverDetailsPayload {
+  truck_line_id: number;
+  truck_number: string;
+  driver_name: string;
+  driver_contact: string;
+  driver_license_number: string;
 }
 
 export type QuoteStatus = 'pending_quote' | 'pending' | 'accepted' | 'rejected';
@@ -21,7 +62,11 @@ export type PricingBase = 'per_ton' | 'per_truck';
 
 export interface ProposedTruckDetail {
   id: string;
+  truck_line_id?: number;
   vehicle_type: string;
+  proposed_truck_type_id?: number | null;
+  is_new_truck_type?: boolean;
+  truck_type_name?: string;
   capacity_tons: number | string;
   pricing_base?: PricingBase;
   proposed_rate?: number | string;
@@ -29,6 +74,7 @@ export interface ProposedTruckDetail {
   driver_name?: string;
   driver_contact?: string;
   driver_license_number?: string;
+  state?: string;
 }
 
 export interface QuoteItem {
