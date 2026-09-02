@@ -494,6 +494,11 @@ This document logs the major architectural, feature, and design changes implemen
 - **Background Scroll Locking (`UploadBiltyModal.tsx`)**: Configured body scroll lock (`document.body.style.overflow = 'hidden'`) upon modal open with automatic restoration on close/unmount, preventing unwanted background list scrolling while interacting with the modal.
 - **Outside Click Dismissal (`UploadBiltyModal.tsx`)**: Added backdrop overlay `onClick` dismissal while maintaining `e.stopPropagation()` on the modal container card, allowing users to dismiss the modal by tapping anywhere outside.
 
+## Phase 77: GPU-Accelerated Directional Slide Tab Transition
+- **Hardware-Accelerated CSS Keyframes (`index.css`)**: Implemented `slideInFromRight` and `slideInFromLeft` transitions utilizing 3D transforms (`translate3d(±28px, 0, 0)`) and opacity easing on the GPU compositor thread with `will-change`.
+- **Directional Tab Animation (`QuotesPage.tsx`)**: Added directional slide tracking when switching between "Pending to Quote" and "Already Quoted", giving users a native 60 FPS mobile slide animation when alternating between quotation categories.
+
+
 
 
 

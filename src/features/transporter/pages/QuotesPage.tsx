@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuotes } from '../hooks/useQuotes';
 import { QuoteCard } from '../components/QuoteCard';
@@ -59,6 +59,20 @@ export function QuotesPage() {
     displayedList,
     refreshQuotes,
   } = useQuotes();
+
+  const prevTabRef = useRef<'pending' | 'quoted'>(activeTab);
+  const [slideDirection, setSlideDirection] = useState<'right' | 'left'>('right');
+
+  useEffect(() => {
+    if (prevTabRef.current !== activeTab) {
+      if (activeTab === 'quoted') {
+        setSlideDirection('right');
+      } else {
+        setSlideDirection('left');
+      }
+      prevTabRef.current = activeTab;
+    }
+  }, [activeTab]);
 
   const handleNavigateToSubmit = (quote: TransporterQuotation) => {
     navigate(`/transporter/quotes/submit/${quote.id}`);
@@ -164,7 +178,12 @@ export function QuotesPage() {
 
       {/* Main List View with PullToRefresh */}
       <PullToRefresh onRefresh={handleRefresh}>
-        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-4">
+        <main 
+          key={activeTab}
+          className={`max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-4 ${
+            slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'
+          }`}
+        >
           {loading ? (
             <QuoteSkeleton />
           ) : error ? (
