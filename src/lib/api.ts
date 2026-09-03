@@ -9,6 +9,20 @@ export interface ApiRequestOptions {
   successMessage?: string;
 }
 
+export class ApiError extends Error {
+  status: number;
+  data?: any;
+  isNetworkError?: boolean;
+
+  constructor(message: string, status: number = 500, data?: any) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.data = data;
+    this.isNetworkError = status === 0;
+  }
+}
+
 /**
  * A wrapper around CapacitorHttp to standardize requests, base URLs, error handling, and toast notifications.
  * CapacitorHttp runs requests through the native mobile layer, inherently bypassing CORS restrictions.
@@ -21,6 +35,7 @@ export async function apiRequest<T = any>(
   headers: Record<string, string> = {},
   options?: ApiRequestOptions
 ): Promise<T> {
+  const isMutation = method !== 'GET';
   
   const httpOptions: HttpOptions = {
     url: `${BASE_URL}${endpoint}`,
@@ -46,15 +61,16 @@ export async function apiRequest<T = any>(
     } catch (networkError: any) {
       window.dispatchEvent(new CustomEvent('network-error', { detail: { isOffline: true } }));
       
-      if (!options?.silentError) {
+      // Only dispatch network error toast immediately for user-initiated mutations
+      if (!options?.silentError && isMutation) {
         dispatchGlobalToast({
           type: 'error',
           title: 'Network Connection Failed',
-          message: 'Unable to reach the server. Please check your internet connection and try again.',
+          message: 'Unable to reach the server. Please check your internet connection.',
         });
       }
       
-      throw new Error('Network error: Unable to reach the server. Please check your connection.');
+      throw new ApiError('Network error: Unable to reach the server. Please check your connection.', 0);
     }
 
     // Since the request reached the server, clear any offline banners
@@ -67,7 +83,7 @@ export async function apiRequest<T = any>(
       // 1. If 401 occurs during Login attempt -> Invalid credentials (not an expired session)
       if (isLoginEndpoint) {
         const errorMsg = serverMessage || 'Invalid username or password.';
-        throw new Error(errorMsg);
+        throw new ApiError(errorMsg, 401, response.data);
       }
 
       // 2. If 401 occurs during an authenticated session -> Token/Session has expired
@@ -82,14 +98,15 @@ export async function apiRequest<T = any>(
         });
       }
 
-      throw new Error(sessionMsg);
+      throw new ApiError(sessionMsg, 401, response.data);
     }
 
     // Odoo API returns 200 OK but sometimes indicates error in body
     if (response.status >= 400 || response.data?.status === 'error') {
       const errorMsg = response.data?.message || `Server request failed with status ${response.status}`;
       
-      if (!options?.silentError) {
+      // For mutations, show toast notification; for queries, let TanStack Query handle retries silently
+      if (!options?.silentError && isMutation) {
         dispatchGlobalToast({
           type: 'error',
           title: 'Request Failed',
@@ -97,7 +114,7 @@ export async function apiRequest<T = any>(
         });
       }
 
-      throw new Error(errorMsg);
+      throw new ApiError(errorMsg, response.status, response.data);
     }
     
     // Optional success toast notification for mutations

@@ -543,6 +543,12 @@ This document logs the major architectural, feature, and design changes implemen
 ## Phase 87: Driver Details Assignment Extension for Waiting Management Approval
 - **Editable Driver Details Scope (`DriverAssignmentCard.tsx`, `useAssignDrivers.ts`, `QuoteCard.tsx`)**: Extended driver details editing and submission to allow truck lines in both `waiting_management_approval` and `management_approved` states, keeping other states (e.g. `waiting_team_approval`, `rejected`, `loading`) strictly read-only.
 
+## Phase 88: Smart Background Retries & Notification Deduplication
+- **Selective 5xx/Network Retries (`QueryProvider.tsx`, `api.ts`)**: Reconfigured TanStack Query to immediately stop retrying on 4xx client errors (400, 401, 403, 404), restricting automatic background retries strictly to 5xx server errors and network connection drops (up to 2 retries).
+- **Silent Background Retries (`api.ts`, `QueryProvider.tsx`)**: Prevented `apiRequest` from popping up premature error toast banners during background query attempts. Added a central `QueryCache.onError` handler that notifies the user only once after all background retries have completely failed.
+- **Toast Flood Protection (`ToastProvider.tsx`)**: Implemented automatic toast deduplication that prevents identical messages from stacking up or spamming the user within a 3.5-second window.
+
+
 
 
 

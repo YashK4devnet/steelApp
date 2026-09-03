@@ -36,6 +36,7 @@ export function dispatchGlobalToast(options: ToastOptions) {
 
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
+  const recentToastsRef = React.useRef<Map<string, number>>(new Map());
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
@@ -43,6 +44,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showToast = useCallback(
     (options: ToastOptions) => {
+      // Prevent spamming identical toast notifications within 3.5 seconds
+      const toastKey = `${options.type || 'info'}:${options.title || ''}:${options.message}`;
+      const now = Date.now();
+      const lastTime = recentToastsRef.current.get(toastKey);
+      if (lastTime && now - lastTime < 3500) {
+        return;
+      }
+      recentToastsRef.current.set(toastKey, now);
+
       const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const newToast: ToastItem = {
         id,
