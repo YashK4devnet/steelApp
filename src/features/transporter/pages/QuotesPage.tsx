@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuotes } from '../hooks/useQuotes';
 import { QuoteCard } from '../components/QuoteCard';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import { QueryErrorState } from '../../../components/ui/QueryErrorState';
 import type { TransporterQuotation } from '../types';
 
 const ArrowLeftIcon = () => (
@@ -187,19 +188,11 @@ export function QuotesPage() {
           {loading ? (
             <QuoteSkeleton />
           ) : error ? (
-            <div className="text-center py-10 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-red-100 flex flex-col items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-red-50 text-red-500 flex items-center justify-center text-xl font-bold">
-                ⚠️
-              </div>
-              <p className="text-sm font-semibold text-red-600">{error}</p>
-              <button
-                type="button"
-                onClick={handleRefresh}
-                className="px-5 py-2 bg-primary text-white font-bold text-xs rounded-full hover:bg-primary/90 transition-all cursor-pointer active:scale-95"
-              >
-                Try Again
-              </button>
-            </div>
+            <QueryErrorState
+              title="Unable to Load Quotations"
+              message={error}
+              onRetry={handleRefresh}
+            />
           ) : displayedList.length === 0 ? (
             <div className="text-center py-12 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">

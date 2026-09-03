@@ -24,6 +24,70 @@ export class ApiError extends Error {
 }
 
 /**
+ * Safely parses response body and extracts a clean, human-readable error message.
+ * Handles Odoo standard JSON errors, nested RPC data, raw text, and proxy/gateway HTML pages.
+ */
+export function extractErrorMessage(data: any, status: number): string {
+  if (!data) {
+    if (status === 404) return 'The requested resource was not found.';
+    if (status === 403) return 'You do not have permission to perform this action.';
+    if (status === 502 || status === 503 || status === 504) {
+      return 'The server is temporarily unavailable. Please try again shortly.';
+    }
+    return `Server request failed with status ${status}.`;
+  }
+
+  // If CapacitorHttp returned a JSON string instead of an object, parse it
+  let parsed = data;
+  if (typeof data === 'string') {
+    const trimmed = data.trim();
+    if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+      try {
+        parsed = JSON.parse(trimmed);
+      } catch {
+        // Keep string
+      }
+    } else if (trimmed.includes('<html') || trimmed.includes('<!DOCTYPE') || trimmed.includes('<title>')) {
+      if (status === 502 || status === 503 || status === 504) {
+        return 'The server is temporarily unavailable. Please try again shortly.';
+      }
+      return `Server error (${status}). Please try again.`;
+    } else if (trimmed.length > 0 && trimmed.length < 200) {
+      return trimmed;
+    }
+  }
+
+  if (typeof parsed === 'object' && parsed !== null) {
+    // 1. Direct message field
+    if (typeof parsed.message === 'string' && parsed.message.trim()) {
+      return parsed.message.trim();
+    }
+    // 2. Direct error string
+    if (typeof parsed.error === 'string' && parsed.error.trim()) {
+      return parsed.error.trim();
+    }
+    // 3. Odoo nested error: { error: { data: { message: "..." } } }
+    if (typeof parsed.error?.data?.message === 'string' && parsed.error.data.message.trim()) {
+      return parsed.error.data.message.trim();
+    }
+    // 4. Odoo nested error: { error: { message: "..." } }
+    if (typeof parsed.error?.message === 'string' && parsed.error.message.trim()) {
+      return parsed.error.message.trim();
+    }
+    // 5. XML-RPC or custom fault
+    if (typeof parsed.faultString === 'string' && parsed.faultString.trim()) {
+      return parsed.faultString.trim();
+    }
+  }
+
+  if (status === 404) return 'The requested resource was not found.';
+  if (status === 403) return 'Access denied. You do not have permission.';
+  if (status >= 500) return 'Server error occurred. Please try again.';
+
+  return `Server request failed with status ${status}.`;
+}
+
+/**
  * A wrapper around CapacitorHttp to standardize requests, base URLs, error handling, and toast notifications.
  * CapacitorHttp runs requests through the native mobile layer, inherently bypassing CORS restrictions.
  * It also automatically uses the native cookie jar, maintaining the Odoo session_id.
@@ -75,15 +139,28 @@ export async function apiRequest<T = any>(
 
     // Since the request reached the server, clear any offline banners
     window.dispatchEvent(new CustomEvent('network-error', { detail: { isOffline: false } }));
+
+    // Normalize response data if it arrived as a serialized JSON string
+    let parsedData = response.data;
+    if (typeof parsedData === 'string') {
+      const trimmed = parsedData.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          parsedData = JSON.parse(trimmed);
+        } catch {
+          // Keep original
+        }
+      }
+    }
     
     if (response.status === 401) {
       const isLoginEndpoint = endpoint.includes('/auth/login');
-      const serverMessage = response.data?.message;
+      const serverMessage = extractErrorMessage(parsedData, response.status);
 
       // 1. If 401 occurs during Login attempt -> Invalid credentials (not an expired session)
       if (isLoginEndpoint) {
         const errorMsg = serverMessage || 'Invalid username or password.';
-        throw new ApiError(errorMsg, 401, response.data);
+        throw new ApiError(errorMsg, 401, parsedData);
       }
 
       // 2. If 401 occurs during an authenticated session -> Token/Session has expired
@@ -98,12 +175,12 @@ export async function apiRequest<T = any>(
         });
       }
 
-      throw new ApiError(sessionMsg, 401, response.data);
+      throw new ApiError(sessionMsg, 401, parsedData);
     }
 
     // Odoo API returns 200 OK but sometimes indicates error in body
-    if (response.status >= 400 || response.data?.status === 'error') {
-      const errorMsg = response.data?.message || `Server request failed with status ${response.status}`;
+    if (response.status >= 400 || parsedData?.status === 'error' || parsedData?.error) {
+      const errorMsg = extractErrorMessage(parsedData, response.status);
       
       // For mutations, show toast notification; for queries, let TanStack Query handle retries silently
       if (!options?.silentError && isMutation) {
@@ -114,7 +191,7 @@ export async function apiRequest<T = any>(
         });
       }
 
-      throw new ApiError(errorMsg, response.status, response.data);
+      throw new ApiError(errorMsg, response.status, parsedData);
     }
     
     // Optional success toast notification for mutations
@@ -125,7 +202,7 @@ export async function apiRequest<T = any>(
       });
     }
 
-    return response.data;
+    return parsedData;
   } catch (error: any) {
     console.error(`[API Error] ${method} ${endpoint}:`, error);
     throw error;

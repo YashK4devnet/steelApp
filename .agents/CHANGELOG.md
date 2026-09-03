@@ -548,6 +548,12 @@ This document logs the major architectural, feature, and design changes implemen
 - **Silent Background Retries (`api.ts`, `QueryProvider.tsx`)**: Prevented `apiRequest` from popping up premature error toast banners during background query attempts. Added a central `QueryCache.onError` handler that notifies the user only once after all background retries have completely failed.
 - **Toast Flood Protection (`ToastProvider.tsx`)**: Implemented automatic toast deduplication that prevents identical messages from stacking up or spamming the user within a 3.5-second window.
 
+## Phase 89: Resilient API Response Parsing & Unified Query Error States
+- **Robust Error Extractor (`api.ts`)**: Implemented top-level `extractErrorMessage(data, status)` capable of parsing nested Odoo exceptions (`error.data.message`, `error.message`), raw strings, serialized JSON, and proxy HTML 502/504 gateway timeout pages into clean user-facing error text.
+- **Reusable `<QueryErrorState />` Component (`QueryErrorState.tsx`)**: Designed a modern, responsive in-page error card with an alert icon, clear messaging, and a one-tap "Try Again" retry button with spinner feedback.
+- **Clear Separation of Empty vs. Failed States Across List Pages**: Integrated `<QueryErrorState />` into `BookingsPage`, `TransporterLoadingTrucksPage`, `LoadedTrucksPage`, `LoadingTrucksPage`, `OutgoingTrucksPage`, and `QuotesPage`. Prevents network/server errors from being mistaken for zero-record empty states.
+
+
 
 
 

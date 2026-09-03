@@ -5,6 +5,7 @@ import { getTransporterLoadingTrucks } from '../services/transporterApi';
 import type { TransporterLoadingTruck } from '../types';
 import { UploadBiltyModal } from '../components/UploadBiltyModal';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import { QueryErrorState } from '../../../components/ui/QueryErrorState';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 const ArrowLeftIcon = () => (
@@ -68,7 +69,14 @@ export function TransporterLoadingTrucksPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTruckForBilty, setSelectedTruckForBilty] = useState<TransporterLoadingTruck | null>(null);
 
-  const { data: trucks = [], isLoading: loading, isError, error, refetch } = useQuery({
+  const {
+    data: trucks = [],
+    isLoading: loading,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = useQuery({
     queryKey: QUERY_KEYS.transporterLoadingTrucks,
     queryFn: getTransporterLoadingTrucks,
   });
@@ -124,22 +132,12 @@ export function TransporterLoadingTrucksPage() {
           {loading ? (
             <TruckSkeleton />
           ) : isError ? (
-            <div className="bg-white rounded-[24px] p-8 text-center shadow-sm border border-slate-900/5 flex flex-col items-center justify-center gap-3">
-              <div className="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center text-xl font-bold">
-                ⚠️
-              </div>
-              <h3 className="text-base font-bold text-text-primary">Unable to Load Trucks</h3>
-              <p className="text-xs text-text-secondary max-w-md">
-                {error instanceof Error ? error.message : 'Failed to connect to server.'}
-              </p>
-              <button 
-                type="button"
-                onClick={() => handleRefresh()}
-                className="mt-2 px-5 py-2 bg-primary text-white text-xs font-semibold rounded-full shadow-sm active:scale-95 transition-all"
-              >
-                Try Again
-              </button>
-            </div>
+            <QueryErrorState
+              title="Unable to Load Trucks"
+              message={error instanceof Error ? error.message : 'Failed to connect to server. Please try again.'}
+              onRetry={handleRefresh}
+              isRetrying={isFetching}
+            />
           ) : filteredTrucks.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-[24px] p-6 shadow-sm border border-slate-900/5">
               <p className="text-text-secondary font-medium">No loading trucks assigned.</p>

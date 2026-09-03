@@ -10,7 +10,14 @@ export function useBookings() {
   const [activeTab, setActiveTab] = useState<'All' | 'Pending' | 'Loaded' | 'Cancelled'>('All');
   const [cancelModalBooking, setCancelModalBooking] = useState<Booking | null>(null);
 
-  const { data: bookings = [], isLoading: loading, refetch: refreshBookings } = useQuery({
+  const {
+    data: bookings = [],
+    isLoading: loading,
+    isError,
+    error,
+    isFetching,
+    refetch: refreshBookings,
+  } = useQuery({
     queryKey: QUERY_KEYS.bookings,
     queryFn: getBookings,
   });
@@ -41,6 +48,9 @@ export function useBookings() {
     bookings: filteredBookings,
     totalCount: bookings.length,
     loading,
+    isError,
+    error: error instanceof Error ? error.message : null,
+    isFetching,
     activeTab,
     setActiveTab,
     cancelModalBooking,

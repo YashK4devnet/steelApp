@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useBookings } from '../hooks/useBookings';
 import { BOOKING_STATUS } from '../constants';
 import { DateFilterCalendar } from '../components/DateFilterCalendar';
+import { QueryErrorState } from '../../../components/ui/QueryErrorState';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -59,10 +60,14 @@ export function BookingsPage() {
   const {
     bookings,
     loading,
+    isError,
+    error,
+    isFetching,
     cancelModalBooking,
     setCancelModalBooking,
     isCancelling,
     handleCancel,
+    refreshBookings,
   } = useBookings();
 
   useEffect(() => {
@@ -252,6 +257,13 @@ export function BookingsPage() {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </div>
+        ) : isError ? (
+          <QueryErrorState
+            title="Unable to Load Bookings"
+            message={error || 'A connection or server issue occurred while loading bookings. Please try again.'}
+            onRetry={refreshBookings}
+            isRetrying={isFetching}
+          />
         ) : bookings.length === 0 ? (
           <div className="text-center py-10 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5">
             <p className="text-text-secondary font-medium">No bookings found.</p>

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getLoadedTrucks } from '../services/truckApi';
 import type { LoadedTruck } from '../types';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import { QueryErrorState } from '../../../components/ui/QueryErrorState';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 const ArrowLeftIcon = () => (
@@ -34,7 +35,14 @@ export function LoadedTrucksPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: trucks = [], isLoading: loading, isError, error, refetch } = useQuery<LoadedTruck[], Error>({
+  const {
+    data: trucks = [],
+    isLoading: loading,
+    isError,
+    error,
+    isFetching,
+    refetch,
+  } = useQuery<LoadedTruck[], Error>({
     queryKey: QUERY_KEYS.loadedTrucks,
     queryFn: () => getLoadedTrucks(),
   });
@@ -58,25 +66,39 @@ export function LoadedTrucksPage() {
             type="button"
             onClick={() => navigate('/dashboard', { replace: true })}
             aria-label="Back to dashboard"
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+            className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
           >
             <ArrowLeftIcon />
           </button>
-          <h1 className="text-[24px] font-bold text-text-primary tracking-tight">Loaded Trucks</h1>
+          <div>
+            <h1 className="text-[24px] font-bold text-text-primary tracking-tight">Report Loaded Trucks</h1>
+            <p className="text-[13px] font-medium text-text-secondary">Arrival reporting & status</p>
+          </div>
         </div>
 
         {/* Search Bar */}
         <div className="max-w-[1200px] mx-auto relative">
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-text-secondary opacity-60">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-secondary pointer-events-none">
             <SearchIcon />
           </div>
           <input 
             type="text" 
-            placeholder="Search by driver, plate or type..." 
+            placeholder="Search by driver, truck plate, or vehicle..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-12 pr-4 bg-white rounded-[16px] border border-slate-900/5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-colors text-[15px] font-medium placeholder:text-text-secondary placeholder:font-normal"
+            className="w-full h-11 pl-10 pr-9 bg-white rounded-[14px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-text-secondary/60"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary p-0.5"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
 
@@ -88,9 +110,12 @@ export function LoadedTrucksPage() {
               <p className="text-text-secondary">Loading trucks...</p>
             </div>
           ) : isError ? (
-            <div className="text-center py-12">
-              <p className="text-error">{error instanceof Error ? error.message : 'Failed to fetch trucks'}</p>
-            </div>
+            <QueryErrorState
+              title="Unable to Load Trucks"
+              message={error?.message || 'A connection or server issue occurred while loading loaded trucks.'}
+              onRetry={handleRefresh}
+              isRetrying={isFetching}
+            />
           ) : filteredTrucks.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-text-secondary">No trucks found.</p>
