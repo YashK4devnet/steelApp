@@ -498,7 +498,8 @@ Returns the logged-in transporter's quotation lines
 (`transport.booking.quotation.line`).
 
 * `transporter_id` matches the logged-in user's `partner_id`.
-* Cancelled quotation lines (`state = cancelled`) are excluded.
+* Cancelled quotation lines (`state = cancelled`) and Closed quotation lines
+  (`state = done`) are excluded, along with `draft`.
 * Truck-line details are **not** included. Use the quotation line `id` in a
   later details API when the user opens one quotation.
 
@@ -527,7 +528,7 @@ This list is meant for the transporter's booking / quotation screen.
 | ------------------------- | ---------------------------- |
 | `draft`                   | Draft                        |
 | `waiting_team_approval`   | Waiting for Approval         |
-| `done`                    | All Approved                 |
+| `done`                    | Closed                       |
 | `partially_cancelled`     | Partially Cancelled          |
 
 **Example Request**
@@ -1867,9 +1868,106 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
 
 ---
 
+## Device Registration (Firebase Push)
+
+After login, the mobile app must register the Firebase Cloud Messaging (FCM)
+device token so the backend can send push notifications to that user.
+
+These endpoints use the same Bearer token as the rest of the RNE APIs. They
+are available to every role. For now the backend only *sends* transporter
+notifications; other roles can already register devices for later use.
+
+### Register Device
+
+**Endpoint**
+
+```text
+POST /booking/auth/register_device
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+Call this after a successful login, and again whenever FCM refreshes the token.
+
+| Field       | Type   | Required | Description |
+| ----------- | ------ | -------- | ----------- |
+| `token`     | string | Yes      | FCM registration token. `fcm_token` and `device_token` are also accepted. |
+| `platform`  | string | No       | `android` or `ios`. |
+| `device_id` | string | No       | Stable device identifier from the app. Used to replace an old token on the same phone. |
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/auth/register_device" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "token": "<fcm-registration-token>",
+    "platform": "android",
+    "device_id": "optional-stable-device-id"
+  }'
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Device registered successfully.",
+  "device_id": 12
+}
+```
+
+### Unregister Device
+
+**Endpoint**
+
+```text
+POST /booking/auth/unregister_device
+```
+
+**Authentication**
+
+Bearer token from `login`.
+
+Call this on logout. If `token` is omitted, every device for the logged-in user is deactivated.
+
+| Field   | Type   | Required | Description |
+| ------- | ------ | -------- | ----------- |
+| `token` | string | No       | FCM token to deactivate. Omit to deactivate all devices for this user. |
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/auth/unregister_device" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{ "token": "<fcm-registration-token>" }'
+```
+
+### Notification payload (tap handling)
+
+FCM `data` values are strings. On notification tap, read `type` and navigate:
+
+| `type` | Open this screen | Use this id |
+| ------ | ---------------- | ----------- |
+| `transporter_new_quotation` | Quotation details | `quotation_line_id` → `GET /booking/transporter/quotations/<id>` |
+| `transporter_truck_quote_approved` | Quotation details (then submit truck/driver) | `quotation_line_id` and `truck_line_id` |
+| `transporter_truck_quote_rejected` | Quotation details (do not submit truck/driver) | `quotation_line_id` and `truck_line_id` |
+
+Common fields: `role` (`transporter`), `booking_id`, `booking_number`.
+
+---
+
 ## Mobile App Flow
 
 1. Call `POST /booking/auth/login` with `X-Odoo-Database` to obtain a bearer token.
+   Then call `POST /booking/auth/register_device` with the FCM token so the user
+   can receive push notifications.
 2. **Security Guard flow**
    - Incoming: `GET /booking/trucks/loaded` → show **Report** when `is_reported` is `false` → `POST /booking/trucks/report` with `truck_line_id`, datetime, note, and images.
    - Outgoing: `GET /booking/trucks/outgoing` → show **Report** when `is_reported` is `false` → `POST /booking/trucks/outgoing/report` with `truck_id`, datetime, note, and images.
@@ -1909,5 +2007,7 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
 6. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.
+   Also call `POST /booking/auth/unregister_device` with the current FCM token
+   so this device stops receiving push notifications for that user.
 
 ---

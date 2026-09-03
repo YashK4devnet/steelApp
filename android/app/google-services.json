@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "974786377402",
+    "project_id": "rne-push-odoo",
+    "storage_bucket": "rne-push-odoo.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:974786377402:android:f98544086895e67faaf483",
+        "android_client_info": {
+          "package_name": "com.fourdevnet.steelapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_hHJKg8Hudih9b2ON1PrQEQ5ksS6Pq04"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

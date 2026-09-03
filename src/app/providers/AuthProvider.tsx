@@ -3,6 +3,7 @@ import type { User } from '../../types';
 import { apiRequest } from '../../lib/api';
 import { SessionExpiredModal } from '../../components/ui/SessionExpiredModal';
 import { syncMasterData } from '../../features/bookings/services/bookingApi';
+import { pushNotificationService } from '../../services/pushNotificationService';
 
 interface AuthContextType {
   user: User | null;
@@ -75,20 +76,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (role === 'buyer' || role === 'customer') {
         syncMasterData();
       }
+
+      // Register device FCM token with backend
+      pushNotificationService.registerDeviceWithBackend().catch((err) => {
+        console.warn('[AuthProvider] Push device registration failed on login:', err);
+      });
     } else {
       throw new Error('Invalid response from server or missing token');
     }
   };
 
   const logout = async () => {
-    // 1. Call Odoo backend API POST /booking/auth/logout
+    // 1. Unregister device push token from backend before logging out
+    await pushNotificationService.unregisterDeviceWithBackend().catch((err) => {
+      console.warn('[AuthProvider] Device unregistration failed on logout:', err);
+    });
+
+    // 2. Call Odoo backend API POST /booking/auth/logout
     const res = await apiRequest<{ status?: string }>('POST', '/booking/auth/logout');
 
     if (res && res.status === 'error') {
       throw new Error((res as any).message || 'Server rejected logout request');
     }
 
-    // 2. Clear local user session ONLY if API call succeeds
+    // 3. Clear local user session ONLY if API call succeeds
     setUser(null);
     setToken(null);
     localStorage.removeItem('authUser');

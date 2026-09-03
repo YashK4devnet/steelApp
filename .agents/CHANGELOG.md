@@ -584,6 +584,38 @@ This document logs the major architectural, feature, and design changes implemen
   - `cancelled`: *"Read-only: This truck line has been cancelled."*
   - `loading` / `loaded`: *"Read-only: Truck has already progressed to [state]."*
 
+## Phase 96: Firebase Push Notifications Setup & Deep Linking
+- **Native Plugin Integration (`@capacitor/push-notifications`)**: Installed and synced `@capacitor/push-notifications` with Android (`npx cap sync android`). Added presentation options to `capacitor.config.ts`.
+- **Dedicated Push Service (`src/services/pushNotificationService.ts`)**:
+  - Implemented high-importance Android Notification Channel (`transporter_quotes`) with heads-up display, sound, and vibration.
+  - Added native permission checks and requests on startup.
+  - Handled FCM token acquisition with console logging and `localStorage` persistence (`fcm_device_token`) for immediate testing via Firebase Console / Postman.
+  - Added foreground alert handling via global in-app toast (`dispatchGlobalToast`).
+  - Added deep linking in `pushNotificationActionPerformed` directing users straight to `/transporter/quotes/submit/:id` or custom route payloads.
+- **Router Hooking (`src/app/router/index.tsx`)**: Initialized the push service inside `CapacitorNativeSetup` with deep linking navigation callback.
+
+## Phase 97: Backend Device Token Registration & Unregistration (Firebase Push)
+- **Device Registration API (`src/services/pushNotificationService.ts`)**: Implemented `registerDeviceWithBackend(token?)` to call `POST /booking/auth/register_device` with `{ token, platform }`.
+- **Device Unregistration API (`src/services/pushNotificationService.ts`)**: Implemented `unregisterDeviceWithBackend()` to call `POST /booking/auth/unregister_device` with `{ token }` on logout.
+- **Payload Tap Type Mapping (`src/services/pushNotificationService.ts`)**: Updated `pushNotificationActionPerformed` to parse the exact specification `type` attributes:
+  - `transporter_new_quotation` $\rightarrow$ `/transporter/quotes/submit/<quotation_line_id>`
+  - `transporter_truck_quote_approved` $\rightarrow$ `/transporter/quotes/assign-drivers/<quotation_line_id>`
+  - `transporter_truck_quote_rejected` $\rightarrow$ `/transporter/quotes?tab=quoted`
+- **Auth Lifecycle Integration (`src/app/providers/AuthProvider.tsx`)**:
+  - Connected `registerDeviceWithBackend` immediately upon successful login.
+  - Connected `unregisterDeviceWithBackend` right before clearing session state on logout.
+
+## Phase 98: Native Device Identification & Push Role Safeguards
+- **Native Device Identification (`@capacitor/device`, `pushNotificationService.ts`)**: Installed `@capacitor/device` and implemented `getDeviceId()` to retrieve Android's persistent `ANDROID_ID` hardware identifier. Included `device_id` in the `POST /booking/auth/register_device` payload so Odoo cleanly upserts the token on the same physical phone.
+- **Client-Side Role Safeguard (`pushNotificationService.ts`)**: Added active role verification in both `pushNotificationReceived` (foreground toast) and `pushNotificationActionPerformed` (tap action). If a notification payload specifies `role: "transporter"`, it checks the current user's session role—suppressing alerts and deep links if the logged-in user is a Security Guard, Buyer, or other role.
+
+## Phase 99: Fix Odoo Language Rejection with Global `Accept-Language` Header
+- **Default Accept-Language Header (`src/lib/api.ts`)**: Added `'Accept-Language': 'en_US'` to default HTTP headers in `apiRequest`. This prevents native Android network requests (operating on `en_IN` or device-specific locales) from triggering Odoo's 422 *Invalid language code* validation error.
+
+
+
+
+
 
 
 

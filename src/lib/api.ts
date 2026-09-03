@@ -105,6 +105,7 @@ export async function apiRequest<T = any>(
     url: `${BASE_URL}${endpoint}`,
     headers: {
       'Content-Type': 'application/json',
+      'Accept-Language': 'en_US',
       ...headers,
     },
   };

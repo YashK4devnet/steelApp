@@ -6,6 +6,7 @@ import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { NetworkBanner } from '../../components/ui/NetworkBanner';
+import { pushNotificationService } from '../../services/pushNotificationService';
 
 // Route-based code splitting for production bundle optimization
 const LoginPage = React.lazy(() => import('../../features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
@@ -112,6 +113,11 @@ function CapacitorNativeSetup() {
     // Configure native status bar
     StatusBar.setStyle({ style: Style.Light }).catch(() => {});
     StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
+
+    // Initialize native Firebase push notifications & deep link handler
+    pushNotificationService.init((route) => {
+      navigate(route);
+    });
 
     // Native Android hardware back button handler
     const listener = CapacitorApp.addListener('backButton', () => {
