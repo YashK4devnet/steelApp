@@ -8,6 +8,8 @@ import type {
   TransporterQuotationDetail,
   ActiveTruckType,
   SubmitTruckQuotePayload,
+  SubmitTruckQuoteBatchPayload,
+  SubmitTruckQuoteBatchResponse,
   SubmitTruckDriverDetailsPayload,
 } from '../types';
 import { apiRequest } from '../../../lib/api';
@@ -141,21 +143,13 @@ export async function getTransporterTruckTypes(): Promise<ActiveTruckType[]> {
 }
 
 /**
- * Submits initial quote proposal details for one truck line.
+ * Submits quote proposal details for one or more truck lines on a quotation.
  * Endpoint: POST /booking/transporter/submit_truck_quote
  */
-export async function submitTruckQuote(payload: SubmitTruckQuotePayload): Promise<{
-  status: string;
-  message?: string;
-  truck_line_id?: number;
-  state?: string;
-}> {
-  return apiRequest<{
-    status: string;
-    message?: string;
-    truck_line_id?: number;
-    state?: string;
-  }>(
+export async function submitTruckQuote(
+  payload: SubmitTruckQuoteBatchPayload
+): Promise<SubmitTruckQuoteBatchResponse> {
+  return apiRequest<SubmitTruckQuoteBatchResponse>(
     'POST',
     '/booking/transporter/submit_truck_quote',
     payload
@@ -200,6 +194,7 @@ export async function getQuoteById(id: number | string): Promise<QuoteItem | nul
 
       const mappedTruckDetails = (detail.truck_lines || []).map((tl, index) => ({
         id: String(tl.id || `truck-${index + 1}`),
+        truck_line_id: tl.id,
         vehicle_type: tl.proposed_truck_type || tl.requested_truck_type_name || '12 Wheeler (21-25 MT)',
         capacity_tons: tl.truck_capacity || 20,
         pricing_base: detail.by_truck ? ('per_truck' as const) : ('per_ton' as const),

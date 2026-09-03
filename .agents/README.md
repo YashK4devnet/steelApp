@@ -744,27 +744,38 @@ Bearer token from `login`.
 
 **Description**
 
-Allows a Transporter to submit the initial quote for one truck line: proposed truck type, capacity in tons, and proposal rate. The truck line must belong to the logged-in transporter and must be in `waiting_team_approval`. After this, the existing Odoo approval flow continues for that truck line.
+Allows a Transporter to submit quotes for one or more truck lines on a quotation. Each item in `truck_quotes` uses the same validation as before: proposed truck type, capacity in tons, and proposal rate. Every submitted truck line must belong to `quotation_line_id`, to the logged-in transporter, and must be in `waiting_team_approval`. Submitted trucks continue through the existing Odoo approval flow.
+
+After the submitted quotes are saved, remaining truck lines on that quotation that were **not** included in `truck_quotes` and are still waiting for approval are cancelled automatically with the reason **Not submitted by transporter**.
 
 **Authorisation**
 
 * **Transporter users** only. Other roles receive `403 Forbidden`.
-* The truck line's `transporter_id` must match the logged-in user's `partner_id`.
+* The quotation line's `transporter_id` must match the logged-in user's `partner_id`.
+* Each truck line's `transporter_id` must match the logged-in user's `partner_id`.
 
 **Request Format**
 
-Send JSON (`application/json`) or form fields.
+Send JSON (`application/json`).
+
+| Field                   | Type    | Required | Description |
+| ----------------------- | ------- | -------- | ----------- |
+| `quotation_line_id`     | integer | Yes      | Quotation line `id` these truck quotes belong to. |
+| `available_truck_count` | integer | Yes      | Number of trucks the transporter is quoting. Must match `truck_quotes` length and be greater than `0`. |
+| `truck_quotes`          | list    | Yes      | Quote details for each submitted truck. Must be a non-empty list. |
+
+**Fields inside each `truck_quotes` item**
 
 | Field                     | Type    | Required | Description |
 | ------------------------- | ------- | -------- | ----------- |
-| `truck_line_id`           | integer | Yes      | Truck line `id` from quotation details. |
+| `truck_line_id`           | integer | Yes      | Truck line `id` from quotation details. Must belong to `quotation_line_id`. |
 | `new_truck_type`          | boolean | No       | `false` — select an existing truck type. `true` — create from `truck_type_name`. Default `false`. |
 | `proposed_truck_type_id`  | integer | If `new_truck_type` is `false` | Active truck type `id` from `GET /booking/transporter/truck-types`. |
 | `truck_type_name`         | string  | If `new_truck_type` is `true` | New truck type name. If an active type with the same name already exists, it is reused. |
 | `truck_capacity`          | number  | Yes      | Truck capacity in **tons**. Uses the **Product Unit** decimal accuracy. |
 | `proposal_rate`           | integer | Yes      | Proposed rate. Whole numbers only (no decimals). |
 
-**Example Request (existing truck type)**
+**Example Request (existing and new truck types)**
 
 ```bash
 curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
@@ -772,29 +783,28 @@ curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
   -H "X-Odoo-Database: mydb" \
   -H "Content-Type: application/json" \
   -d '{
-    "truck_line_id": 201,
-    "new_truck_type": false,
-    "proposed_truck_type_id": 7,
-    "truck_capacity": 16.5,
-    "proposal_rate": 24000
+    "quotation_line_id": 12,
+    "available_truck_count": 2,
+    "truck_quotes": [
+      {
+        "truck_line_id": 201,
+        "new_truck_type": false,
+        "proposed_truck_type_id": 7,
+        "truck_capacity": 16.5,
+        "proposal_rate": 24000
+      },
+      {
+        "truck_line_id": 202,
+        "new_truck_type": true,
+        "truck_type_name": "32 Ft Container",
+        "truck_capacity": 20,
+        "proposal_rate": 26000
+      }
+    ]
   }'
 ```
 
-**Example Request (new truck type)**
-
-```bash
-curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
-  -H "Authorization: Bearer a1b2c3d4..." \
-  -H "X-Odoo-Database: mydb" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "truck_line_id": 201,
-    "new_truck_type": true,
-    "truck_type_name": "32 Ft Container",
-    "truck_capacity": 20,
-    "proposal_rate": 24000
-  }'
-```
+If the quotation has four truck lines and only `201` and `202` are sent, truck lines `203` and `204` (if still waiting for approval) are cancelled with reason **Not submitted by transporter**.
 
 **Example Success Response** (`200 OK`)
 
@@ -802,8 +812,13 @@ curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
 {
   "status": "success",
   "message": "Truck quote details submitted successfully.",
-  "truck_line_id": 201,
-  "state": "waiting_team_approval"
+  "quotation_line_id": 12,
+  "available_truck_count": 2,
+  "cancelled_truck_line_ids": [203, 204],
+  "submitted_trucks": [
+    { "id": 201, "truck_type_name": "Flatbed Truck", "state": "waiting_team_approval" },
+    { "id": 202, "truck_type_name": "Container / Closed Box Truck", "state": "waiting_team_approval" }
+  ]
 }
 ```
 
@@ -812,7 +827,7 @@ curl -X POST "http://<odoo-host>/booking/transporter/submit_truck_quote" \
 ```json
 {
   "status": "error",
-  "message": "Proposal Rate must be an integer."
+  "message": "Truck quote 1: Proposal Rate must be an integer."
 }
 ```
 
@@ -1871,8 +1886,10 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
      quotation details with linked truck lines.
    - Call `GET /booking/transporter/truck-types` to fill the proposed truck
      type dropdown when submitting a truck quote.
-   - Call `POST /booking/transporter/submit_truck_quote` with `truck_line_id`,
-     proposed truck type, capacity (tons), and integer `proposal_rate`.
+   - Call `POST /booking/transporter/submit_truck_quote` with `quotation_line_id`,
+     `available_truck_count`, and `truck_quotes` (each item has `truck_line_id`,
+     proposed truck type, capacity in tons, and integer `proposal_rate`).
+     Truck lines on that quotation that are not included are cancelled.
    - After the truck line is approved, call
      `POST /booking/transporter/submit_truck_details` with truck number and
      driver details.

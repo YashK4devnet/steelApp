@@ -568,6 +568,25 @@ This document logs the major architectural, feature, and design changes implemen
 - **Exit Lifecycle (`isClosing` State)**: Added graceful dismissal handling so closing via backdrop tap, top-right '✕', or Cancel button triggers the full slide-down exit animation before unmounting.
 - **Mobile Ergonomics**: Added a rounded pill drag handle indicator at the top of the sheet and light tactile haptics on modal open/dismiss.
 
+## Phase 93: Section 10 Batch Truck Quote Submission Alignment
+- **Batch Payload Architecture (`types.ts`, `transporterApi.ts`)**: Updated `submitTruckQuote` and payload definitions to support the revised Section 10 specification (`POST /booking/transporter/submit_truck_quote`), sending `{ quotation_line_id, available_truck_count, truck_quotes }` in a single atomic request instead of parallel calls.
+- **Atomic Batch Handler (`useSubmitQuote.ts`)**: Replaced `Promise.all` sequential truck submissions with a single consolidated batch request, coercing `proposal_rate` to whole integers (`Math.round`) and providing proper error mapping.
+
+## Phase 94: Fix Truck Line ID Resolution on Quote Submission
+- **Single Source of Truth Fetching (`useSubmitQuote.ts`)**: Replaced the duplicate parallel calls (`getQuoteById` + `getQuotationDetail`) with a direct call to `getQuotationDetail(id)`, ensuring `quotationDetail` and `detailRef.current` are always hydrated with server-returned `truck_lines` (e.g. IDs 59, 60, 61).
+- **Explicit `truck_line_id` Mapping (`transporterApi.ts`, `useSubmitQuote.ts`)**: Added `truck_line_id: tl.id` to `mappedTruckDetails` in `getQuoteById` and ensured sequential truck allocations in `handleAvailableTrucksChange` assign the resolved numeric truck line ID to both `truck_line_id` and `id`.
+- **Multi-Layer ID Fallback in `handleSubmit`**: Enhanced line ID resolution in `handleSubmit` to check `t.truck_line_id`, parsed `Number(t.id)`, `quotationDetail.truck_lines[idx].id`, and `detailRef.current.truck_lines[idx].id`.
+
+## Phase 95: Clarified Read-Only Messages in Driver Assignment
+- **Accurate State Progression (`DriverAssignmentCard.tsx`)**: Replaced misleading *"Driver details can only be assigned after management approves"* with stage-accurate messaging:
+  - `waiting_team_approval`: *"Read-only: Awaiting team approval before driver details can be assigned."*
+  - `rejected`: *"Read-only: This truck quote was rejected."*
+  - `cancelled`: *"Read-only: This truck line has been cancelled."*
+  - `loading` / `loaded`: *"Read-only: Truck has already progressed to [state]."*
+
+
+
+
 
 
 

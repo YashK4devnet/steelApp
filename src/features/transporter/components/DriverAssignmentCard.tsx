@@ -48,6 +48,22 @@ function getTruckStateBadge(state?: string) {
   }
 }
 
+function getReadOnlyReason(state?: string, defaultLabel?: string): string {
+  switch (state) {
+    case 'waiting_team_approval':
+      return 'Read-only: Awaiting team approval before driver details can be assigned.';
+    case 'rejected':
+      return 'Read-only: This truck quote was rejected.';
+    case 'cancelled':
+      return 'Read-only: This truck line has been cancelled.';
+    case 'loading':
+    case 'loaded':
+      return `Read-only: Truck has already progressed to ${state}.`;
+    default:
+      return `Read-only: Truck status is ${defaultLabel?.toLowerCase() || 'pending'}.`;
+  }
+}
+
 export function DriverAssignmentCard({ index, truck, onUpdate }: DriverAssignmentCardProps) {
   // Trucks in 'management_approved' or 'waiting_management_approval' state can have driver details added or edited
   const isEditable = truck.state === 'management_approved' || truck.state === 'waiting_management_approval';
@@ -86,11 +102,7 @@ export function DriverAssignmentCard({ index, truck, onUpdate }: DriverAssignmen
       {!isEditable && (
         <div className="p-3 bg-slate-100/80 rounded-[12px] border border-slate-200/80 text-[11px] font-medium text-slate-600 flex items-center gap-2">
           <span>🔒</span>
-          <span>
-            {truck.state === 'waiting_management_approval' || truck.state === 'waiting_team_approval'
-              ? 'Read-only: Driver details can only be assigned after management approves this truck.'
-              : `Read-only: Truck status is ${stateBadge.label.toLowerCase()}.`}
-          </span>
+          <span>{getReadOnlyReason(truck.state, stateBadge.label)}</span>
         </div>
       )}
 

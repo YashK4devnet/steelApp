@@ -39,13 +39,34 @@ export interface ActiveTruckType {
   name: string;
 }
 
-export interface SubmitTruckQuotePayload {
+export interface TruckQuoteItemPayload {
   truck_line_id: number;
   new_truck_type?: boolean;
   proposed_truck_type_id?: number;
   truck_type_name?: string;
   truck_capacity: number;
   proposal_rate: number;
+}
+
+export type SubmitTruckQuotePayload = TruckQuoteItemPayload;
+
+export interface SubmitTruckQuoteBatchPayload {
+  quotation_line_id: number;
+  available_truck_count: number;
+  truck_quotes: TruckQuoteItemPayload[];
+}
+
+export interface SubmitTruckQuoteBatchResponse {
+  status: string;
+  message?: string;
+  quotation_line_id: number;
+  available_truck_count: number;
+  cancelled_truck_line_ids?: number[];
+  submitted_trucks?: Array<{
+    id: number;
+    truck_type_name: string;
+    state: string;
+  }>;
 }
 
 export interface SubmitTruckDriverDetailsPayload {
