@@ -4,6 +4,7 @@ import { useQuotes } from '../hooks/useQuotes';
 import { QuoteCard } from '../components/QuoteCard';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
 import { QueryErrorState } from '../../../components/ui/QueryErrorState';
+import { hapticFeedback } from '../../../utils/haptics';
 import type { TransporterQuotation } from '../types';
 
 const ArrowLeftIcon = () => (
@@ -116,8 +117,11 @@ export function QuotesPage() {
           <div className="bg-white/80 p-1.5 rounded-[18px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.03)] grid grid-cols-2 gap-1">
             <button
               type="button"
-              onClick={() => setActiveTab('pending')}
-              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              onClick={() => {
+                hapticFeedback.light();
+                setActiveTab('pending');
+              }}
+              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.97] ${
                 activeTab === 'pending'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-text-primary hover:bg-slate-50'
@@ -133,8 +137,11 @@ export function QuotesPage() {
 
             <button
               type="button"
-              onClick={() => setActiveTab('quoted')}
-              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+              onClick={() => {
+                hapticFeedback.light();
+                setActiveTab('quoted');
+              }}
+              className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.97] ${
                 activeTab === 'quoted'
                   ? 'bg-primary text-white shadow-sm'
                   : 'text-text-secondary hover:text-text-primary hover:bg-slate-50'

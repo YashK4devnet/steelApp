@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { hapticFeedback } from '../../utils/haptics';
 
 interface PullToRefreshProps {
   onRefresh: () => Promise<void> | void;
@@ -12,7 +13,7 @@ interface PullToRefreshProps {
 const RefreshIcon = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
-    className={className}
+    className={className} 
     viewBox="0 0 24 24" 
     fill="none" 
     stroke="currentColor" 
@@ -37,6 +38,7 @@ export function PullToRefresh({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const startYRef = useRef<number | null>(null);
   const isDraggingRef = useRef(false);
+  const hasTriggeredHapticRef = useRef(false);
 
   const isAtTop = useCallback(() => {
     return window.scrollY <= 0;
@@ -46,6 +48,7 @@ export function PullToRefresh({
     if (disabled || isRefreshing || !isAtTop()) return;
     startYRef.current = clientY;
     isDraggingRef.current = true;
+    hasTriggeredHapticRef.current = false;
   };
 
   const handleMove = (clientY: number) => {
@@ -55,8 +58,17 @@ export function PullToRefresh({
       // Rubberband dampening
       const distance = Math.min(dy * 0.45, threshold * 1.4);
       setPullDistance(distance);
+
+      // Tactile snap when crossing the refresh threshold
+      if (distance >= threshold && !hasTriggeredHapticRef.current) {
+        hapticFeedback.medium();
+        hasTriggeredHapticRef.current = true;
+      } else if (distance < threshold) {
+        hasTriggeredHapticRef.current = false;
+      }
     } else {
       setPullDistance(0);
+      hasTriggeredHapticRef.current = false;
     }
   };
 
@@ -64,6 +76,7 @@ export function PullToRefresh({
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     startYRef.current = null;
+    hasTriggeredHapticRef.current = false;
 
     if (pullDistance >= threshold && !isRefreshing) {
       setIsRefreshing(true);
@@ -73,6 +86,7 @@ export function PullToRefresh({
 
       try {
         await Promise.all([Promise.resolve(onRefresh()), minTimer]);
+        hapticFeedback.light();
       } catch (err) {
         console.error('[PullToRefresh] Refresh error:', err);
         await minTimer;

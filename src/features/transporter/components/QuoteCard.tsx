@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { TransporterQuotation } from '../types';
 import { getQuotationDetail } from '../services/transporterApi';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
+import { hapticFeedback } from '../../../utils/haptics';
 
 const TruckIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -218,6 +219,7 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              hapticFeedback.light();
               onSubmitQuote(quote);
             }}
             className="px-5 py-2.5 rounded-full bg-primary text-white hover:bg-primary/90 active:scale-95 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"
@@ -231,6 +233,7 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
             type="button"
             onClick={(e) => {
               e.stopPropagation();
+              hapticFeedback.light();
               onAssignDrivers(quote);
             }}
             className="px-5 py-2.5 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 text-xs font-bold shadow-sm transition-all flex items-center gap-1.5 cursor-pointer"

@@ -553,6 +553,24 @@ This document logs the major architectural, feature, and design changes implemen
 - **Reusable `<QueryErrorState />` Component (`QueryErrorState.tsx`)**: Designed a modern, responsive in-page error card with an alert icon, clear messaging, and a one-tap "Try Again" retry button with spinner feedback.
 - **Clear Separation of Empty vs. Failed States Across List Pages**: Integrated `<QueryErrorState />` into `BookingsPage`, `TransporterLoadingTrucksPage`, `LoadedTrucksPage`, `LoadingTrucksPage`, `OutgoingTrucksPage`, and `QuotesPage`. Prevents network/server errors from being mistaken for zero-record empty states.
 
+## Phase 90: Route Code-Splitting & Lazy Loading Optimization
+- **Dynamic Route Splitting (`src/app/router/index.tsx`)**: Converted all 16 page routes to `React.lazy()` dynamic imports, wrapping routes in `<React.Suspense fallback={<PageLoadingFallback />}>`.
+- **Bundle Size Reduction**: Reduced the primary bundle size from 547 kB down to 319 kB (~41.6% reduction), eliminated oversized chunk warnings, and enabled fast, on-demand feature loading per user role.
+
+## Phase 91: Native Haptics & Tactile Micro-Animations
+- **Central Haptics Utility (`src/utils/haptics.ts`)**: Installed `@capacitor/haptics` and created a safe cross-platform wrapper supporting `light`, `medium`, `success`, `error`, and `selection` patterns with seamless fallback for web environments.
+- **Global Toast Haptic Integration (`ToastProvider.tsx`)**: Wired `hapticFeedback.success()` and `hapticFeedback.error()` into the global toast dispatch system, providing physical confirmation for all submissions across the app.
+- **Pull-To-Refresh Tactile Feedback (`PullToRefresh.tsx`)**: Added threshold-crossing snap feedback (`medium`) and completion feedback (`light`) to pull-to-refresh gestures.
+- **Micro-Animations & Touch Springs (`Button.tsx`, `QuoteCard.tsx`, `QuotesPage.tsx`)**: Added `active:scale-[0.97]` touch spring transforms and light haptics on button clicks, tab switches, and quote action cards.
+
+## Phase 92: Smooth Bottom-Sheet Spring Animations for Upload Bilty Modal
+- **Spring Slide Transitions (`UploadBiltyModal.tsx`)**: Replaced missing CSS class names with GPU-accelerated `.animate-slide-up-bottom` on entrance and `.animate-slide-down-bottom` on exit, coupled with smooth 250ms backdrop fade transitions.
+- **Exit Lifecycle (`isClosing` State)**: Added graceful dismissal handling so closing via backdrop tap, top-right '✕', or Cancel button triggers the full slide-down exit animation before unmounting.
+- **Mobile Ergonomics**: Added a rounded pill drag handle indicator at the top of the sheet and light tactile haptics on modal open/dismiss.
+
+
+
+
 
 
 

@@ -4,6 +4,7 @@ import type { TransporterLoadingTruck } from '../types';
 import { useSubmitBilty } from '../hooks/useBiltyMutations';
 import { processDocumentFile, compressImage } from '../../../lib/fileCompression';
 import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
+import { hapticFeedback } from '../../../utils/haptics';
 
 interface UploadBiltyModalProps {
   isOpen: boolean;
@@ -54,6 +55,7 @@ const TruckIcon = () => (
 );
 
 export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalProps) {
+  const [isClosing, setIsClosing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +67,13 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
   // Reset state, lock body scrolling, and notify layout when modal opens/closes
   useEffect(() => {
     if (isOpen) {
+      setIsClosing(false);
       setSelectedFile(null);
       setPreviewUrl(null);
       setError(null);
       setIsProcessing(false);
       document.body.style.overflow = 'hidden';
+      hapticFeedback.light();
     } else {
       document.body.style.overflow = '';
     }
@@ -79,6 +83,16 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
       window.dispatchEvent(new CustomEvent('toggle-modal-overlay', { detail: { open: false } }));
     };
   }, [isOpen]);
+
+  const handleClose = () => {
+    if (isProcessing || submitMutation.isPending || isClosing) return;
+    hapticFeedback.light();
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 240);
+  };
 
   if (!isOpen || !truck) return null;
 
@@ -194,7 +208,7 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
         message: `Bilty document submitted successfully for ${truck.truck_number_plate}.`,
       });
 
-      onClose();
+      handleClose();
     } catch (err: unknown) {
       // Handled centrally in apiRequest
       setError(err instanceof Error ? err.message : 'Failed to submit bilty document.');
@@ -213,17 +227,24 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
 
   return (
     <div 
-      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in cursor-pointer"
+      className={`fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-250 cursor-pointer ${
+        isClosing ? 'opacity-0 pointer-events-none' : 'opacity-100 animate-page-transition'
+      }`}
       onClick={(e) => {
         if (e.target === e.currentTarget && !isSubmitting) {
-          onClose();
+          handleClose();
         }
       }}
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-white rounded-t-[28px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.25)] border border-slate-900/10 p-5 sm:p-6 pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)] sm:pb-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto animate-slide-up cursor-default"
+        className={`w-full max-w-lg bg-white rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.25)] border border-slate-900/10 p-5 sm:p-6 pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)] sm:pb-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto cursor-default ${
+          isClosing ? 'animate-slide-down-bottom' : 'animate-slide-up-bottom'
+        }`}
       >
+        {/* Mobile Sheet Drag Handle */}
+        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto -mt-1 mb-1 sm:hidden shrink-0" />
+
         {/* Modal Header */}
         <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
           <div>
@@ -232,10 +253,10 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
           </div>
           <button 
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             disabled={isSubmitting}
             aria-label="Close"
-            className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 flex items-center justify-center transition-colors active:scale-95"
+            className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 flex items-center justify-center transition-colors active:scale-95 cursor-pointer"
           >
             ✕
           </button>
@@ -362,9 +383,9 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
           <div className="flex items-center gap-3 mt-2">
             <button
               type="button"
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isSubmitting}
-              className="flex-1 py-3 px-4 rounded-[14px] border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50"
+              className="flex-1 py-3 px-4 rounded-[14px] border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
             >
               Cancel
             </button>

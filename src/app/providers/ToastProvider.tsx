@@ -34,6 +34,8 @@ export function dispatchGlobalToast(options: ToastOptions) {
   );
 }
 
+import { hapticFeedback } from '../../utils/haptics';
+
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
   const recentToastsRef = React.useRef<Map<string, number>>(new Map());
@@ -52,6 +54,17 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       recentToastsRef.current.set(toastKey, now);
+
+      // Trigger native tactile feedback based on toast nature
+      if (options.type === 'success') {
+        hapticFeedback.success();
+      } else if (options.type === 'error') {
+        hapticFeedback.error();
+      } else if (options.type === 'warning') {
+        hapticFeedback.medium();
+      } else {
+        hapticFeedback.light();
+      }
 
       const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
       const newToast: ToastItem = {

@@ -2,26 +2,37 @@ import React, { useEffect, useState, useRef } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { LoginPage } from '../../features/auth/pages/LoginPage';
-import { DashboardPage } from '../../features/dashboard/pages/DashboardPage';
-import { ProfilePage } from '../../features/profile/pages/ProfilePage';
-import { LoadedTrucksPage } from '../../features/trucks/pages/LoadedTrucksPage';
-import { LoadingTrucksPage } from '../../features/trucks/pages/LoadingTrucksPage';
-import { ReportTruckPage } from '../../features/trucks/pages/ReportTruckPage';
-import { SubmitVendorBillPage } from '../../features/trucks/pages/SubmitVendorBillPage';
-import { OutgoingTrucksPage } from '../../features/trucks/pages/OutgoingTrucksPage';
-import { ReportOutgoingTruckPage } from '../../features/trucks/pages/ReportOutgoingTruckPage';
-import { BookingsPage } from '../../features/bookings/pages/BookingsPage';
-import { CreateBookingStep1Page } from '../../features/bookings/pages/CreateBookingStep1Page';
-import { CreateBookingStep2Page } from '../../features/bookings/pages/CreateBookingStep2Page';
-import { QuotesPage } from '../../features/transporter/pages/QuotesPage';
-import { SubmitQuotePage } from '../../features/transporter/pages/SubmitQuotePage';
-import { AssignDriversPage } from '../../features/transporter/pages/AssignDriversPage';
-import { TransporterLoadingTrucksPage } from '../../features/transporter/pages/TransporterLoadingTrucksPage';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { NetworkBanner } from '../../components/ui/NetworkBanner';
+
+// Route-based code splitting for production bundle optimization
+const LoginPage = React.lazy(() => import('../../features/auth/pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const DashboardPage = React.lazy(() => import('../../features/dashboard/pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const ProfilePage = React.lazy(() => import('../../features/profile/pages/ProfilePage').then((m) => ({ default: m.ProfilePage })));
+const LoadedTrucksPage = React.lazy(() => import('../../features/trucks/pages/LoadedTrucksPage').then((m) => ({ default: m.LoadedTrucksPage })));
+const LoadingTrucksPage = React.lazy(() => import('../../features/trucks/pages/LoadingTrucksPage').then((m) => ({ default: m.LoadingTrucksPage })));
+const ReportTruckPage = React.lazy(() => import('../../features/trucks/pages/ReportTruckPage').then((m) => ({ default: m.ReportTruckPage })));
+const SubmitVendorBillPage = React.lazy(() => import('../../features/trucks/pages/SubmitVendorBillPage').then((m) => ({ default: m.SubmitVendorBillPage })));
+const OutgoingTrucksPage = React.lazy(() => import('../../features/trucks/pages/OutgoingTrucksPage').then((m) => ({ default: m.OutgoingTrucksPage })));
+const ReportOutgoingTruckPage = React.lazy(() => import('../../features/trucks/pages/ReportOutgoingTruckPage').then((m) => ({ default: m.ReportOutgoingTruckPage })));
+const BookingsPage = React.lazy(() => import('../../features/bookings/pages/BookingsPage').then((m) => ({ default: m.BookingsPage })));
+const CreateBookingStep1Page = React.lazy(() => import('../../features/bookings/pages/CreateBookingStep1Page').then((m) => ({ default: m.CreateBookingStep1Page })));
+const CreateBookingStep2Page = React.lazy(() => import('../../features/bookings/pages/CreateBookingStep2Page').then((m) => ({ default: m.CreateBookingStep2Page })));
+const QuotesPage = React.lazy(() => import('../../features/transporter/pages/QuotesPage').then((m) => ({ default: m.QuotesPage })));
+const SubmitQuotePage = React.lazy(() => import('../../features/transporter/pages/SubmitQuotePage').then((m) => ({ default: m.SubmitQuotePage })));
+const AssignDriversPage = React.lazy(() => import('../../features/transporter/pages/AssignDriversPage').then((m) => ({ default: m.AssignDriversPage })));
+const TransporterLoadingTrucksPage = React.lazy(() => import('../../features/transporter/pages/TransporterLoadingTrucksPage').then((m) => ({ default: m.TransporterLoadingTrucksPage })));
+
+function PageLoadingFallback() {
+  return (
+    <div className="min-h-[60vh] flex flex-col items-center justify-center gap-3">
+      <div className="w-10 h-10 rounded-full border-[3px] border-primary/20 border-t-primary animate-spin" />
+      <span className="text-xs font-semibold text-text-secondary tracking-wide animate-pulse">Loading...</span>
+    </div>
+  );
+}
 
 export interface PageLevelConfig {
   level: number;
@@ -156,39 +167,41 @@ export function AppRouter() {
     <BrowserRouter>
       <CapacitorNativeSetup />
       <NetworkBanner />
-      <Routes>
-        <Route element={<PublicRoute />}>
-          <Route path="/login" element={<LoginPage />} />
-        </Route>
-        
-        <Route element={<ProtectedRoute />}>
-          <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
-            <Route path="/trucks/outgoing" element={<OutgoingTrucksPage />} />
-            <Route path="/trucks/loading" element={<LoadingTrucksPage />} />
-            <Route path="/trucks/submit-bill/:id" element={<SubmitVendorBillPage />} />
-            <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
-            <Route path="/trucks/outgoing/report/:id" element={<ReportOutgoingTruckPage />} />
-            <Route path="/bookings" element={<BookingsPage />} />
-            <Route path="/bookings/new" element={<CreateBookingStep1Page />} />
-            <Route path="/bookings/new/step2" element={<CreateBookingStep2Page />} />
-            <Route path="/bookings/edit/:id" element={<CreateBookingStep1Page />} />
-            <Route path="/bookings/edit/:id/step2" element={<CreateBookingStep2Page />} />
-            <Route path="/bookings/view/:id" element={<CreateBookingStep1Page />} />
-            <Route path="/bookings/view/:id/step2" element={<CreateBookingStep2Page />} />
-            <Route path="/transporter/quotes" element={<QuotesPage />} />
-            <Route path="/transporter/quotes/submit/:id" element={<SubmitQuotePage />} />
-            <Route path="/transporter/quotes/assign-drivers/:id" element={<AssignDriversPage />} />
-            <Route path="/transporter/upload-bilty" element={<TransporterLoadingTrucksPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+      <React.Suspense fallback={<PageLoadingFallback />}>
+        <Routes>
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<LoginPage />} />
           </Route>
-        </Route>
-        
-        {/* Redirect root and unknown routes to dashboard (which will redirect to login if unauthenticated) */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+          
+          <Route element={<ProtectedRoute />}>
+            <Route element={<MainLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/trucks/loaded" element={<LoadedTrucksPage />} />
+              <Route path="/trucks/outgoing" element={<OutgoingTrucksPage />} />
+              <Route path="/trucks/loading" element={<LoadingTrucksPage />} />
+              <Route path="/trucks/submit-bill/:id" element={<SubmitVendorBillPage />} />
+              <Route path="/trucks/report/:id" element={<ReportTruckPage />} />
+              <Route path="/trucks/outgoing/report/:id" element={<ReportOutgoingTruckPage />} />
+              <Route path="/bookings" element={<BookingsPage />} />
+              <Route path="/bookings/new" element={<CreateBookingStep1Page />} />
+              <Route path="/bookings/new/step2" element={<CreateBookingStep2Page />} />
+              <Route path="/bookings/edit/:id" element={<CreateBookingStep1Page />} />
+              <Route path="/bookings/edit/:id/step2" element={<CreateBookingStep2Page />} />
+              <Route path="/bookings/view/:id" element={<CreateBookingStep1Page />} />
+              <Route path="/bookings/view/:id/step2" element={<CreateBookingStep2Page />} />
+              <Route path="/transporter/quotes" element={<QuotesPage />} />
+              <Route path="/transporter/quotes/submit/:id" element={<SubmitQuotePage />} />
+              <Route path="/transporter/quotes/assign-drivers/:id" element={<AssignDriversPage />} />
+              <Route path="/transporter/upload-bilty" element={<TransporterLoadingTrucksPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+            </Route>
+          </Route>
+          
+          {/* Redirect root and unknown routes to dashboard (which will redirect to login if unauthenticated) */}
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </React.Suspense>
     </BrowserRouter>
   );
 }
