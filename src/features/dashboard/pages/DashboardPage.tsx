@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
 import { useTheme } from '../../../hooks/useTheme';
+import { useNotifications } from '../../../hooks/useNotifications';
 import { BellIcon } from '../components/Icons';
 import { LogoutIcon } from '../../profile/components/Icons';
 import { SecurityDashboard } from '../components/SecurityDashboard';
@@ -9,11 +10,14 @@ import { SellerDashboard } from '../components/SellerDashboard';
 import { CustomerDashboard } from '../components/CustomerDashboard';
 import { TransporterDashboard } from '../components/TransporterDashboard';
 import { LogoutModal } from '../../../components/ui/LogoutModal';
+import { NotificationSheet } from '../../../components/ui/NotificationSheet';
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
   const { isDark } = useTheme();
+  const { unreadCount } = useNotifications();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showNotificationSheet, setShowNotificationSheet] = useState(false);
 
   const userRole = user?.role?.toLowerCase() || '';
   const isTransporter = userRole.includes('transporter');
@@ -51,11 +55,17 @@ export function DashboardPage() {
           {/* Action Buttons - Premium Pill Buttons */}
           <div className="flex items-center gap-2.5 flex-shrink-0">
             <button 
-              className="relative w-[42px] h-[42px] rounded-full bg-slate-50 dark:bg-slate-700/80 shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-200"
+              onClick={() => setShowNotificationSheet(true)}
+              className="relative w-[42px] h-[42px] rounded-full bg-slate-50 dark:bg-slate-700/80 shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-200 cursor-pointer"
               title="Notifications"
+              aria-label="Notifications"
             >
               <BellIcon />
-              <span className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-accent ring-2 ring-white dark:ring-slate-700 animate-pulse" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1 rounded-full bg-accent text-white text-[11px] font-extrabold flex items-center justify-center ring-2 ring-white dark:ring-[#1E293B] shadow-sm animate-fade-in">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </button>
 
             <button 
@@ -110,6 +120,12 @@ export function DashboardPage() {
         isOpen={showLogoutModal}
         onClose={() => setShowLogoutModal(false)}
         onConfirm={logout}
+      />
+
+      {/* In-App Notification Center Bottom Sheet */}
+      <NotificationSheet
+        isOpen={showNotificationSheet}
+        onClose={() => setShowNotificationSheet(false)}
       />
     </div>
   );

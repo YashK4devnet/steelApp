@@ -3,6 +3,7 @@ import { PushNotifications, type Token, type ActionPerformed, type PushNotificat
 import { Device } from '@capacitor/device';
 import { apiRequest } from '../lib/api';
 import { dispatchGlobalToast } from '../app/providers/ToastProvider';
+import { addNotification } from './notificationStorage';
 
 let isInitialized = false;
 let pendingDeepLinkRoute: string | null = null;
@@ -128,6 +129,14 @@ export const pushNotificationService = {
           }
         }
 
+        // Save to in-app notification center history
+        addNotification({
+          id: notification.id ? String(notification.id) : undefined,
+          title: notification.title || 'New Notification',
+          body: notification.body || '',
+          data,
+        });
+
         // Display in-app toast since heads-up banner may not trigger in foreground on all Android builds
         dispatchGlobalToast({
           type: 'info',
@@ -141,6 +150,14 @@ export const pushNotificationService = {
       await PushNotifications.addListener('pushNotificationActionPerformed', (action: ActionPerformed) => {
         console.log('[PushService] Notification tapped by user:', action);
         const data = action.notification.data || {};
+
+        // Save to in-app notification center history and mark read
+        addNotification({
+          id: action.notification.id ? String(action.notification.id) : undefined,
+          title: action.notification.title || 'New Notification',
+          body: action.notification.body || '',
+          data,
+        });
 
         // Role Safeguard: Verify user role before performing deep-link navigation
         const storedUser = localStorage.getItem('authUser');
