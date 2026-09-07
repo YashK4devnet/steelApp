@@ -152,13 +152,13 @@ export function PullToRefresh({
         }}
       >
         <div 
-          className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_6px_20px_rgba(15,23,42,0.1)] border border-slate-900/10 text-primary transition-transform duration-150"
+          className="w-10 h-10 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_6px_20px_rgba(15,23,42,0.1)] dark:shadow-[0_6px_20px_rgba(0,0,0,0.5)] border border-slate-900/10 dark:border-white/10 text-primary dark:text-blue-400 transition-transform duration-150"
           style={{
             transform: `scale(${Math.max(0.6, pullRatio)})`
           }}
         >
           <RefreshIcon 
-            className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-primary' : 'text-slate-600'}`} 
+            className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-primary dark:text-blue-400' : 'text-slate-600 dark:text-slate-300'}`} 
             {...(!isRefreshing ? { style: { transform: `rotate(${rotateDeg}deg)` } } : {})}
           />
         </div>

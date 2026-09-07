@@ -58,15 +58,15 @@ export function LoadedTrucksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-32 transition-colors duration-200">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         <div className="max-w-[1200px] mx-auto flex items-center gap-4 mb-6">
           <button 
             type="button"
             onClick={() => navigate('/dashboard', { replace: true })}
             aria-label="Back to dashboard"
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+            className="w-10 h-10 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
           >
             <ArrowLeftIcon />
           </button>
@@ -86,7 +86,7 @@ export function LoadedTrucksPage() {
             placeholder="Search by driver, truck plate, or vehicle..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-11 pl-10 pr-9 bg-white rounded-[14px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-text-secondary/60"
+            className="w-full h-11 pl-10 pr-9 bg-white dark:bg-surface text-text-primary rounded-[14px] border border-slate-900/5 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-text-secondary/60"
           />
           {searchQuery && (
             <button
@@ -124,11 +124,11 @@ export function LoadedTrucksPage() {
             filteredTrucks.map((truck) => (
               <div 
                 key={truck.id}
-                className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col sm:flex-row gap-5"
+                className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col sm:flex-row gap-5 transition-colors duration-200"
               >
                 {/* Icon & Primary Info */}
                 <div className="flex flex-row items-center gap-4 flex-1">
-                  <div className="w-12 h-12 flex-shrink-0 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                  <div className="w-12 h-12 flex-shrink-0 bg-primary/10 dark:bg-blue-500/20 rounded-full flex items-center justify-center text-primary dark:text-blue-400">
                     <TruckIcon />
                   </div>
                   <div className="flex-1">
@@ -142,7 +142,7 @@ export function LoadedTrucksPage() {
                 </div>
 
                 {/* Destination & Action */}
-                <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-900/5 pt-4 sm:pt-0 sm:pl-5">
+                <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-900/5 dark:border-white/10 pt-4 sm:pt-0 sm:pl-5">
                   <div className="sm:text-right">
                     <p className="text-[12px] text-text-secondary mb-0.5">Destination</p>
                     <p className="text-[14px] font-semibold text-text-primary max-w-[200px] truncate">
@@ -154,7 +154,7 @@ export function LoadedTrucksPage() {
                     type="button"
                     className={`w-full sm:w-auto px-6 py-2.5 rounded-[12px] font-semibold text-[14px] transition-transform active:scale-[0.98] ${
                       truck.is_reported 
-                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
+                        ? 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed' 
                         : 'bg-primary text-white shadow-[0_4px_12px_rgba(10,46,99,0.15)] hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)]'
                     }`}
                     disabled={truck.is_reported}

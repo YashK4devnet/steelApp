@@ -36,25 +36,22 @@ function LoadingTruckSkeleton() {
       {[1, 2, 3].map((n) => (
         <div 
           key={n} 
-          className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col sm:flex-row gap-5 animate-pulse"
+          className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col sm:flex-row gap-5 animate-pulse"
         >
           <div className="flex flex-row items-center gap-4 flex-1">
-            <div className="w-12 h-12 flex-shrink-0 bg-slate-200 rounded-full" />
+            <div className="w-12 h-12 flex-shrink-0 bg-slate-200 dark:bg-slate-800 rounded-full" />
             <div className="flex-1 space-y-2">
               <div className="flex items-center gap-2">
-                <div className="h-5 bg-slate-200 rounded-md w-32" />
-                <div className="h-4 bg-slate-200 rounded-full w-16" />
+                <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded-md w-32" />
+                <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-full w-16" />
               </div>
-              <div className="h-4 bg-slate-200 rounded-md w-48" />
-              <div className="h-3.5 bg-slate-100 rounded-md w-full max-w-sm mt-1" />
+              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-48" />
+              <div className="h-3.5 bg-slate-100 dark:bg-slate-800/60 rounded-md w-full max-w-sm mt-1" />
             </div>
           </div>
-          <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-900/5 pt-4 sm:pt-0 sm:pl-5">
-            <div className="sm:text-right space-y-1">
-              <div className="h-3 bg-slate-100 rounded w-20 sm:ml-auto" />
-              <div className="h-4 bg-slate-200 rounded w-36 sm:ml-auto" />
-            </div>
-            <div className="h-10 bg-slate-200 rounded-[12px] w-full sm:w-36" />
+          <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-100 dark:border-white/10 pt-4 sm:pt-0 sm:pl-5">
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded-md w-36" />
+            <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-[12px] w-full sm:w-40" />
           </div>
         </div>
       ))}
@@ -91,16 +88,16 @@ export function LoadingTrucksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-32 transition-colors duration-200">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <button 
               type="button"
               onClick={() => navigate('/dashboard', { replace: true })}
               aria-label="Back to dashboard"
-              className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+              className="w-10 h-10 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
@@ -118,7 +115,7 @@ export function LoadingTrucksPage() {
             placeholder="Search by driver, plate or location..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-12 pl-12 pr-4 bg-white rounded-[16px] border border-slate-900/5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-colors text-[15px] font-medium placeholder:text-text-secondary placeholder:font-normal"
+            className="w-full h-12 pl-12 pr-4 bg-white dark:bg-surface text-text-primary rounded-[16px] border border-slate-900/5 dark:border-white/10 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] outline-none focus:border-primary transition-colors text-[15px] font-medium placeholder:text-text-secondary placeholder:font-normal"
           />
         </div>
       </div>
@@ -136,18 +133,18 @@ export function LoadingTrucksPage() {
               isRetrying={isFetching}
             />
           ) : filteredTrucks.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-[24px] p-6 shadow-sm border border-slate-900/5">
+            <div className="text-center py-12 bg-white dark:bg-surface rounded-[24px] p-6 shadow-sm border border-slate-900/5 dark:border-white/10">
               <p className="text-text-secondary font-medium">No loading trucks found.</p>
             </div>
           ) : (
             filteredTrucks.map((truck) => (
               <div 
                 key={truck.id}
-                className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col sm:flex-row gap-5"
+                className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col sm:flex-row gap-5 transition-colors duration-200"
               >
                 {/* Icon & Primary Info */}
                 <div className="flex flex-row items-center gap-4 flex-1">
-                  <div className="w-12 h-12 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                  <div className="w-12 h-12 flex-shrink-0 bg-blue-100 dark:bg-blue-950/60 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400">
                     <TruckIcon />
                   </div>
                   <div className="flex-1">
@@ -157,8 +154,8 @@ export function LoadingTrucksPage() {
                       </h3>
                       <span className={`text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
                         truck.is_submitted 
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' 
-                          : 'bg-blue-50 text-blue-600'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/40' 
+                          : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
                       }`}>
                         {truck.is_submitted ? 'Bill Submitted' : truck.state}
                       </span>
@@ -166,14 +163,14 @@ export function LoadingTrucksPage() {
                     <p className="text-[14px] text-text-secondary font-medium">
                       {truck.driver_name} • {truck.truck_type}
                     </p>
-                    <p className="text-[12px] text-slate-500 mt-1">
-                      <span className="font-semibold text-slate-700">Pickup:</span> {truck.pickup_location_name}
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-1">
+                      <span className="font-semibold text-slate-700 dark:text-slate-300">Pickup:</span> {truck.pickup_location_name}
                     </p>
                   </div>
                 </div>
 
                 {/* Destination & Action */}
-                <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-900/5 pt-4 sm:pt-0 sm:pl-5">
+                <div className="flex flex-col justify-center sm:items-end gap-3 border-t sm:border-t-0 sm:border-l border-slate-900/5 dark:border-white/10 pt-4 sm:pt-0 sm:pl-5">
                   <div className="sm:text-right">
                     <p className="text-[12px] text-text-secondary mb-0.5">Delivery Destination</p>
                     <p className="text-[14px] font-semibold text-text-primary max-w-[220px] truncate">
@@ -186,7 +183,7 @@ export function LoadingTrucksPage() {
                     disabled={truck.is_submitted}
                     className={`w-full sm:w-auto px-6 py-2.5 rounded-[12px] font-semibold text-[14px] transition-all ${
                       truck.is_submitted 
-                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none' 
+                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-white/10 cursor-not-allowed shadow-none' 
                         : 'bg-primary text-white shadow-[0_4px_12px_rgba(10,46,99,0.15)] hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)] active:scale-[0.98]'
                     }`}
                     onClick={() => !truck.is_submitted && navigate(`/trucks/submit-bill/${truck.id}`, { state: { truck } })}

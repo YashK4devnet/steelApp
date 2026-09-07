@@ -11,10 +11,10 @@ interface ToggleProps {
 export function Toggle({ label, checked, onChange, description, disabled }: ToggleProps) {
   return (
     <label 
-      className={`flex items-center gap-3 p-4 bg-slate-50 rounded-[16px] border border-slate-200 select-none transition-colors ${
+      className={`flex items-center gap-3 p-4 bg-slate-50 dark:bg-slate-800/60 rounded-[16px] border border-slate-200 dark:border-white/10 select-none transition-colors ${
         disabled 
           ? 'opacity-60 cursor-not-allowed' 
-          : 'cursor-pointer hover:bg-slate-100/70'
+          : 'cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/90'
       }`}
     >
       <div className="flex-1">
@@ -35,7 +35,7 @@ export function Toggle({ label, checked, onChange, description, disabled }: Togg
           disabled={disabled}
           className="sr-only"
         />
-        <div className={`w-11 h-6 rounded-full transition-colors duration-300 ease-in-out ${checked ? 'bg-primary' : 'bg-slate-300'}`}>
+        <div className={`w-11 h-6 rounded-full transition-colors duration-300 ease-in-out ${checked ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}>
           <div 
             className={`w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 shadow-sm transform transition-transform duration-300 ease-in-out ${
               checked ? 'translate-x-5' : 'translate-x-0'

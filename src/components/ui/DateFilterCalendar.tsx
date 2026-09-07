@@ -74,7 +74,7 @@ export function DateFilterCalendar({
   const availableDateSet = new Set(availableDates);
 
   return (
-    <div className="bg-white rounded-[24px] p-4 sm:p-5 shadow-[0_12px_32px_rgba(15,23,42,0.08)] border border-slate-900/5 animate-fade-in flex flex-col gap-3.5">
+    <div className="bg-white dark:bg-surface rounded-[24px] p-4 sm:p-5 shadow-[0_12px_32px_rgba(15,23,42,0.08)] dark:shadow-[0_12px_32px_rgba(0,0,0,0.5)] border border-slate-900/5 dark:border-white/10 animate-fade-in flex flex-col gap-3.5 transition-colors duration-200">
       {/* Month & Year Header with Navigation */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-baseline gap-2">
@@ -90,7 +90,7 @@ export function DateFilterCalendar({
             type="button"
             onClick={prevMonth}
             aria-label="Previous month"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-primary hover:bg-slate-100 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -100,7 +100,7 @@ export function DateFilterCalendar({
             type="button"
             onClick={nextMonth}
             aria-label="Next month"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 hover:text-primary hover:bg-slate-100 active:scale-95 transition-all"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 transition-all"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
@@ -142,8 +142,8 @@ export function DateFilterCalendar({
                 isSelected
                   ? 'bg-primary text-white shadow-sm font-bold scale-105'
                   : isToday
-                  ? 'border border-primary/40 text-primary font-bold hover:bg-primary/5'
-                  : 'text-text-primary hover:bg-slate-100'
+                  ? 'border border-primary/40 text-primary dark:text-blue-400 font-bold hover:bg-primary/5'
+                  : 'text-text-primary hover:bg-slate-100 dark:hover:bg-slate-800'
               }`}
             >
               <span>{day}</span>
@@ -160,7 +160,7 @@ export function DateFilterCalendar({
       </div>
 
       {/* Quick selection chips & actions */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 mt-1">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100 dark:border-white/10 mt-1">
         <div className="flex items-center gap-1.5">
           <button
             type="button"
@@ -168,7 +168,7 @@ export function DateFilterCalendar({
             className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ${
               selectedDate === todayStr
                 ? 'bg-primary text-white'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
             Today
@@ -176,7 +176,7 @@ export function DateFilterCalendar({
           <button
             type="button"
             onClick={setYesterday}
-            className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all"
+            className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
           >
             Yesterday
           </button>
@@ -184,7 +184,7 @@ export function DateFilterCalendar({
             <button
               type="button"
               onClick={() => onSelectDate(null)}
-              className="px-2.5 py-1 rounded-full text-[11px] font-bold text-red-600 hover:bg-red-50 transition-all"
+              className="px-2.5 py-1 rounded-full text-[11px] font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-all"
             >
               Clear
             </button>
@@ -194,7 +194,7 @@ export function DateFilterCalendar({
         <button
           type="button"
           onClick={onClose}
-          className="px-3 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-700 active:scale-95 transition-all ml-auto"
+          className="px-3 py-1 rounded-full text-[11px] font-bold bg-primary text-white hover:bg-primary/90 active:scale-95 transition-all ml-auto"
         >
           Done
         </button>

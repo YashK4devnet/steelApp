@@ -65,22 +65,22 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[100] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
       onClick={handleClose}
     >
       <div 
-        className={`bg-white rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.22)] border border-slate-900/10 p-6 sm:p-7 max-w-md w-full relative overflow-hidden ${
+        className={`bg-white dark:bg-surface rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.22)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-slate-900/10 dark:border-white/10 p-6 sm:p-7 max-w-md w-full relative overflow-hidden transition-colors duration-200 ${
           isClosing ? 'animate-slide-down-bottom' : 'animate-slide-up-bottom'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Bottom sheet pull bar visual indicator for mobile */}
-        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-5 sm:hidden" />
+        <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-5 sm:hidden" />
 
         {/* Header Icon */}
-        <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mb-4 border border-red-100">
+        <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 flex items-center justify-center mb-4 border border-red-100 dark:border-red-900/40">
           <LogoutBadgeIcon />
         </div>
 
@@ -94,11 +94,11 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
 
         {/* Error Alert */}
         {errorMessage && (
-          <div className="mb-5 p-3.5 bg-red-50 border border-red-150 rounded-[14px] text-xs font-semibold text-red-800 flex items-start gap-2.5 shadow-sm">
+          <div className="mb-5 p-3.5 bg-red-50 dark:bg-red-950/40 border border-red-150 dark:border-red-900/40 rounded-[14px] text-xs font-semibold text-red-800 dark:text-red-300 flex items-start gap-2.5 shadow-sm">
             <span className="text-base leading-none">⚠️</span>
             <div className="flex-1">
-              <p className="font-bold text-red-900 mb-0.5">Logout Failed</p>
-              <p className="text-[11px] font-medium text-red-700 leading-tight">{errorMessage}</p>
+              <p className="font-bold text-red-900 dark:text-red-200 mb-0.5">Logout Failed</p>
+              <p className="text-[11px] font-medium text-red-700 dark:text-red-300 leading-tight">{errorMessage}</p>
             </div>
           </div>
         )}
@@ -109,7 +109,7 @@ export function LogoutModal({ isOpen, onClose, onConfirm }: LogoutModalProps) {
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="flex-1 py-3.5 px-4 rounded-full border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50"
+            className="flex-1 py-3.5 px-4 rounded-full border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50"
           >
             Cancel
           </button>

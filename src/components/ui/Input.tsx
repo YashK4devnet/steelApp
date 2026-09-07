@@ -17,7 +17,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative flex items-center w-full">
           <input
             ref={ref}
-            className={`w-full h-[48px] rounded-[12px] bg-surface px-4 ${
+            className={`w-full h-[48px] rounded-[12px] bg-surface text-text-primary placeholder:text-text-secondary/60 px-4 ${
               rightElement ? 'pr-11' : ''
             } border ${
               error ? 'border-error focus:border-error' : 'border-border focus:border-primary'

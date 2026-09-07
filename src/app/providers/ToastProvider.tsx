@@ -130,25 +130,25 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           <div
             key={t.id}
             role="alert"
-            className={`pointer-events-auto w-full rounded-[20px] p-3.5 sm:p-4 shadow-[0_12px_36px_rgba(15,23,42,0.14)] border flex items-start gap-3 transition-all duration-300 ease-out animate-slide-down backdrop-blur-md ${
+            className={`pointer-events-auto w-full rounded-[20px] p-3.5 sm:p-4 shadow-[0_12px_36px_rgba(15,23,42,0.14)] dark:shadow-[0_12px_36px_rgba(0,0,0,0.5)] border flex items-start gap-3 transition-all duration-300 ease-out animate-slide-down backdrop-blur-md ${
               t.type === 'success'
-                ? 'bg-white/95 border-emerald-200 text-emerald-950 shadow-emerald-500/10'
+                ? 'bg-white/95 dark:bg-slate-900/95 border-emerald-200 dark:border-emerald-800/60 text-emerald-950 dark:text-emerald-100 shadow-emerald-500/10'
                 : t.type === 'error'
-                ? 'bg-white/95 border-red-200 text-red-950 shadow-red-500/10'
+                ? 'bg-white/95 dark:bg-slate-900/95 border-red-200 dark:border-red-800/60 text-red-950 dark:text-red-100 shadow-red-500/10'
                 : t.type === 'warning'
-                ? 'bg-white/95 border-amber-200 text-amber-950 shadow-amber-500/10'
-                : 'bg-white/95 border-blue-200 text-slate-900 shadow-blue-500/10'
+                ? 'bg-white/95 dark:bg-slate-900/95 border-amber-200 dark:border-amber-800/60 text-amber-950 dark:text-amber-100 shadow-amber-500/10'
+                : 'bg-white/95 dark:bg-slate-900/95 border-blue-200 dark:border-blue-800/60 text-slate-900 dark:text-slate-100 shadow-blue-500/10'
             }`}
           >
             {/* Status Icon */}
             <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
               t.type === 'success'
-                ? 'bg-emerald-50 text-emerald-600 border border-emerald-200/80'
+                ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60'
                 : t.type === 'error'
-                ? 'bg-red-50 text-red-600 border border-red-200/80'
+                ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200/80 dark:border-red-800/60'
                 : t.type === 'warning'
-                ? 'bg-amber-50 text-amber-600 border border-amber-200/80'
-                : 'bg-blue-50 text-blue-600 border border-blue-200/80'
+                ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200/80 dark:border-amber-800/60'
+                : 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-800/60'
             }`}>
               {t.type === 'success' ? (
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
@@ -178,7 +178,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   {t.title}
                 </h5>
               )}
-              <p className="text-xs font-semibold leading-snug text-slate-700 break-words">
+              <p className="text-xs font-semibold leading-snug text-slate-700 dark:text-slate-300 break-words">
                 {t.message}
               </p>
             </div>
@@ -188,7 +188,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               type="button"
               onClick={() => dismissToast(t.id)}
               aria-label="Dismiss notification"
-              className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all shrink-0 active:scale-95"
+              className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all shrink-0 active:scale-95"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

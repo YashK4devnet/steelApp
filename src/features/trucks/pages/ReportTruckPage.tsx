@@ -99,8 +99,8 @@ export function ReportTruckPage() {
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mb-6">
+      <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] flex flex-col items-center justify-center p-6 text-center transition-colors duration-200">
+        <div className="w-20 h-20 bg-green-100 dark:bg-emerald-950/60 text-green-600 dark:text-emerald-400 rounded-full flex items-center justify-center mb-6">
           <CheckCircleIcon />
         </div>
         <h1 className="text-[24px] font-bold text-text-primary mb-2 tracking-tight">Report Submitted</h1>
@@ -110,14 +110,14 @@ export function ReportTruckPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-32 transition-colors duration-200">
       
       {/* Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         <div className="max-w-[1200px] mx-auto flex gap-4">
           <button 
             onClick={() => navigate(-1)}
-            className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+            className="w-10 h-10 shrink-0 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all"
           >
             <ArrowLeftIcon />
           </button>
@@ -125,7 +125,7 @@ export function ReportTruckPage() {
             <div className="h-10 flex items-center">
               <h1 className="text-[24px] font-bold text-text-primary tracking-tight leading-none">Report Arrival</h1>
             </div>
-            <p className="text-[14px] font-semibold text-primary mt-1">{truckPlate}</p>
+            <p className="text-[14px] font-semibold text-primary dark:text-blue-400 mt-1">{truckPlate}</p>
             {addressName && (
               <p className="text-[12px] text-text-secondary mt-0.5 line-clamp-1 max-w-[250px]">{addressName}</p>
             )}
@@ -136,7 +136,7 @@ export function ReportTruckPage() {
       <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-32">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
 
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-4">
+          <div className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-4 transition-colors duration-200">
             <label className="text-[14px] font-semibold text-text-primary">
               Reporting Date & Time <span className="text-accent">*</span>
             </label>
@@ -144,12 +144,12 @@ export function ReportTruckPage() {
               type="datetime-local"
               value={reportingDateTime}
               onChange={(e) => setReportingDateTime(e.target.value)}
-              className="w-full p-4 bg-gray-50 rounded-[16px] border border-slate-300 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-[15px] [&::-webkit-calendar-picker-indicator]:mr-2 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+              className="w-full p-4 bg-gray-50 dark:bg-slate-800/60 rounded-[16px] border border-slate-300 dark:border-white/10 text-text-primary outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors text-[15px] dark:[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:mr-2 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
               required
             />
           </div>
           
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-5">
+          <div className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-5 transition-colors duration-200">
             <h2 className="text-[18px] font-semibold text-text-primary">Photos</h2>
             
             <ImageUpload 
@@ -170,25 +170,25 @@ export function ReportTruckPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-4">
+          <div className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-4 transition-colors duration-200">
             <label className="text-[14px] font-semibold text-text-primary">Notes</label>
             <textarea 
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Add any specific observations or notes here..."
-              className="w-full min-h-[120px] p-4 bg-gray-50 rounded-[16px] border border-slate-300 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none text-[15px]"
+              className="w-full min-h-[120px] p-4 bg-gray-50 dark:bg-slate-800/60 rounded-[16px] border border-slate-300 dark:border-white/10 text-text-primary outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors resize-none text-[15px] placeholder:text-text-secondary/60"
             />
           </div>
 
           {/* Fixed Bottom Button */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-900/5 p-4 sm:p-6 z-50">
+          <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#0B1120]/90 backdrop-blur-md border-t border-slate-900/5 dark:border-white/10 p-4 sm:p-6 z-50 transition-colors duration-200">
             <div className="max-w-[1200px] mx-auto">
               <button 
                 type="submit"
                 disabled={reportMutation.isPending || !image1}
                 className={`w-full py-4 rounded-[16px] font-bold text-[16px] shadow-[0_4px_12px_rgba(10,46,99,0.15)] flex justify-center items-center transition-transform active:scale-[0.98] ${
                   reportMutation.isPending || !image1 
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed shadow-none' 
+                    ? 'bg-gray-300 dark:bg-slate-800 text-gray-500 dark:text-slate-500 cursor-not-allowed shadow-none' 
                     : 'bg-primary text-white hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)]'
                 }`}
               >

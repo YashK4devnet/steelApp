@@ -28,21 +28,21 @@ export function SessionExpiredModal({ isOpen, onClose }: SessionExpiredModalProp
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[100] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
     >
       <div 
-        className={`bg-white rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.22)] border border-slate-900/10 p-6 sm:p-7 max-w-md w-full relative overflow-hidden ${
+        className={`bg-white dark:bg-surface rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.22)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-slate-900/10 dark:border-white/10 p-6 sm:p-7 max-w-md w-full relative overflow-hidden transition-colors duration-200 ${
           isClosing ? 'animate-slide-down-bottom' : 'animate-slide-up-bottom'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Bottom sheet pull bar visual indicator for mobile */}
-        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-5 sm:hidden" />
+        <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-5 sm:hidden" />
 
         {/* Header Icon */}
-        <div className="w-12 h-12 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center mb-4 border border-orange-100">
+        <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-950/40 text-orange-500 dark:text-orange-400 flex items-center justify-center mb-4 border border-orange-100 dark:border-orange-900/30">
           <AlertTriangleIcon />
         </div>
 

@@ -1,18 +1,43 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-primary: #0A2E63;
-  --color-accent: #C8102E;
-  --color-background: #F8FAFC;
-  --color-surface: #FFFFFF;
-  --color-text-primary: #1F2937;
-  --color-text-secondary: #6B7280;
-  --color-border: #E5E7EB;
+  --color-primary: var(--primary);
+  --color-accent: var(--accent);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-border: var(--border);
   --color-success: #22C55E;
   --color-warning: #F59E0B;
   --color-error: #DC2626;
   
   --font-sans: "Inter", system-ui, sans-serif;
+}
+
+:root {
+  --primary: #0A2E63;
+  --accent: #C8102E;
+  --background: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-elevated: #F1F5F9;
+  --text-primary: #1F2937;
+  --text-secondary: #6B7280;
+  --border: #E5E7EB;
+}
+
+.dark {
+  --primary: #3B82F6;
+  --accent: #EF4444;
+  --background: #0B1120;
+  --surface: #131D33;
+  --surface-elevated: #1E2B48;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --border: rgba(255, 255, 255, 0.08);
 }
 
 body {

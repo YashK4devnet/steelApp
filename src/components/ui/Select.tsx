@@ -18,20 +18,20 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <div className="relative">
           <select
             ref={ref}
-            className={`w-full h-[48px] rounded-[14px] bg-slate-50 px-4 pr-10 border appearance-none outline-none transition-all text-sm font-medium ${
+            className={`w-full h-[48px] rounded-[14px] bg-slate-50 dark:bg-slate-800/80 text-text-primary px-4 pr-10 border appearance-none outline-none transition-all text-sm font-medium ${
               error 
-                ? 'border-error focus:border-error focus:bg-white' 
-                : 'border-slate-200 focus:border-primary focus:bg-white'
+                ? 'border-error focus:border-error focus:bg-white dark:focus:bg-slate-800' 
+                : 'border-slate-200 dark:border-white/10 focus:border-primary focus:bg-white dark:focus:bg-slate-800'
             } ${className}`}
             {...props}
           >
             {placeholder && (
-              <option value="" disabled hidden>
+              <option value="" disabled hidden className="bg-white dark:bg-slate-800 text-text-secondary">
                 {placeholder}
               </option>
             )}
             {options.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} className="bg-white dark:bg-slate-800 text-text-primary">
                 {opt.label}
               </option>
             ))}

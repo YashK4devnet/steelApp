@@ -51,8 +51,8 @@ export function QueryErrorState({
   className = '',
 }: QueryErrorStateProps) {
   return (
-    <div className={`bg-white rounded-[24px] p-8 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-red-100 flex flex-col items-center text-center gap-4 my-4 max-w-md mx-auto ${className}`}>
-      <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center border border-red-100/80 shadow-inner">
+    <div className={`bg-surface rounded-[24px] p-8 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-red-100 dark:border-red-900/40 flex flex-col items-center text-center gap-4 my-4 max-w-md mx-auto transition-colors duration-200 ${className}`}>
+      <div className="w-14 h-14 rounded-full bg-red-50 dark:bg-red-950/40 flex items-center justify-center border border-red-100/80 dark:border-red-900/40 shadow-inner">
         <AlertTriangleIcon />
       </div>
 

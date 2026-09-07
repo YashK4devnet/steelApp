@@ -24,11 +24,11 @@ export function BottomNav() {
   if (location.pathname.startsWith('/profile')) activeIndex = 1;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 h-16 bg-white border border-slate-900/5 shadow-[0_8px_32px_rgba(15,23,42,0.08)] z-50 flex flex-row items-center p-1.5 gap-1 rounded-full w-max">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 h-16 bg-white dark:bg-[#131D33] border border-slate-900/5 dark:border-white/10 shadow-[0_8px_32px_rgba(15,23,42,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] z-50 flex flex-row items-center p-1.5 gap-1 rounded-full w-max transition-colors duration-200">
       
       {/* Sliding Pill Background */}
       <div 
-        className="absolute top-1.5 bottom-1.5 rounded-full bg-primary/10 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] -z-10"
+        className="absolute top-1.5 bottom-1.5 rounded-full bg-primary/10 dark:bg-primary/20 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] -z-10"
         style={{
           width: '104px',
           transform: `translateX(${activeIndex * 108}px)`, // 104px width + 4px gap = 108px per step
@@ -39,7 +39,7 @@ export function BottomNav() {
       <NavLink 
         to="/dashboard"
         replace
-        className={({ isActive }) => `flex flex-row items-center justify-center gap-2 w-[104px] h-full rounded-full transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}
+        className={({ isActive }) => `flex flex-row items-center justify-center gap-2 w-[104px] h-full rounded-full transition-colors duration-300 ${isActive ? 'text-primary dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
       >
         <HomeIcon className="w-5 h-5" />
         <span className="text-[13px] font-semibold tracking-wide">Home</span>
@@ -49,7 +49,7 @@ export function BottomNav() {
       <NavLink 
         to="/profile"
         replace
-        className={({ isActive }) => `flex flex-row items-center justify-center gap-2 w-[104px] h-full rounded-full transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-500 hover:text-gray-900'}`}
+        className={({ isActive }) => `flex flex-row items-center justify-center gap-2 w-[104px] h-full rounded-full transition-colors duration-300 ${isActive ? 'text-primary dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
       >
         <UserIcon className="w-5 h-5" />
         <span className="text-[13px] font-semibold tracking-wide">Profile</span>

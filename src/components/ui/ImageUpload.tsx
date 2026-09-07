@@ -57,7 +57,7 @@ export function ImageUpload({ label, onImageSelected, required = false }: ImageU
       
       <div 
         onClick={takePicture}
-        className={`relative w-full h-40 rounded-[16px] border-2 border-dashed ${previewUrl ? 'border-transparent' : 'border-slate-300 bg-gray-50'} overflow-hidden flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-transform`}
+        className={`relative w-full h-40 rounded-[16px] border-2 border-dashed ${previewUrl ? 'border-transparent' : 'border-slate-300 dark:border-slate-700 bg-gray-50 dark:bg-slate-800/40'} overflow-hidden flex flex-col items-center justify-center cursor-pointer active:scale-[0.98] transition-transform`}
       >
         {previewUrl ? (
           <>
@@ -67,7 +67,7 @@ export function ImageUpload({ label, onImageSelected, required = false }: ImageU
             </div>
             <button 
               onClick={removeImage}
-              className="absolute top-2 right-2 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center text-accent shadow-md z-10 active:scale-95"
+              className="absolute top-2 right-2 w-10 h-10 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm rounded-full flex items-center justify-center text-accent shadow-md z-10 active:scale-95"
             >
               <TrashIcon />
             </button>
