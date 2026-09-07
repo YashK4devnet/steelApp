@@ -3,10 +3,27 @@ import { PushNotifications, type Token, type ActionPerformed, type PushNotificat
 import { Device } from '@capacitor/device';
 import { apiRequest } from '../lib/api';
 import { dispatchGlobalToast } from '../app/providers/ToastProvider';
-import { addNotification } from './notificationStorage';
+import { addNotification, resolveNotificationRoute } from './notificationStorage';
 
 let isInitialized = false;
 let pendingDeepLinkRoute: string | null = null;
+let pendingDeepLinkState: Record<string, unknown> | undefined = undefined;
+
+/**
+ * Validates if the current logged-in user matches the notification target role.
+ * Handles aliases (e.g. buyer/customer, seller/vendor).
+ */
+function matchesUserRole(userRole?: string, targetRole?: string): boolean {
+  if (!targetRole || !userRole) return true;
+  const u = userRole.toLowerCase();
+  const t = targetRole.toLowerCase();
+  if (u === t) return true;
+  if ((t === 'buyer' || t === 'customer') && (u === 'buyer' || u === 'customer')) return true;
+  if ((t === 'seller' || t === 'vendor') && (u === 'seller' || u === 'vendor')) return true;
+  if (t === 'transporter' && u.includes('transporter')) return true;
+  if (t === 'security' && u.includes('security')) return true;
+  return false;
+}
 
 /**
  * Service to handle Firebase Cloud Messaging (FCM) push notifications
@@ -40,15 +57,16 @@ export const pushNotificationService = {
    * Initializes push notifications and registers listener hooks.
    * Safe to call multiple times; will only register once.
    */
-  init: async (onNavigate?: (route: string) => void) => {
+  init: async (onNavigate?: (route: string, state?: Record<string, unknown>) => void) => {
     if (!Capacitor.isNativePlatform()) {
       return;
     }
 
     if (isInitialized) {
       if (pendingDeepLinkRoute && onNavigate) {
-        onNavigate(pendingDeepLinkRoute);
+        onNavigate(pendingDeepLinkRoute, pendingDeepLinkState);
         pendingDeepLinkRoute = null;
+        pendingDeepLinkState = undefined;
       }
       return;
     }
@@ -105,7 +123,7 @@ export const pushNotificationService = {
 
       // 5. Registration Error Listener
       await PushNotifications.addListener('registrationError', (error) => {
-        console.error('[PushService] Error during FCM registration:', error);
+        console.error('[PushService] FCM Registration Error:', error);
       });
 
       // 6. Foreground Notification Received Listener
@@ -118,10 +136,8 @@ export const pushNotificationService = {
         if (storedUser && data.role) {
           try {
             const user = JSON.parse(storedUser);
-            const userRole = (user.role || '').toLowerCase();
-            const targetRole = String(data.role).toLowerCase();
-            if (targetRole && userRole && targetRole !== userRole) {
-              console.log(`[PushService] Suppressed toast: current user is ${userRole}, notification was for ${targetRole}`);
+            if (!matchesUserRole(user.role, String(data.role))) {
+              console.log(`[PushService] Suppressed toast: current user is ${user.role}, notification was for ${data.role}`);
               return;
             }
           } catch {
@@ -164,10 +180,8 @@ export const pushNotificationService = {
         if (storedUser && data.role) {
           try {
             const user = JSON.parse(storedUser);
-            const userRole = (user.role || '').toLowerCase();
-            const targetRole = String(data.role).toLowerCase();
-            if (targetRole && userRole && targetRole !== userRole) {
-              console.log(`[PushService] Ignored notification tap: current user is ${userRole}, notification was for ${targetRole}`);
+            if (!matchesUserRole(user.role, String(data.role))) {
+              console.log(`[PushService] Ignored notification tap: current user is ${user.role}, notification was for ${data.role}`);
               return;
             }
           } catch {
@@ -175,31 +189,27 @@ export const pushNotificationService = {
           }
         }
 
-        const qId = data.quotation_line_id || data.quote_id;
+        // Resolve target route matching README Notification payload specification
+        const targetRoute = resolveNotificationRoute(data) || '/dashboard';
 
-        // Resolve target route matching README Notification payload specification:
-        // - transporter_new_quotation -> /transporter/quotes/submit/<quotation_line_id>
-        // - transporter_truck_quote_approved -> /transporter/quotes/assign-drivers/<quotation_line_id>
-        // - transporter_truck_quote_rejected -> /transporter/quotes?tab=quoted
-        let targetRoute = '/transporter/quotes';
-
-        if (data.route) {
-          targetRoute = data.route;
-        } else if (data.type === 'transporter_new_quotation' && qId) {
-          targetRoute = `/transporter/quotes/submit/${qId}`;
-        } else if (data.type === 'transporter_truck_quote_approved' && qId) {
-          targetRoute = `/transporter/quotes/assign-drivers/${qId}`;
-        } else if (data.type === 'transporter_truck_quote_rejected') {
-          targetRoute = '/transporter/quotes?tab=quoted';
-        } else if (qId) {
-          targetRoute = `/transporter/quotes/submit/${qId}`;
+        // Prepare navigation state so destination pages can render truck plate / details immediately
+        const navState: Record<string, unknown> = {};
+        if (data.truck_number || data.truck_line_id || data.truck_id) {
+          navState.truck = {
+            id: Number(data.truck_line_id || data.truck_id || 0),
+            truck_number_plate: data.truck_number,
+            truck_type: data.truck_type,
+          };
         }
+        if (data.booking_id) navState.booking_id = data.booking_id;
+        if (data.booking_number) navState.booking_number = data.booking_number;
 
         if (onNavigate) {
-          onNavigate(targetRoute);
+          onNavigate(targetRoute, navState);
         } else {
-          // If router is not ready yet (cold launch), queue route
+          // If router is not ready yet (cold launch), queue route and state
           pendingDeepLinkRoute = targetRoute;
+          pendingDeepLinkState = navState;
         }
       });
     } catch (err) {

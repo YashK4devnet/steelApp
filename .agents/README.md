@@ -1874,8 +1874,8 @@ After login, the mobile app must register the Firebase Cloud Messaging (FCM)
 device token so the backend can send push notifications to that user.
 
 These endpoints use the same Bearer token as the rest of the RNE APIs. They
-are available to every role. For now the backend only *sends* transporter
-notifications; other roles can already register devices for later use.
+are available to every role. The backend sends role-specific pushes (Security,
+Seller, Transporter, Buyer) to registered devices.
 
 ### Register Device
 
@@ -1958,8 +1958,15 @@ FCM `data` values are strings. On notification tap, read `type` and navigate:
 | `transporter_new_quotation` | Quotation details | `quotation_line_id` → `GET /booking/transporter/quotations/<id>` |
 | `transporter_truck_quote_approved` | Quotation details (then submit truck/driver) | `quotation_line_id` and `truck_line_id` |
 | `transporter_truck_quote_rejected` | Quotation details (do not submit truck/driver) | `quotation_line_id` and `truck_line_id` |
+| `transporter_bilty` | Transporter loading / submit bilty | `truck_line_id` → `GET /booking/trucks/transporter/loading` |
+| `seller_vendor_bill` | Seller loading / submit vendor bill | `truck_line_id` → `GET /booking/trucks/loading` |
+| `security_incoming_unloading` | Incoming truck reporting | `truck_line_id` → `GET /booking/trucks/loaded` |
+| `security_outgoing_loading` | Outgoing truck reporting | `truck_id` → `GET /booking/trucks/outgoing` |
+| `customer_truck_accepted` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
+| `customer_truck_rejected` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
+| `customer_truck_cancelled` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
 
-Common fields: `role` (`transporter`), `booking_id`, `booking_number`.
+Common fields: `role` (`transporter`, `seller`, `security`, `buyer`), `truck_number`, `truck_type`. Transporter quotation types also include `booking_id` and `booking_number`.
 
 ---
 

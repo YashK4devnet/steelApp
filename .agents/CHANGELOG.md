@@ -612,61 +612,83 @@ This document logs the major architectural, feature, and design changes implemen
 ## Phase 99: Fix Odoo Language Rejection with Global `Accept-Language` Header
 - **Default Accept-Language Header (`src/lib/api.ts`)**: Added `'Accept-Language': 'en_US'` to default HTTP headers in `apiRequest`. This prevents native Android network requests (operating on `en_IN` or device-specific locales) from triggering Odoo's 422 *Invalid language code* validation error.
 
+## Phase 100: Comprehensive Dark Theme Architecture & Security Guard Polish
+- **Theme Infrastructure (`ThemeProvider.tsx`, `useTheme.ts`)**: Implemented system-preference-aware dark mode provider with persistent `localStorage` storage and smooth class toggling on `document.documentElement`.
+- **Global Design System Tokens (`src/index.css`)**: Expanded CSS variables and Tailwind utility bindings for slate dark surfaces (`dark:bg-background`, `dark:bg-surface`, `dark:border-white/10`, `dark:text-text-primary`, `dark:text-text-secondary`).
+- **Dark Mode Brand Assets (`public/in-app-logo-dark.png`)**: Removed bright glow effect from dashboard header logo and integrated `in-app-logo-dark.png` for a crisp, native dark theme header presentation.
+- **Shared Component Styling**: Aligned `Button`, `Input`, `Select`, `Card`, `Accordion`, `DateFilterCalendar`, `Toggle`, `LogoutModal`, `SessionExpiredModal`, `QueryErrorState`, `PullToRefresh`, `ToastProvider`, and `BottomNav` for seamless light/dark rendering.
+- **Security Guard Flows**: Styled `SecurityDashboard.tsx`, `LoadedTrucksPage.tsx`, `LoadingTrucksPage.tsx`, `OutgoingTrucksPage.tsx`, `ReportTruckPage.tsx`, and `ReportOutgoingTruckPage.tsx`. Added dark mode toggle switch to `ProfilePage.tsx`.
 
+## Phase 101: Seller Dashboard Dark Mode Alignment
+- **Seller Dashboard Grid (`SellerDashboard.tsx`)**: Re-styled primary action cards, pending truck counters, and "Coming Soon" badges to high-contrast dark slate styling (`dark:bg-surface`, `dark:border-white/10`).
+- **Document Upload Area (`DocumentUpload.tsx`)**: Aligned file dropzones, PDF/image format badges, and file preview cards with slate backgrounds and light borders.
+- **Submit Vendor Bill Workflow (`SubmitVendorBillPage.tsx`)**: Updated input elements, toggles, form fields, and fixed bottom submission action bar for dark theme readability.
 
+## Phase 102: Customer (Buyer) Dashboard & Booking Flow Dark Mode Alignment
+- **Customer Dashboard (`CustomerDashboard.tsx`)**: Updated booking overview tiles, quick-action cards, and counter metrics with dark theme styling.
+- **Bookings List Page (`BookingsPage.tsx`)**: Styled search inputs, status filter tabs, booking summary cards, and metrics with high-contrast dark mode palettes.
+- **Booking Creation Wizard**: Themed multi-step booking components including `CreateBookingStep1Page.tsx`, `CreateBookingStep2Page.tsx`, `ProductConfigSheet.tsx`, `SelectedProductCard.tsx`, `PickupSection.tsx`, and `DeliverySection.tsx`.
 
+## Phase 103: Transporter Dashboard & Quotation Flow Dark Mode Alignment
+- **Transporter Dashboard (`TransporterDashboard.tsx`)**: Updated operational metrics, quotation tiles, and action buttons for dark theme.
+- **Quotation Management (`QuotesPage.tsx`, `QuoteCard.tsx`, `ServerQuoteSummary.tsx`)**: Themed tab navigators, quote summary cards, rates, and status badges.
+- **Quote Submission & Bilty Upload (`SubmitQuotePage.tsx`, `TruckDetailFormCard.tsx`, `UploadBiltyModal.tsx`)**: Styled rate calculation inputs, truck detail forms, and bottom-sheet bilty modal with dark slate containers.
+- **Driver Assignment & In-Transit Trucks (`AssignDriversPage.tsx`, `DriverAssignmentCard.tsx`, `TransporterLoadingTrucksPage.tsx`)**: Styled driver input cards, truck tracking rows, and vehicle status badges.
 
+## Phase 104: Login Screen Dark Theme & Native Splash Screen Dark Background
+- **Login Dark Theme (`LoginPage.tsx`, `public/logo-dark.png`)**:
+  - Integrated `public/logo-dark.png` specifically for dark theme presentation.
+  - Aligned page background to `#0F172A` (`dark:bg-background`) without white borders or harsh light shadows.
+- **Android Splash Screen Dark Background (`values-night/ic_launcher_background.xml`)**:
+  - Configured `@color/ic_launcher_background` to `#0F172A` in the Android `values-night` resource directory, ensuring native splash transition matches the dark mode application theme.
 
+## Phase 105: Native Android Push Notification Icon & Color Customization
+- **Vector Truck Icon Drawables (`ic_notification.xml`, `ic_stat_name.xml`)**: Created clean, flat white silhouette truck vector drawables matching Android's push notification icon requirements (white shape on transparent background).
+- **Notification Accent Color (`colors.xml`)**: Defined `@color/colorPrimary` (`#0A2E63`) and `@color/notification_color` in Android resource values.
+- **FCM Manifest Configuration (`AndroidManifest.xml`)**:
+  - Registered `com.google.firebase.messaging.default_notification_icon` pointing to `@drawable/ic_stat_name`.
+  - Registered `com.google.firebase.messaging.default_notification_color` pointing to `@color/notification_color`.
+- **Capacitor Configuration (`capacitor.config.ts`)**: Configured `PushNotifications.iconColor: "#0A2E63"`.
 
+## Phase 106: In-App Notification Center & Dynamic Modal Bottom Sheet
+- **Storage & Retention Strategy (`notificationStorage.ts`)**:
+  - Implemented persistent notification store with a rolling 50-item FIFO limit.
+  - Implemented 30-day automatic time-to-live (TTL) expiration purging.
+  - Built deep-link route resolver for all role-specific notification types (transporter quotes, driver assignments, loading trucks, etc.).
+- **Reactive State Hook (`useNotifications.ts`)**: Built reactive hook providing real-time notification list, unread badge counter (`unreadCount`), and storage mutation methods.
+- **Push Notification Auto-Capture (`pushNotificationService.ts`)**: Connected foreground push reception and background push tap handlers to automatically persist incoming notifications into `notificationStorage`.
+- **Dashboard Bell Badge (`DashboardPage.tsx`)**: Connected notification bell icon with dynamic badge pill (`1`, `2`, `9+`) on dashboard header across all roles.
+- **Bottom Sheet Notification Center (`NotificationSheet.tsx`)**:
+  - Designed responsive bottom sheet modal with smooth spring animations (`animate-slide-up-bottom` / `animate-slide-down-bottom`).
+  - Added "Mark all read", "Clear all", individual delete/mark read actions, relative time formatting ("Just now", "5m ago"), and status icons (Truck, CheckCircle, AlertCircle, Bell).
+  - **Auto-Hide Bottom Navigation**: Emits `toggle-modal-overlay` custom event to immediately hide `BottomNav` when the sheet is opened and restore it on dismissal.
+  - **Dynamic Content Hugging**: Modal height dynamically conforms to content (compact ~220px empty state, snugly wrapping 1–3 items) and expands up to `max-h-[85vh]` with internal smooth scrolling for larger notification lists.
 
+## Phase 107: Full 10-Case Notification Deep Linking & Role-Protected Tap Routing
+- **Central Route Resolver (`notificationStorage.ts`)**: Expanded `resolveNotificationRoute` to strictly map all 10 notification `type` specifications from `.agents/README.md` lines 1952–1970:
+  - `transporter_new_quotation` $\rightarrow$ `/transporter/quotes/submit/:quotation_line_id`
+  - `transporter_truck_quote_approved` $\rightarrow$ `/transporter/quotes/assign-drivers/:quotation_line_id`
+  - `transporter_truck_quote_rejected` $\rightarrow$ `/transporter/quotes?tab=quoted`
+  - `transporter_bilty` $\rightarrow$ `/transporter/upload-bilty`
+  - `seller_vendor_bill` $\rightarrow$ `/trucks/submit-bill/:truck_line_id`
+  - `security_incoming_unloading` $\rightarrow$ `/trucks/report/:truck_line_id`
+  - `security_outgoing_loading` $\rightarrow$ `/trucks/outgoing/report/:truck_id`
+  - `customer_truck_accepted` / `customer_truck_rejected` / `customer_truck_cancelled` $\rightarrow$ `/bookings/view/:truck_id`
+- **Instant UI State Forwarding (`pushNotificationService.ts`, `NotificationSheet.tsx`)**: Pre-populates navigation state (`truck_number_plate`, `truck_type`, `booking_id`, `booking_number`) across both native push taps and in-app sheet taps, enabling immediate header/card rendering before network responses complete.
+- **Robust Role Matcher (`matchesUserRole`)**: Normalizes role checks across case differences and backend aliases (`buyer` $\leftrightarrow$ `customer`, `seller` $\leftrightarrow$ `vendor`), preventing unauthorized or misplaced cross-role alert interruptions.
+- **Router Hooking (`src/app/router/index.tsx`)**: Updated `pushNotificationService.init` callback to forward `(route, state)` seamlessly to React Router `navigate(route, { state })`.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## Phase 108: Rich Contextual Notification Cards with Entity Chips & Action Prompts
+- **Presentation Engine (`getNotificationPresentation` in `NotificationSheet.tsx`)**:
+  - Parses FCM payload parameters (`type`, `truck_number`, `truck_type`, `booking_number`, `quotation_line_id`, `truck_line_id`, `truck_id`).
+  - Synthesizes informative, role-specific titles and summaries when payloads contain generic strings (`"New Notification"`, `"You have a new update."`).
+- **Category Header Badges**: Displays high-contrast category tags with role-appropriate colors:
+  - *Quote Request* (Blue), *Quote Approved* (Emerald), *Quote Rejected* (Red), *Bilty Upload* (Blue), *Vendor Bill* (Indigo), *Inbound Truck* (Amber), *Outbound Truck* (Purple), *Booking Accepted/Rejected/Cancelled*.
+- **Entity Metadata Chips (Pills)**: Renders dedicated chips for instant operational visibility:
+  - `🚚 [Truck Number Plate]`
+  - `📐 [Truck Type]`
+  - `📦 [Order / Booking Reference]`
+  - `📄 [Quote / Ref ID]`
+- **Contextual Action CTAs**: Replaced generic "View Details →" with explicit operational action triggers:
+  - *"Submit Rates →"*, *"Assign Drivers →"*, *"View Quoted History →"*, *"Upload Bilty →"*, *"Submit Bill →"*, *"Report Arrival →"*, *"Report Outbound →"*, *"View Booking →"*.
 

@@ -128,8 +128,8 @@ function CapacitorNativeSetup() {
     StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
 
     // Initialize native Firebase push notifications & deep link handler
-    pushNotificationService.init((route) => {
-      navigate(route);
+    pushNotificationService.init((route, state) => {
+      navigate(route, state ? { state } : undefined);
     });
 
     // Native Android hardware back button handler

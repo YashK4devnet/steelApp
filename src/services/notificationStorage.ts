@@ -30,41 +30,74 @@ function getStorageKey(): string {
 
 /**
  * Resolves the destination deep-link route based on notification data payload.
+ * Matches .agents/README.md Section "Notification payload (tap handling)" lines 1952-1970.
  */
 export function resolveNotificationRoute(data: Record<string, unknown> = {}): string | undefined {
   if (typeof data.route === 'string' && data.route.trim()) {
     return data.route;
   }
 
-  const qId = data.quotation_line_id || data.quote_id;
-  const type = String(data.type || '');
+  const type = String(data.type || '').trim();
+  const quotationLineId = data.quotation_line_id || data.quote_id;
+  const truckLineId = data.truck_line_id;
+  const truckId = data.truck_id;
 
-  if (type === 'transporter_new_quotation' && qId) {
-    return `/transporter/quotes/submit/${qId}`;
-  }
-  if (type === 'transporter_truck_quote_approved' && qId) {
-    return `/transporter/quotes/assign-drivers/${qId}`;
-  }
-  if (type === 'transporter_truck_quote_rejected') {
-    return '/transporter/quotes?tab=quoted';
-  }
-  if (type.startsWith('transporter_') && qId) {
-    return `/transporter/quotes/submit/${qId}`;
-  }
-  if (type.startsWith('transporter_')) {
-    return '/transporter/quotes';
-  }
-  if (type === 'truck_inspection' || type === 'security_alert') {
-    return '/security/loading-trucks';
-  }
-  if (type === 'vendor_bill' || type === 'seller_alert') {
-    return '/dashboard';
-  }
-  if (type === 'booking_status' || type === 'booking_update') {
-    return '/customer/bookings';
-  }
+  switch (type) {
+    // 1. Transporter: New Quotation Request -> Submit Quote page
+    case 'transporter_new_quotation':
+      return quotationLineId ? `/transporter/quotes/submit/${quotationLineId}` : '/transporter/quotes';
 
-  return undefined;
+    // 2. Transporter: Quote Approved -> Assign Drivers page
+    case 'transporter_truck_quote_approved':
+      return quotationLineId ? `/transporter/quotes/assign-drivers/${quotationLineId}` : '/transporter/quotes';
+
+    // 3. Transporter: Quote Rejected -> Quoted History tab
+    case 'transporter_truck_quote_rejected':
+      return '/transporter/quotes?tab=quoted';
+
+    // 4. Transporter: Loading / Submit Bilty
+    case 'transporter_bilty':
+      return '/transporter/upload-bilty';
+
+    // 5. Seller: Loading / Submit Vendor Bill -> Submit Vendor Bill page
+    case 'seller_vendor_bill':
+      return truckLineId ? `/trucks/submit-bill/${truckLineId}` : '/trucks/loading';
+
+    // 6. Security: Incoming Truck Reporting -> Report Truck page
+    case 'security_incoming_unloading':
+      return truckLineId ? `/trucks/report/${truckLineId}` : '/trucks/loaded';
+
+    // 7. Security: Outgoing Truck Reporting -> Report Outgoing Truck page
+    case 'security_outgoing_loading':
+      return truckId ? `/trucks/outgoing/report/${truckId}` : '/trucks/outgoing';
+
+    // 8, 9, 10. Customer / Buyer: Truck Accepted, Rejected, Cancelled -> View Booking page
+    case 'customer_truck_accepted':
+    case 'customer_truck_rejected':
+    case 'customer_truck_cancelled':
+      return truckId ? `/bookings/view/${truckId}` : '/bookings';
+
+    default:
+      // Fallback by role or prefix
+      if (type.startsWith('transporter_')) {
+        return quotationLineId ? `/transporter/quotes/submit/${quotationLineId}` : '/transporter/quotes';
+      }
+      if (type.startsWith('security_')) {
+        return '/trucks/loaded';
+      }
+      if (type.startsWith('seller_')) {
+        return '/trucks/loading';
+      }
+      if (type.startsWith('customer_')) {
+        return '/bookings';
+      }
+      if (data.role === 'transporter') return '/transporter/quotes';
+      if (data.role === 'seller') return '/trucks/loading';
+      if (data.role === 'security') return '/trucks/loaded';
+      if (data.role === 'buyer' || data.role === 'customer') return '/bookings';
+
+      return undefined;
+  }
 }
 
 /**

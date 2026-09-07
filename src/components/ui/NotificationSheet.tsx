@@ -57,19 +57,27 @@ function formatRelativeTime(timestamp: number): string {
 
 function getNotificationIcon(notif: AppNotification) {
   const type = String(notif.type || notif.data?.type || '').toLowerCase();
-  if (type.includes('approved')) {
+  if (type.includes('approved') || type.includes('accepted')) {
     return {
       icon: <CheckCircleIcon />,
       bg: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400',
     };
   }
-  if (type.includes('rejected')) {
+  if (type.includes('rejected') || type.includes('cancelled')) {
     return {
       icon: <AlertCircleIcon />,
       bg: 'bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400',
     };
   }
-  if (type.includes('quotation') || type.includes('truck') || type.includes('transporter')) {
+  if (
+    type.includes('quotation') ||
+    type.includes('truck') ||
+    type.includes('transporter') ||
+    type.includes('bilty') ||
+    type.includes('bill') ||
+    type.includes('loading') ||
+    type.includes('unloading')
+  ) {
     return {
       icon: <TruckIcon />,
       bg: 'bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400',
@@ -79,6 +87,124 @@ function getNotificationIcon(notif: AppNotification) {
     icon: <BellOutlineIcon />,
     bg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
   };
+}
+
+interface NotificationPresentation {
+  category: { text: string; bg: string; textCol: string };
+  title: string;
+  body: string;
+  chips: { label: string; text: string; icon?: string }[];
+  actionLabel: string;
+}
+
+function getNotificationPresentation(notif: AppNotification): NotificationPresentation {
+  const data = notif.data || {};
+  const type = String(notif.type || data.type || '').trim().toLowerCase();
+  const truckNumber = typeof data.truck_number === 'string' && data.truck_number ? data.truck_number : undefined;
+  const truckType = typeof data.truck_type === 'string' && data.truck_type ? data.truck_type : undefined;
+  const bookingNumber = (typeof data.booking_number === 'string' && data.booking_number) || (data.booking_id ? String(data.booking_id) : undefined);
+  const quotationLineId = data.quotation_line_id ? String(data.quotation_line_id) : undefined;
+  const truckLineId = data.truck_line_id ? String(data.truck_line_id) : undefined;
+  const truckId = data.truck_id ? String(data.truck_id) : undefined;
+
+  let category = { text: 'Notification', bg: 'bg-slate-100 dark:bg-slate-800', textCol: 'text-slate-600 dark:text-slate-300' };
+  let actionLabel = 'View Details →';
+  let defaultTitle = notif.title && notif.title !== 'New Notification' ? notif.title : 'New Update';
+  let defaultBody = notif.body && notif.body !== 'You have a new update.' ? notif.body : 'Tap to open and view the latest cargo details.';
+
+  switch (type) {
+    case 'transporter_new_quotation':
+      category = { text: 'Quote Request', bg: 'bg-blue-100 dark:bg-blue-950/60', textCol: 'text-blue-700 dark:text-blue-300' };
+      defaultTitle = 'New Quotation Request';
+      defaultBody = `Quotation requested for ${truckType || 'cargo'}. Tap to review specifications and propose rates.`;
+      actionLabel = 'Submit Rates →';
+      break;
+
+    case 'transporter_truck_quote_approved':
+      category = { text: 'Quote Approved', bg: 'bg-emerald-100 dark:bg-emerald-950/60', textCol: 'text-emerald-700 dark:text-emerald-300' };
+      defaultTitle = truckNumber ? `Quote Approved: ${truckNumber}` : 'Truck Quote Approved';
+      defaultBody = 'Management approved your quote proposal. Please assign driver and vehicle details to continue.';
+      actionLabel = 'Assign Drivers →';
+      break;
+
+    case 'transporter_truck_quote_rejected':
+      category = { text: 'Quote Rejected', bg: 'bg-red-100 dark:bg-red-950/60', textCol: 'text-red-700 dark:text-red-300' };
+      defaultTitle = truckNumber ? `Quote Rejected: ${truckNumber}` : 'Quote Proposal Not Accepted';
+      defaultBody = 'Your proposed quote rate was not accepted for this shipment line.';
+      actionLabel = 'View Quoted History →';
+      break;
+
+    case 'transporter_bilty':
+      category = { text: 'Bilty Upload', bg: 'bg-blue-100 dark:bg-blue-950/60', textCol: 'text-blue-700 dark:text-blue-300' };
+      defaultTitle = truckNumber ? `Upload Bilty: ${truckNumber}` : 'Bilty Document Required';
+      defaultBody = `Truck ${truckNumber || ''} is in loading state. Please submit the verified bilty document.`;
+      actionLabel = 'Upload Bilty →';
+      break;
+
+    case 'seller_vendor_bill':
+      category = { text: 'Vendor Bill', bg: 'bg-indigo-100 dark:bg-indigo-950/60', textCol: 'text-indigo-700 dark:text-indigo-300' };
+      defaultTitle = truckNumber ? `Vendor Bill: ${truckNumber}` : 'Vendor Bill Submission';
+      defaultBody = `Truck ${truckNumber || ''} is loading. Please upload the vendor bill and e-way bill document.`;
+      actionLabel = 'Submit Bill →';
+      break;
+
+    case 'security_incoming_unloading':
+      category = { text: 'Inbound Truck', bg: 'bg-amber-100 dark:bg-amber-950/60', textCol: 'text-amber-800 dark:text-amber-300' };
+      defaultTitle = truckNumber ? `Arrived: ${truckNumber}` : 'Inbound Truck Arrived';
+      defaultBody = `Inbound truck ${truckNumber || ''} has arrived for unloading and security gate reporting.`;
+      actionLabel = 'Report Arrival →';
+      break;
+
+    case 'security_outgoing_loading':
+      category = { text: 'Outbound Truck', bg: 'bg-purple-100 dark:bg-purple-950/60', textCol: 'text-purple-700 dark:text-purple-300' };
+      defaultTitle = truckNumber ? `Outgoing: ${truckNumber}` : 'Outbound Truck Ready';
+      defaultBody = `Truck ${truckNumber || ''} has completed loading and is ready for dispatch exit inspection.`;
+      actionLabel = 'Report Outbound →';
+      break;
+
+    case 'customer_truck_accepted':
+      category = { text: 'Booking Accepted', bg: 'bg-emerald-100 dark:bg-emerald-950/60', textCol: 'text-emerald-700 dark:text-emerald-300' };
+      defaultTitle = bookingNumber ? `Booking #${bookingNumber} Accepted` : 'Truck Request Accepted';
+      defaultBody = 'Your truck booking request has been confirmed and accepted by operations.';
+      actionLabel = 'View Booking →';
+      break;
+
+    case 'customer_truck_rejected':
+      category = { text: 'Booking Rejected', bg: 'bg-red-100 dark:bg-red-950/60', textCol: 'text-red-700 dark:text-red-300' };
+      defaultTitle = bookingNumber ? `Booking #${bookingNumber} Rejected` : 'Truck Request Rejected';
+      defaultBody = 'Your truck booking request could not be accepted at this time.';
+      actionLabel = 'View Booking →';
+      break;
+
+    case 'customer_truck_cancelled':
+      category = { text: 'Booking Cancelled', bg: 'bg-slate-100 dark:bg-slate-800', textCol: 'text-slate-700 dark:text-slate-300' };
+      defaultTitle = bookingNumber ? `Booking #${bookingNumber} Cancelled` : 'Truck Request Cancelled';
+      defaultBody = 'This truck booking line has been cancelled.';
+      actionLabel = 'View Booking →';
+      break;
+  }
+
+  // Build metadata chips from payload
+  const chips: { label: string; text: string; icon?: string }[] = [];
+  if (truckNumber) {
+    chips.push({ label: 'Truck', text: truckNumber, icon: '🚚' });
+  }
+  if (truckType) {
+    chips.push({ label: 'Type', text: truckType, icon: '📐' });
+  }
+  if (bookingNumber) {
+    chips.push({ label: 'Booking', text: `Order #${bookingNumber}`, icon: '📦' });
+  } else if (quotationLineId) {
+    chips.push({ label: 'Quote', text: `Quote #${quotationLineId}`, icon: '📄' });
+  } else if (truckLineId || truckId) {
+    chips.push({ label: 'Ref', text: `Ref #${truckLineId || truckId}` });
+  }
+
+  // Use custom title/body if provided and non-generic; otherwise fallback to rich defaults
+  const title = (notif.title && notif.title !== 'New Notification') ? notif.title : defaultTitle;
+  const body = (notif.body && notif.body !== 'You have a new update.') ? notif.body : defaultBody;
+
+  return { category, title, body, chips, actionLabel };
 }
 
 export function NotificationSheet({ isOpen, onClose }: NotificationSheetProps) {
@@ -118,7 +244,20 @@ export function NotificationSheet({ isOpen, onClose }: NotificationSheetProps) {
     }
     if (notif.route) {
       handleClose();
-      navigate(notif.route);
+      // Pass truck info in navigation state so destination pages can render truck plate / details immediately
+      const navState: Record<string, unknown> = {};
+      if (notif.data) {
+        if (notif.data.truck_number || notif.data.truck_line_id || notif.data.truck_id) {
+          navState.truck = {
+            id: Number(notif.data.truck_line_id || notif.data.truck_id || 0),
+            truck_number_plate: notif.data.truck_number,
+            truck_type: notif.data.truck_type,
+          };
+        }
+        if (notif.data.booking_id) navState.booking_id = notif.data.booking_id;
+        if (notif.data.booking_number) navState.booking_number = notif.data.booking_number;
+      }
+      navigate(notif.route, Object.keys(navState).length > 0 ? { state: navState } : undefined);
     }
   };
 
@@ -211,18 +350,19 @@ export function NotificationSheet({ isOpen, onClose }: NotificationSheetProps) {
           ) : (
             notifications.map((item) => {
               const { icon, bg } = getNotificationIcon(item);
+              const { category, title, body, chips, actionLabel } = getNotificationPresentation(item);
               const isClickable = Boolean(item.route);
 
               return (
                 <div
                   key={item.id}
                   onClick={() => handleItemClick(item)}
-                  className={`p-3.5 rounded-[18px] transition-all flex items-start gap-3.5 relative group ${
+                  className={`p-3.5 sm:p-4 rounded-[20px] transition-all flex items-start gap-3.5 relative group ${
                     isClickable ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'
                   } ${
                     !item.isRead
-                      ? 'bg-blue-50/50 dark:bg-blue-950/25 border-l-4 border-l-primary border-t border-r border-b border-slate-200/80 dark:border-white/10 shadow-sm'
-                      : 'bg-slate-50/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-white/5 opacity-85 hover:opacity-100'
+                      ? 'bg-blue-50/60 dark:bg-blue-950/25 border-l-4 border-l-primary border-t border-r border-b border-slate-200/80 dark:border-white/10 shadow-sm'
+                      : 'bg-slate-50/70 dark:bg-slate-800/30 border border-slate-200/60 dark:border-white/5 opacity-90 hover:opacity-100'
                   }`}
                 >
                   {/* Category Icon */}
@@ -232,32 +372,56 @@ export function NotificationSheet({ isOpen, onClose }: NotificationSheetProps) {
 
                   {/* Body Content */}
                   <div className="flex-1 min-w-0 pr-6">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <h4 className={`text-sm tracking-tight truncate ${
-                        !item.isRead ? 'font-bold text-text-primary' : 'font-semibold text-text-primary'
-                      }`}>
-                        {item.title}
-                      </h4>
-                      {!item.isRead && (
-                        <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-                      )}
-                    </div>
-
-                    <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed font-medium">
-                      {item.body}
-                    </p>
-
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
-                        {formatRelativeTime(item.timestamp)}
+                    {/* Header line: Category badge + Unread indicator + Time */}
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-wide ${category.bg} ${category.textCol}`}>
+                        {category.text}
                       </span>
-                      {isClickable && (
-                        <span className="text-[11px] font-bold text-primary dark:text-blue-400 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                          <span>View Details</span>
-                          <span>→</span>
+                      {!item.isRead && (
+                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary text-white">
+                          NEW
                         </span>
                       )}
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 ml-auto">
+                        {formatRelativeTime(item.timestamp)}
+                      </span>
                     </div>
+
+                    {/* Notification Title */}
+                    <h4 className={`text-sm tracking-tight ${
+                      !item.isRead ? 'font-bold text-text-primary' : 'font-semibold text-text-primary'
+                    }`}>
+                      {title}
+                    </h4>
+
+                    {/* Notification Description */}
+                    <p className="text-xs text-text-secondary mt-1 leading-relaxed font-medium">
+                      {body}
+                    </p>
+
+                    {/* Entity Metadata Chips */}
+                    {chips.length > 0 && (
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
+                        {chips.map((chip, idx) => (
+                          <span
+                            key={idx}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-white dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 border border-slate-200/80 dark:border-white/10 shadow-[0_1px_2px_rgba(0,0,0,0.03)]"
+                          >
+                            {chip.icon && <span className="text-xs">{chip.icon}</span>}
+                            <span>{chip.text}</span>
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Action Link / Context CTA */}
+                    {isClickable && (
+                      <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-slate-100 dark:border-white/5">
+                        <span className="text-xs font-bold text-primary dark:text-blue-400 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                          <span>{actionLabel}</span>
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Individual Delete Button */}
