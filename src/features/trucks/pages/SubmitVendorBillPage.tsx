@@ -162,8 +162,8 @@ export function SubmitVendorBillPage() {
 
   if (showSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
+      <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] flex flex-col items-center justify-center p-6 text-center transition-colors">
+        <div className="w-20 h-20 bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mb-6 shadow-sm">
           <CheckCircleIcon />
         </div>
         <h1 className="text-[24px] font-bold text-text-primary mb-2 tracking-tight">Vendor Bill Submitted!</h1>
@@ -175,14 +175,14 @@ export function SubmitVendorBillPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 transition-colors">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors">
         <div className="max-w-[800px] mx-auto flex items-center gap-4">
           <button 
             type="button"
             onClick={() => (window.history.length > 1 ? navigate(-1) : navigate('/trucks/loading', { replace: true }))}
-            className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+            className="w-10 h-10 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
           >
             <ArrowLeftIcon />
           </button>
@@ -193,18 +193,18 @@ export function SubmitVendorBillPage() {
       <main className="max-w-[800px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-36">
         {/* Network / API Error Alert Banner */}
         {apiError && (
-          <div className="mb-6 p-4 rounded-[18px] bg-red-50 border border-red-200 text-red-800 text-sm font-semibold flex items-start justify-between gap-3 shadow-sm">
+          <div className="mb-6 p-4 rounded-[18px] bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/40 text-red-800 dark:text-red-300 text-sm font-semibold flex items-start justify-between gap-3 shadow-sm">
             <div className="flex items-start gap-3">
               <span className="text-xl flex-shrink-0">⚠️</span>
               <div>
-                <p className="font-bold text-red-900">Submission Error</p>
-                <p className="text-xs font-medium text-red-700 mt-0.5">{apiError}</p>
+                <p className="font-bold text-red-900 dark:text-red-200">Submission Error</p>
+                <p className="text-xs font-medium text-red-700 dark:text-red-300 mt-0.5">{apiError}</p>
               </div>
             </div>
             <button 
               type="button" 
               onClick={() => setApiError(null)} 
-              className="text-red-400 hover:text-red-700 text-sm font-bold p-1 rounded"
+              className="text-red-400 dark:text-red-300 hover:text-red-700 dark:hover:text-red-100 text-sm font-bold p-1 rounded"
               title="Dismiss error"
             >
               ✕
@@ -214,9 +214,9 @@ export function SubmitVendorBillPage() {
 
         {/* Truck Details Summary Header Card */}
         {truck && (
-          <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 flex-shrink-0">
+              <div className="w-11 h-11 bg-blue-100 dark:bg-blue-950/60 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 flex-shrink-0">
                 <TruckIcon />
               </div>
               <div>
@@ -229,7 +229,7 @@ export function SubmitVendorBillPage() {
               </div>
             </div>
 
-            <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 w-full sm:w-auto">
+            <div className="text-left sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-white/10 w-full sm:w-auto">
               <span className="text-xs text-text-secondary block">Destination</span>
               <span className="text-xs font-semibold text-text-primary">{truck.delivery_address_name}</span>
             </div>
@@ -237,8 +237,8 @@ export function SubmitVendorBillPage() {
         )}
 
         {/* Vendor Bill Form */}
-        <form onSubmit={handleSubmit} className="bg-white rounded-[24px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-6">
-          <h2 className="text-lg font-bold text-text-primary tracking-tight border-b border-slate-100 pb-3">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-surface rounded-[24px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-6 transition-colors">
+          <h2 className="text-lg font-bold text-text-primary tracking-tight border-b border-slate-100 dark:border-white/10 pb-3">
             Bill & Invoice Details
           </h2>
 
@@ -256,7 +256,7 @@ export function SubmitVendorBillPage() {
                 setForm({ ...form, bill_number: e.target.value });
                 if (errors.bill_number) setErrors({ ...errors, bill_number: '' });
               }}
-              className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-[14px] outline-none focus:border-primary focus:bg-white transition-all text-sm font-medium"
+              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 text-text-primary rounded-[14px] outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 transition-all text-sm font-medium placeholder:text-text-secondary"
             />
             {errors.bill_number && <p className="text-xs font-semibold text-error mt-0.5">{errors.bill_number}</p>}
           </div>
@@ -274,7 +274,7 @@ export function SubmitVendorBillPage() {
                 setForm({ ...form, bill_date: e.target.value });
                 if (errors.bill_date) setErrors({ ...errors, bill_date: '' });
               }}
-              className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-[14px] outline-none focus:border-primary focus:bg-white transition-all text-sm font-medium"
+              className="w-full h-12 px-4 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 text-text-primary rounded-[14px] outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 transition-all text-sm font-medium dark:[color-scheme:dark]"
             />
             {errors.bill_date && <p className="text-xs font-semibold text-error mt-0.5">{errors.bill_date}</p>}
           </div>
@@ -302,13 +302,13 @@ export function SubmitVendorBillPage() {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-slate-100 my-2 pt-4">
+          <div className="border-t border-slate-100 dark:border-white/10 my-2 pt-4">
             <h2 className="text-lg font-bold text-text-primary tracking-tight mb-4">
               E-Way Bill Details
             </h2>
 
             {/* E-Way Bill Toggle */}
-            <label className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-[16px] border border-slate-200 cursor-pointer select-none mb-4">
+            <label className="flex items-center gap-3 p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-[16px] border border-slate-200 dark:border-white/10 cursor-pointer select-none mb-4">
               <input 
                 type="checkbox"
                 checked={form.eway_bill_attached_with_bill}
@@ -322,7 +322,7 @@ export function SubmitVendorBillPage() {
 
             {/* E-Way Bill Sub-fields when not attached with bill */}
             {!form.eway_bill_attached_with_bill && (
-              <div className="flex flex-col gap-5 p-4 bg-blue-50/40 rounded-[20px] border border-blue-100">
+              <div className="flex flex-col gap-5 p-4 bg-blue-50/40 dark:bg-blue-950/20 rounded-[20px] border border-blue-100 dark:border-blue-900/30">
                 {/* E-Way Bill Number */}
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="eway_bill_number" className="text-sm font-semibold text-text-primary">
@@ -334,7 +334,7 @@ export function SubmitVendorBillPage() {
                     placeholder="e.g. 123456789012"
                     value={form.eway_bill_number}
                     onChange={(e) => setForm({ ...form, eway_bill_number: e.target.value })}
-                    className="w-full h-12 px-4 bg-white border border-slate-200 rounded-[14px] outline-none focus:border-primary transition-all text-sm font-medium"
+                    className="w-full h-12 px-4 bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 text-text-primary rounded-[14px] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-text-secondary"
                   />
                 </div>
 
@@ -359,7 +359,7 @@ export function SubmitVendorBillPage() {
       </main>
 
       {/* Fixed Bottom Submit Button Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-900/5 p-4 sm:p-6 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#0B1120]/90 backdrop-blur-md border-t border-slate-900/5 dark:border-white/10 p-4 sm:p-6 z-50 transition-colors">
         <div className="max-w-[800px] mx-auto">
           <button 
             type="button"
@@ -367,8 +367,8 @@ export function SubmitVendorBillPage() {
             disabled={submitting}
             className={`w-full py-4 rounded-[16px] font-bold text-[16px] flex justify-center items-center gap-2 transition-all active:scale-[0.98] ${
               submitting 
-                ? 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none' 
-                : 'bg-primary text-white shadow-[0_4px_16px_rgba(10,46,99,0.2)] hover:shadow-[0_4px_20px_rgba(10,46,99,0.25)]'
+                ? 'bg-slate-300 dark:bg-slate-800 text-slate-500 dark:text-slate-500 cursor-not-allowed shadow-none' 
+                : 'bg-primary text-white shadow-[0_4px_16px_rgba(10,46,99,0.2)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_4px_20px_rgba(10,46,99,0.25)]'
             }`}
           >
             {submitting ? (

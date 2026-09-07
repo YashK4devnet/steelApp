@@ -133,20 +133,20 @@ export function DocumentUpload({
 
       {value ? (
         /* Selected File Card */
-        <div className="bg-white border border-slate-200 rounded-[16px] p-3 flex items-center justify-between gap-3 shadow-sm">
+        <div className="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[16px] p-3 flex items-center justify-between gap-3 shadow-sm transition-colors">
           <div className="flex items-center gap-3 overflow-hidden">
             {isImage && previewUrl ? (
               <img 
                 src={previewUrl} 
                 alt="Preview" 
-                className="w-12 h-12 rounded-[10px] object-cover border border-slate-100 flex-shrink-0"
+                className="w-12 h-12 rounded-[10px] object-cover border border-slate-100 dark:border-white/10 flex-shrink-0"
               />
             ) : isPdf ? (
-              <div className="w-12 h-12 rounded-[10px] bg-red-50 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-[10px] bg-red-50 dark:bg-red-950/40 flex items-center justify-center flex-shrink-0">
                 <PdfIcon />
               </div>
             ) : (
-              <div className="w-12 h-12 rounded-[10px] bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 font-bold text-xs uppercase">
+              <div className="w-12 h-12 rounded-[10px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase">
                 File
               </div>
             )}
@@ -164,7 +164,7 @@ export function DocumentUpload({
           <button 
             type="button"
             onClick={handleRemove}
-            className="w-9 h-9 rounded-full bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-error flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-9 h-9 rounded-full bg-slate-50 dark:bg-slate-700/60 hover:bg-red-50 dark:hover:bg-red-950/60 text-slate-400 hover:text-error dark:hover:text-red-400 flex items-center justify-center transition-colors flex-shrink-0"
             title="Remove document"
           >
             <TrashIcon />
@@ -179,20 +179,20 @@ export function DocumentUpload({
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-[16px] p-5 flex flex-col items-center justify-center text-center cursor-pointer transition-colors ${
             isDragOver 
-              ? 'border-primary bg-primary/5' 
+              ? 'border-primary bg-primary/5 dark:bg-primary/10' 
               : error 
-              ? 'border-red-300 bg-red-50/30' 
-              : 'border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300'
+              ? 'border-red-300 dark:border-red-500/40 bg-red-50/30 dark:bg-red-950/20' 
+              : 'border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:border-slate-300 dark:hover:border-white/20'
           }`}
         >
-          <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-2">
+          <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-blue-500/20 text-primary dark:text-blue-400 flex items-center justify-center mb-2">
             <UploadIcon />
           </div>
           <p className="text-sm font-semibold text-text-primary">
             Click to upload or drag & drop
           </p>
           <p className="text-xs text-text-secondary mt-0.5">
-            Supported formats: <strong className="text-slate-700">PDF or Images (JPG, PNG, WEBP)</strong>
+            Supported formats: <strong className="text-slate-700 dark:text-slate-300">PDF or Images (JPG, PNG, WEBP)</strong>
           </p>
         </div>
       )}
