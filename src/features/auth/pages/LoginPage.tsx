@@ -3,6 +3,7 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Card } from '../../../components/ui/Card';
 import { useAuth } from '../../../app/providers/AuthProvider';
+import { useTheme } from '../../../hooks/useTheme';
 import { EyeIcon, EyeOffIcon } from '../components/Icons';
 
 export function LoginPage() {
@@ -14,6 +15,7 @@ export function LoginPage() {
   const [isAppLoading, setIsAppLoading] = useState(true);
   
   const { login } = useAuth();
+  const { isDark } = useTheme();
 
   useEffect(() => {
     // Hide native Android splash screen with a smooth fade if running natively via Capacitor
@@ -44,7 +46,7 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] overflow-hidden relative z-0">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] overflow-hidden relative z-0 transition-colors duration-200">
       <div className="w-full max-w-[420px] flex flex-col items-center justify-center">
         
         {/* Logo Container - Starts at exact screen dead center, glides up smoothly & slowly */}
@@ -55,9 +57,8 @@ export function LoginPage() {
               : 'scale-100 mb-8'
           }`}
         >
-          {/* Please place the provided logo image as "logo.png" in the "public" folder */}
           <img 
-            src="/logo.png" 
+            src={isDark ? "/logo-dark.png" : "/logo.png"} 
             alt="RNE Logo" 
             className="w-[280px] sm:w-[300px] h-auto object-contain"
             onError={(e) => {
@@ -105,7 +106,7 @@ export function LoginPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="text-slate-400 hover:text-slate-600 focus:text-primary transition-colors p-1 rounded-md focus:outline-none flex items-center justify-center cursor-pointer"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:text-primary transition-colors p-1 rounded-md focus:outline-none flex items-center justify-center cursor-pointer"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                     tabIndex={-1}
                   >
@@ -119,7 +120,7 @@ export function LoginPage() {
               />
               
               {error && (
-                <div className="bg-error/10 text-error p-3 rounded-lg text-sm">
+                <div className="bg-error/10 text-error dark:bg-red-950/50 dark:border dark:border-red-900/40 dark:text-red-400 p-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
