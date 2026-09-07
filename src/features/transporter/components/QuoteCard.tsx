@@ -33,43 +33,43 @@ function getTruckLineStateBadge(state: string) {
     case 'waiting_team_approval':
       return {
         label: 'Waiting Approval',
-        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60',
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/50',
       };
     case 'waiting_management_approval':
       return {
         label: 'Mgmt Approval',
-        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60',
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/50',
       };
     case 'management_approved':
     case 'done':
       return {
         label: 'Approved',
-        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/50',
       };
     case 'loading':
       return {
         label: 'Loading',
-        badgeClass: 'bg-blue-50 text-blue-700 border-blue-200/60',
+        badgeClass: 'bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800/50',
       };
     case 'loaded':
       return {
         label: 'Loaded',
-        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200/60',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/60 dark:text-purple-400 dark:border-purple-800/50',
       };
     case 'rejected':
       return {
         label: 'Rejected',
-        badgeClass: 'bg-red-50 text-red-700 border-red-200/60',
+        badgeClass: 'bg-red-50 text-red-700 border-red-200/60 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800/50',
       };
     case 'cancelled':
       return {
         label: 'Cancelled',
-        badgeClass: 'bg-slate-100 text-slate-600 border-slate-200/60',
+        badgeClass: 'bg-slate-100 text-slate-600 border-slate-200/60 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
       };
     default:
       return {
         label: String(state).replace(/_/g, ' ').toUpperCase(),
-        badgeClass: 'bg-slate-50 text-slate-700 border-slate-200/60',
+        badgeClass: 'bg-slate-50 text-slate-700 border-slate-200/60 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
       };
   }
 }
@@ -112,7 +112,7 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
   return (
     <div 
       onClick={handleCardClick}
-      className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3.5 relative overflow-hidden transition-all cursor-pointer hover:border-primary/20 hover:shadow-[0_12px_28px_rgba(15,23,42,0.08)] active:scale-[0.99]"
+      className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3.5 relative overflow-hidden transition-all cursor-pointer hover:border-primary/20 dark:hover:border-primary/40 hover:shadow-[0_12px_28px_rgba(15,23,42,0.08)] dark:hover:shadow-[0_12px_28px_rgba(0,0,0,0.5)] active:scale-[0.99]"
     >
       {/* Header Row: Booking Number without misleading single global status badge */}
       <div className="flex justify-between items-start gap-2">
@@ -127,9 +127,9 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
       </div>
 
       {/* Information Details */}
-      <div className="flex flex-col gap-2 bg-slate-50/80 p-3.5 rounded-[16px] border border-slate-900/5">
+      <div className="flex flex-col gap-2 bg-slate-50/80 dark:bg-slate-800/40 p-3.5 rounded-[16px] border border-slate-900/5 dark:border-white/5">
         {/* Route: From & Where To */}
-        <div className="flex flex-col gap-1.5 pb-2 border-b border-slate-200/60">
+        <div className="flex flex-col gap-1.5 pb-2 border-b border-slate-200/60 dark:border-white/5">
           <div className="flex items-start gap-2">
             <span className="text-xs font-semibold text-text-secondary w-20 shrink-0 pt-0.5">From:</span>
             <span className="text-xs sm:text-sm font-semibold text-text-primary leading-snug">{quote.pickup_location_name}</span>
@@ -143,7 +143,7 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
         {/* Asking Rate Row */}
         <div className="flex items-center justify-between gap-2 pt-0.5">
           <span className="text-xs font-semibold text-text-secondary">Asking Rate:</span>
-          <span className="text-xs sm:text-sm font-bold text-slate-700 bg-white px-2.5 py-0.5 rounded-full border border-slate-200">
+          <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-white/10">
             {formattedAskingRate}
           </span>
         </div>
@@ -151,7 +151,7 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
 
       {/* Individual Truck Lines Breakdown (Only shown for Already Quoted items) */}
       {!isPendingSubmission && truckLines.length > 0 && (
-        <div className="flex flex-col gap-2 pt-1 border-t border-slate-100">
+        <div className="flex flex-col gap-2 pt-1 border-t border-slate-100 dark:border-white/5">
           <span className="text-[11px] font-bold text-text-secondary uppercase tracking-wide px-0.5">
             Trucks & Status ({truckLines.length})
           </span>
@@ -168,11 +168,11 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
               return (
                 <div
                   key={tl.id || idx}
-                  className="p-3 bg-slate-50/90 rounded-[14px] border border-slate-200/60 flex flex-col gap-1.5"
+                  className="p-3 bg-slate-50/90 dark:bg-slate-800/40 rounded-[14px] border border-slate-200/60 dark:border-white/5 flex flex-col gap-1.5"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="w-5 h-5 rounded-full bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center shrink-0">
+                      <span className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[10px] flex items-center justify-center shrink-0">
                         {idx + 1}
                       </span>
                       <span className="text-xs font-bold text-text-primary truncate">
@@ -185,7 +185,7 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 pl-7">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 dark:text-slate-400 pl-7">
                     {proposedRateLabel && (
                       <span className="font-semibold text-primary">
                         Proposed: {proposedRateLabel}
@@ -193,14 +193,14 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
                     )}
 
                     {tl.truck_number && (
-                      <span className="font-mono font-bold text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200 text-[10px]">
+                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-slate-200 dark:border-white/10 text-[10px]">
                         {tl.truck_number}
                       </span>
                     )}
 
                     {tl.driver_name && (
-                      <span className="flex items-center gap-1 font-medium text-slate-600">
-                        <UserIcon className="w-3 h-3 text-slate-400" />
+                      <span className="flex items-center gap-1 font-medium text-slate-600 dark:text-slate-400">
+                        <UserIcon className="w-3 h-3 text-slate-400 dark:text-slate-500" />
                         <span>{tl.driver_name}</span>
                       </span>
                     )}

@@ -40,11 +40,11 @@ export function TruckDetailFormCard({ index, truck, truckTypes = [], onUpdate }:
   };
 
   return (
-    <div className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-4 transition-all">
+    <div className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-4 transition-all">
       {/* Truck Card Header */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="w-7 h-7 rounded-full bg-primary/10 text-primary font-extrabold text-xs flex items-center justify-center border border-primary/20">
+          <span className="w-7 h-7 rounded-full bg-primary/10 dark:bg-primary/20 text-primary font-extrabold text-xs flex items-center justify-center border border-primary/20 dark:border-primary/40">
             {index + 1}
           </span>
           <h4 className="font-bold text-text-primary text-[15px] leading-tight">
@@ -86,14 +86,14 @@ export function TruckDetailFormCard({ index, truck, truckTypes = [], onUpdate }:
                 onUpdate(index, 'truck_type_name', e.target.value);
                 onUpdate(index, 'vehicle_type', e.target.value);
               }}
-              className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-[12px] outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-semibold text-text-primary transition-all"
+              className="w-full h-11 px-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[12px] outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 text-xs sm:text-sm font-semibold text-text-primary transition-all"
             />
           ) : (
             <div className="relative">
               <select
                 value={truck.proposed_truck_type_id ?? ''}
                 onChange={handleTruckTypeSelect}
-                className="w-full h-11 pl-3.5 pr-9 bg-slate-50 border border-slate-200 rounded-[12px] appearance-none outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-semibold text-text-primary cursor-pointer transition-all"
+                className="w-full h-11 pl-3.5 pr-9 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[12px] appearance-none outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 text-xs sm:text-sm font-semibold text-text-primary cursor-pointer transition-all"
               >
                 <option value="">Select active truck type</option>
                 {truckTypes.map((type) => (
@@ -130,7 +130,7 @@ export function TruckDetailFormCard({ index, truck, truckTypes = [], onUpdate }:
                 placeholder="e.g. 16.5"
                 value={truck.capacity_tons}
                 onChange={(e) => onUpdate(index, 'capacity_tons', e.target.value)}
-                className="w-full h-11 pl-3.5 pr-14 bg-slate-50 border border-slate-200 rounded-[12px] outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-semibold text-text-primary transition-all"
+                className="w-full h-11 pl-3.5 pr-14 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[12px] outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 text-xs sm:text-sm font-semibold text-text-primary transition-all"
               />
               <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-text-secondary pointer-events-none">
                 TON
@@ -143,15 +143,15 @@ export function TruckDetailFormCard({ index, truck, truckTypes = [], onUpdate }:
             <label className="text-[12px] font-bold text-text-primary">
               Pricing Base *
             </label>
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100/90 rounded-[12px] border border-slate-200/60 h-11 items-center">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100/90 dark:bg-slate-800/90 rounded-[12px] border border-slate-200/60 dark:border-white/10 h-11 items-center">
               {PRICING_BASE_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
                   type="button"
                   onClick={() => onUpdate(index, 'pricing_base', opt.value as PricingBase)}
-                  className={`h-full rounded-[9px] text-[11px] font-bold transition-all flex items-center justify-center ${
+                  className={`h-full rounded-[9px] text-[11px] font-bold transition-all flex items-center justify-center cursor-pointer ${
                     currentPricingBase === opt.value
-                      ? 'bg-white text-primary shadow-sm'
+                      ? 'bg-white dark:bg-surface text-primary shadow-sm'
                       : 'text-text-secondary hover:text-text-primary'
                   }`}
                 >
@@ -183,13 +183,13 @@ export function TruckDetailFormCard({ index, truck, truckTypes = [], onUpdate }:
                 // Proposal rate must be integer
                 onUpdate(index, 'proposed_rate', raw);
               }}
-              className="w-full h-11 pl-8 pr-20 bg-slate-50 border border-slate-200 rounded-[12px] outline-none focus:border-primary focus:bg-white text-xs sm:text-sm font-bold text-text-primary transition-all"
+              className="w-full h-11 pl-8 pr-20 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[12px] outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 text-xs sm:text-sm font-bold text-text-primary transition-all"
             />
             <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-text-secondary uppercase">
               / {unitLabel}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 font-medium">Integer whole number (no decimals)</p>
+          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">Integer whole number (no decimals)</p>
         </div>
       </div>
     </div>

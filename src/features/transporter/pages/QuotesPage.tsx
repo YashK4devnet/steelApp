@@ -27,19 +27,19 @@ function QuoteSkeleton() {
       {[1, 2, 3].map((n) => (
         <div 
           key={n} 
-          className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3.5 animate-pulse"
+          className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3.5 animate-pulse"
         >
           <div className="flex justify-between items-start">
             <div className="space-y-1.5">
-              <div className="h-5 bg-slate-200 rounded w-36" />
-              <div className="h-3.5 bg-slate-100 rounded w-24" />
+              <div className="h-5 bg-slate-200 dark:bg-slate-800 rounded w-36" />
+              <div className="h-3.5 bg-slate-100 dark:bg-slate-800/60 rounded w-24" />
             </div>
-            <div className="h-6 bg-slate-200 rounded-full w-24" />
+            <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded-full w-24" />
           </div>
-          <div className="bg-slate-50 p-4 rounded-[16px] space-y-2">
-            <div className="h-4 bg-slate-200 rounded w-3/4" />
-            <div className="h-4 bg-slate-200 rounded w-2/3" />
-            <div className="h-4 bg-slate-200 rounded w-1/2 pt-1" />
+          <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-[16px] space-y-2">
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-2/3" />
+            <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 pt-1" />
           </div>
         </div>
       ))}
@@ -91,16 +91,16 @@ export function QuotesPage() {
   const isFiltering = Boolean(searchQuery.trim());
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-32">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => navigate('/dashboard', { replace: true })}
               aria-label="Back to dashboard"
-              className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all cursor-pointer"
+              className="w-10 h-10 shrink-0 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
@@ -114,7 +114,7 @@ export function QuotesPage() {
 
         {/* Segmented Control Tabs */}
         <div className="max-w-[1200px] mx-auto mb-3">
-          <div className="bg-white/80 p-1.5 rounded-[18px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.03)] grid grid-cols-2 gap-1">
+          <div className="bg-white/80 dark:bg-surface/80 p-1.5 rounded-[18px] border border-slate-900/5 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.03)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] grid grid-cols-2 gap-1">
             <button
               type="button"
               onClick={() => {
@@ -124,12 +124,12 @@ export function QuotesPage() {
               className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.97] ${
                 activeTab === 'pending'
                   ? 'bg-primary text-white shadow-sm'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-slate-50'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}
             >
               <span>Pending to Quote</span>
               <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${
-                activeTab === 'pending' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                activeTab === 'pending' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
               }`}>
                 {pendingQuotes.length}
               </span>
@@ -144,12 +144,12 @@ export function QuotesPage() {
               className={`py-2.5 px-3 rounded-[14px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.97] ${
                 activeTab === 'quoted'
                   ? 'bg-primary text-white shadow-sm'
-                  : 'text-text-secondary hover:text-text-primary hover:bg-slate-50'
+                  : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}
             >
               <span>Already Quoted</span>
               <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${
-                activeTab === 'quoted' ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-600'
+                activeTab === 'quoted' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
               }`}>
                 {alreadyQuotedQuotes.length}
               </span>
@@ -167,14 +167,14 @@ export function QuotesPage() {
             placeholder={activeTab === 'pending' ? "Search booking no, location, rate..." : "Search quotations, status, location..."}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full h-11 pl-10 pr-9 bg-white rounded-[14px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-slate-400"
+            className="w-full h-11 pl-10 pr-9 bg-white dark:bg-surface text-text-primary rounded-[14px] border border-slate-900/5 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-slate-400 dark:placeholder:text-slate-500"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
               aria-label="Clear search text"
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-0.5"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -201,8 +201,8 @@ export function QuotesPage() {
               onRetry={handleRefresh}
             />
           ) : displayedList.length === 0 ? (
-            <div className="text-center py-12 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+            <div className="text-center py-12 px-4 bg-white dark:bg-surface rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500">
                 <SearchIcon />
               </div>
               <div>

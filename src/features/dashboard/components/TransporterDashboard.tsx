@@ -10,9 +10,9 @@ export function TransporterDashboard() {
       {/* Tile 1: Upload Bilty */}
       <button 
         onClick={() => navigate('/transporter/upload-bilty')}
-        className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-start gap-4 w-full text-left transition-all hover:bg-slate-50 active:scale-[0.98] group cursor-pointer"
+        className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-start gap-4 w-full text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 active:scale-[0.98] group cursor-pointer"
       >
-        <div className="w-12 h-12 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-105 transition-transform">
+        <div className="w-12 h-12 flex-shrink-0 bg-blue-100 dark:bg-blue-950/60 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm group-hover:scale-105 transition-transform">
           <BillCheckIcon className="w-6 h-6" />
         </div>
         <div>
@@ -24,9 +24,9 @@ export function TransporterDashboard() {
       {/* Tile 2: Quotes */}
       <button 
         onClick={() => navigate('/transporter/quotes')}
-        className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-start gap-4 w-full text-left transition-all hover:bg-slate-50 active:scale-[0.98] group cursor-pointer"
+        className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-start gap-4 w-full text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 active:scale-[0.98] group cursor-pointer"
       >
-        <div className="w-12 h-12 flex-shrink-0 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-600 shadow-sm group-hover:scale-105 transition-transform">
+        <div className="w-12 h-12 flex-shrink-0 bg-emerald-100 dark:bg-emerald-950/60 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-sm group-hover:scale-105 transition-transform">
           <QuoteIcon className="w-6 h-6" />
         </div>
         <div>

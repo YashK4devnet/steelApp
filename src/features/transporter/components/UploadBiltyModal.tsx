@@ -238,15 +238,15 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
     >
       <div 
         onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-lg bg-white rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.25)] border border-slate-900/10 p-5 sm:p-6 pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)] sm:pb-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto cursor-default ${
+        className={`w-full max-w-lg bg-white dark:bg-surface rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.25)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-slate-900/10 dark:border-white/10 p-5 sm:p-6 pb-[calc(env(safe-area-inset-bottom,1rem)+1.25rem)] sm:pb-6 flex flex-col gap-5 max-h-[90vh] overflow-y-auto cursor-default ${
           isClosing ? 'animate-slide-down-bottom' : 'animate-slide-up-bottom'
         }`}
       >
         {/* Mobile Sheet Drag Handle */}
-        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto -mt-1 mb-1 sm:hidden shrink-0" />
+        <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto -mt-1 mb-1 sm:hidden shrink-0" />
 
         {/* Modal Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3.5">
+        <div className="flex items-center justify-between gap-3 border-b border-slate-100 dark:border-white/10 pb-3.5">
           <div>
             <h3 className="text-[18px] font-bold text-text-primary tracking-tight">Upload Bilty Document</h3>
             <p className="text-xs text-text-secondary font-medium mt-0.5">Capture or upload freight bilty document</p>
@@ -256,15 +256,15 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
             onClick={handleClose}
             disabled={isSubmitting}
             aria-label="Close"
-            className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 flex items-center justify-center transition-colors active:scale-95 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-colors active:scale-95 cursor-pointer"
           >
             ✕
           </button>
         </div>
 
         {/* Truck Context Summary Card */}
-        <div className="bg-[#F8FAFC] border border-slate-200/80 rounded-[18px] p-3.5 flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+        <div className="bg-[#F8FAFC] dark:bg-slate-800/40 border border-slate-200/80 dark:border-white/10 rounded-[18px] p-3.5 flex items-start gap-3">
+          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0 mt-0.5">
             <TruckIcon />
           </div>
           <div className="flex-1 min-w-0">
@@ -272,15 +272,15 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
               <h4 className="text-[15px] font-bold text-text-primary tracking-tight">
                 {truck.truck_number_plate}
               </h4>
-              <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/50 px-2 py-0.5 rounded-full">
                 {truck.truck_type || 'Loading Truck'}
               </span>
             </div>
             <p className="text-xs text-text-secondary mt-0.5">
-              <span className="font-semibold text-slate-700">Driver:</span> {truck.driver_name || 'Not assigned'}
+              <span className="font-semibold text-slate-700 dark:text-slate-300">Driver:</span> {truck.driver_name || 'Not assigned'}
             </p>
             <p className="text-xs text-text-secondary mt-0.5 truncate">
-              <span className="font-semibold text-slate-700">To:</span> {truck.delivery_address_name}
+              <span className="font-semibold text-slate-700 dark:text-slate-300">To:</span> {truck.delivery_address_name}
             </p>
           </div>
         </div>
@@ -297,20 +297,20 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
 
           {selectedFile ? (
             /* Selected File Card */
-            <div className="bg-white border border-slate-200 rounded-[16px] p-3 flex items-center justify-between gap-3 shadow-sm">
+            <div className="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-white/10 rounded-[16px] p-3 flex items-center justify-between gap-3 shadow-sm">
               <div className="flex items-center gap-3 overflow-hidden">
                 {isImage && previewUrl ? (
                   <img 
                     src={previewUrl} 
                     alt="Bilty Preview" 
-                    className="w-12 h-12 rounded-[10px] object-cover border border-slate-100 flex-shrink-0"
+                    className="w-12 h-12 rounded-[10px] object-cover border border-slate-100 dark:border-white/10 flex-shrink-0"
                   />
                 ) : isPdf ? (
-                  <div className="w-12 h-12 rounded-[10px] bg-red-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-[10px] bg-red-50 dark:bg-red-950/60 flex items-center justify-center flex-shrink-0">
                     <PdfIcon />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 rounded-[10px] bg-slate-100 flex items-center justify-center flex-shrink-0 text-slate-500 font-bold text-xs uppercase">
+                  <div className="w-12 h-12 rounded-[10px] bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase">
                     File
                   </div>
                 )}
@@ -329,7 +329,7 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
                 type="button"
                 onClick={handleRemove}
                 disabled={isSubmitting}
-                className="w-9 h-9 rounded-full bg-slate-50 hover:bg-red-50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors flex-shrink-0 active:scale-95"
+                className="w-9 h-9 rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-950/50 text-slate-400 hover:text-red-500 flex items-center justify-center transition-colors flex-shrink-0 active:scale-95"
                 title="Remove document"
               >
                 <TrashIcon />
@@ -343,9 +343,9 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
                 <button
                   type="button"
                   onClick={handleTakePhoto}
-                  className="bg-slate-50 hover:bg-blue-50/60 border-2 border-dashed border-slate-300 hover:border-blue-400 rounded-[18px] p-4 flex flex-col items-center justify-center gap-2 text-center transition-all active:scale-[0.98] group cursor-pointer"
+                  className="bg-slate-50 dark:bg-slate-800/30 hover:bg-blue-50/60 dark:hover:bg-blue-950/30 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 rounded-[18px] p-4 flex flex-col items-center justify-center gap-2 text-center transition-all active:scale-[0.98] group cursor-pointer"
                 >
-                  <div className="w-11 h-11 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-full bg-blue-100 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
                     <CameraIcon />
                   </div>
                   <div>
@@ -358,9 +358,9 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="bg-slate-50 hover:bg-emerald-50/60 border-2 border-dashed border-slate-300 hover:border-emerald-400 rounded-[18px] p-4 flex flex-col items-center justify-center gap-2 text-center transition-all active:scale-[0.98] group cursor-pointer"
+                  className="bg-slate-50 dark:bg-slate-800/30 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500 rounded-[18px] p-4 flex flex-col items-center justify-center gap-2 text-center transition-all active:scale-[0.98] group cursor-pointer"
                 >
-                  <div className="w-11 h-11 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform">
                     <FileIcon />
                   </div>
                   <div>
@@ -373,7 +373,7 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
           )}
 
           {error && (
-            <p className="text-xs font-semibold text-red-600 bg-red-50 border border-red-200/80 rounded-lg p-2 flex items-center gap-1.5">
+            <p className="text-xs font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/50 border border-red-200/80 dark:border-red-900/40 rounded-lg p-2 flex items-center gap-1.5">
               <span>⚠️</span>
               <span>{error}</span>
             </p>
@@ -385,7 +385,7 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="flex-1 py-3 px-4 rounded-[14px] border border-slate-200 text-slate-700 text-sm font-bold hover:bg-slate-50 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-3 px-4 rounded-[14px] border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50 cursor-pointer"
             >
               Cancel
             </button>
@@ -394,7 +394,7 @@ export function UploadBiltyModal({ isOpen, onClose, truck }: UploadBiltyModalPro
               disabled={isSubmitting || !selectedFile}
               className={`flex-1 py-3 px-4 rounded-[14px] text-white text-sm font-bold shadow-[0_4px_12px_rgba(10,46,99,0.15)] flex items-center justify-center gap-2 active:scale-95 transition-all ${
                 isSubmitting || !selectedFile
-                  ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
                   : 'bg-primary hover:shadow-[0_4px_16px_rgba(10,46,99,0.2)]'
               }`}
             >

@@ -13,37 +13,37 @@ function getTruckStateBadge(state?: string) {
     case 'management_approved':
       return {
         label: 'Approved by Management',
-        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/60',
+        badgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/50',
       };
     case 'waiting_management_approval':
       return {
         label: 'Waiting Mgmt Approval',
-        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60',
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/50',
       };
     case 'waiting_team_approval':
       return {
         label: 'Waiting Team Approval',
-        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60',
+        badgeClass: 'bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-950/60 dark:text-amber-400 dark:border-amber-800/50',
       };
     case 'rejected':
       return {
         label: 'Rejected',
-        badgeClass: 'bg-red-50 text-red-700 border-red-200/60',
+        badgeClass: 'bg-red-50 text-red-700 border-red-200/60 dark:bg-red-950/60 dark:text-red-400 dark:border-red-800/50',
       };
     case 'loading':
       return {
         label: 'Loading',
-        badgeClass: 'bg-blue-50 text-blue-700 border-blue-200/60',
+        badgeClass: 'bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-950/60 dark:text-blue-400 dark:border-blue-800/50',
       };
     case 'loaded':
       return {
         label: 'Loaded',
-        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200/60',
+        badgeClass: 'bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-950/60 dark:text-purple-400 dark:border-purple-800/50',
       };
     default:
       return {
         label: state ? state.replace(/_/g, ' ') : 'Pending',
-        badgeClass: 'bg-slate-50 text-slate-700 border-slate-200/60',
+        badgeClass: 'bg-slate-50 text-slate-700 border-slate-200/60 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
       };
   }
 }
@@ -70,16 +70,18 @@ export function DriverAssignmentCard({ index, truck, onUpdate }: DriverAssignmen
   const stateBadge = getTruckStateBadge(truck.state);
 
   return (
-    <div className={`bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border flex flex-col gap-4 transition-all ${
-      isEditable ? 'border-slate-900/5' : 'border-slate-200 bg-slate-50/40 opacity-90'
+    <div className={`rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border flex flex-col gap-4 transition-all ${
+      isEditable 
+        ? 'bg-white dark:bg-surface border-slate-900/5 dark:border-white/10' 
+        : 'border-slate-200 dark:border-white/10 bg-slate-50/40 dark:bg-slate-800/30 opacity-90'
     }`}>
       {/* Header with Truck Index & Spec & Status Badge */}
-      <div className="flex items-center justify-between border-b border-slate-100 pb-3 gap-2">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-3 gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className={`w-7 h-7 rounded-full font-extrabold text-xs flex items-center justify-center border shrink-0 ${
             isEditable
-              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
-              : 'bg-slate-100 text-slate-600 border-slate-200'
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/50'
+              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/10'
           }`}>
             {index + 1}
           </span>
@@ -100,7 +102,7 @@ export function DriverAssignmentCard({ index, truck, onUpdate }: DriverAssignmen
 
       {/* Read-Only Informational Notice for Non-Approved Trucks */}
       {!isEditable && (
-        <div className="p-3 bg-slate-100/80 rounded-[12px] border border-slate-200/80 text-[11px] font-medium text-slate-600 flex items-center gap-2">
+        <div className="p-3 bg-slate-100/80 dark:bg-slate-800/60 rounded-[12px] border border-slate-200/80 dark:border-white/10 text-[11px] font-medium text-slate-600 dark:text-slate-400 flex items-center gap-2">
           <span>🔒</span>
           <span>{getReadOnlyReason(truck.state, stateBadge.label)}</span>
         </div>
