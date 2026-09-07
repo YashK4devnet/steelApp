@@ -217,18 +217,18 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
 
   return (
     <div 
-      className={`fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200 ${
+      className={`fixed inset-0 z-[100] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-200 ${
         isClosing ? 'opacity-0' : 'opacity-100'
       }`}
       onClick={handleClose}
     >
       <div 
-        className={`bg-white rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.22)] border border-slate-900/10 p-6 sm:p-7 max-w-md w-full relative overflow-hidden flex flex-col max-h-[90vh] ${
+        className={`bg-white dark:bg-surface rounded-t-[32px] sm:rounded-[24px] shadow-[0_20px_50px_rgba(15,23,42,0.22)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] border border-slate-900/10 dark:border-white/10 p-6 sm:p-7 max-w-md w-full relative overflow-hidden flex flex-col max-h-[90vh] transition-colors duration-200 ${
           isClosing ? 'animate-slide-down-bottom' : 'animate-slide-up-bottom'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-5 sm:hidden" />
+        <div className="w-12 h-1 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-5 sm:hidden" />
 
         {/* Header */}
         <div className="flex justify-between items-start mb-6">
@@ -244,7 +244,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
             type="button"
             onClick={handleClose}
             aria-label="Close"
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 active:scale-95 transition-all"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
           >
             <CloseIcon />
           </button>
@@ -300,7 +300,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
                     <button 
                       type="button"
                       onClick={() => setBundleQuantity(Math.max(1, bundleQuantity - 1))}
-                      className="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-[16px] text-xl font-bold text-slate-600 active:scale-95 transition-all"
+                      className="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[16px] text-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
                     >
                       -
                     </button>
@@ -310,7 +310,7 @@ export function ProductConfigSheet({ isOpen, onClose, product, initialData, onSa
                     <button 
                       type="button"
                       onClick={() => setBundleQuantity(bundleQuantity + 1)}
-                      className="w-12 h-12 flex items-center justify-center bg-slate-100 rounded-[16px] text-xl font-bold text-slate-600 active:scale-95 transition-all"
+                      className="w-12 h-12 flex items-center justify-center bg-slate-100 dark:bg-slate-800 rounded-[16px] text-xl font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-95 transition-all cursor-pointer"
                     >
                       +
                     </button>

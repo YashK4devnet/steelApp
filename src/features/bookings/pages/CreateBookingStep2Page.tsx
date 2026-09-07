@@ -37,16 +37,16 @@ export function CreateBookingStep2Page() {
   } = useCreateBookingStep2();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-36">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-36 transition-colors duration-200">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         <div className="max-w-[800px] mx-auto flex flex-col gap-3">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={navigateBack}
               aria-label="Go back"
-              className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+              className="w-10 h-10 shrink-0 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
@@ -74,13 +74,13 @@ export function CreateBookingStep2Page() {
         </div>
 
         {selectedProducts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-[24px] p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)] border border-slate-900/5 flex flex-col items-center">
+          <div className="text-center py-12 bg-white dark:bg-surface rounded-[24px] p-6 shadow-[0_4px_16px_rgba(15,23,42,0.03)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col items-center transition-colors duration-200">
             <p className="text-text-secondary font-medium mb-4">No DIA parameters added yet.</p>
             {!isViewMode && (
               <button
                 type="button"
                 onClick={() => setIsAddingProduct(true)}
-                className="px-6 py-3 rounded-full bg-primary text-white font-bold text-[14px] shadow-[0_4px_14px_rgba(10,46,99,0.2)] hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-2"
+                className="px-6 py-3 rounded-full bg-primary text-white font-bold text-[14px] shadow-[0_4px_14px_rgba(10,46,99,0.2)] dark:shadow-[0_4px_14px_rgba(0,0,0,0.4)] hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-2 cursor-pointer"
               >
                 <PlusIcon /> Add DIA Details
               </button>
@@ -109,7 +109,7 @@ export function CreateBookingStep2Page() {
             type="button"
             onClick={() => setIsAddingProduct(true)}
             aria-label="Add DIA Details"
-            className="w-14 h-14 rounded-full bg-primary text-white shadow-[0_8px_25px_rgba(10,46,99,0.35)] hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center border border-white/20 cursor-pointer"
+            className="w-14 h-14 rounded-full bg-primary text-white shadow-[0_8px_25px_rgba(10,46,99,0.35)] dark:shadow-[0_8px_25px_rgba(0,0,0,0.5)] hover:bg-primary/90 active:scale-95 transition-all flex items-center justify-center border border-white/20 cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -120,18 +120,18 @@ export function CreateBookingStep2Page() {
       )}
 
       {/* Fixed Bottom Submit Button Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-900/5 p-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#0B1120]/90 backdrop-blur-md border-t border-slate-900/5 dark:border-white/10 p-4 z-50 transition-colors duration-200">
         <div className="max-w-[800px] mx-auto">
           <button
             type="button"
             onClick={isViewMode ? navigateToBookings : handleSaveOrder}
             disabled={isSaving}
-            className={`w-full py-3.5 px-4 rounded-[16px] font-bold text-[15px] flex items-center justify-center gap-2 transition-all ${
+            className={`w-full py-3.5 px-4 rounded-[16px] font-bold text-[15px] flex items-center justify-center gap-2 transition-all cursor-pointer ${
               isSaving
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed shadow-none'
                 : isViewMode
-                  ? 'bg-slate-800 text-white shadow-[0_4px_16px_rgba(15,23,42,0.15)] hover:bg-slate-700 active:scale-[0.98]'
-                  : 'bg-emerald-500 text-white shadow-[0_4px_16px_rgba(16,185,129,0.25)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.3)] active:scale-[0.98]'
+                  ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-[0_4px_16px_rgba(15,23,42,0.15)] hover:bg-slate-700 dark:hover:bg-slate-600 active:scale-[0.98]'
+                  : 'bg-emerald-500 text-white shadow-[0_4px_16px_rgba(16,185,129,0.25)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_4px_20px_rgba(16,185,129,0.3)] active:scale-[0.98]'
             }`}
           >
             {isSaving ? (

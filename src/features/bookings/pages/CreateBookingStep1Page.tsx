@@ -32,16 +32,16 @@ export function CreateBookingStep1Page() {
   } = useCreateBookingStep1();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-36">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-36 transition-colors duration-200">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         <div className="max-w-[800px] mx-auto flex flex-col gap-3">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={navigateBack}
               aria-label="Go back"
-              className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+              className="w-10 h-10 shrink-0 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
@@ -58,7 +58,7 @@ export function CreateBookingStep1Page() {
           {/* Step Indicator */}
           <div className="flex gap-2">
             <div className="flex-1 h-1.5 rounded-full bg-primary" />
-            <div className="flex-1 h-1.5 rounded-full bg-slate-200" />
+            <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700" />
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@ export function CreateBookingStep1Page() {
         />
 
         {/* Section 3: Transport Switch & Details */}
-        <div className="bg-white rounded-[24px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-6">
+        <div className="bg-white dark:bg-surface rounded-[24px] p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-6 transition-colors duration-200">
           <Toggle
             label="Use Seller's Transport"
             description="Toggle on if seller arranges truck & driver"
@@ -93,7 +93,7 @@ export function CreateBookingStep1Page() {
           />
 
           {!form.use_sellers_truck && (
-            <div className="flex flex-col gap-6 pt-2 border-t border-slate-900/5 animate-fade-in">
+            <div className="flex flex-col gap-6 pt-2 border-t border-slate-900/5 dark:border-white/10 animate-fade-in">
               <TruckDetailsSection
                 form={form}
                 truckTypes={truckTypes}
@@ -115,13 +115,13 @@ export function CreateBookingStep1Page() {
       </main>
 
       {/* Fixed Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-900/5 p-4 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-[#0B1120]/90 backdrop-blur-md border-t border-slate-900/5 dark:border-white/10 p-4 z-50 transition-colors duration-200">
         <div className="max-w-[800px] mx-auto">
           <Button
             type="button"
             variant="primary"
             onClick={handleProceed}
-            className="w-full py-3.5 rounded-[16px] text-[15px] font-bold shadow-[0_4px_16px_rgba(10,46,99,0.25)]"
+            className="w-full py-3.5 rounded-[16px] text-[15px] font-bold shadow-[0_4px_16px_rgba(10,46,99,0.25)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
           >
             {isViewMode ? 'Proceed to Product Details' : 'Proceed to Product Details'}
           </Button>

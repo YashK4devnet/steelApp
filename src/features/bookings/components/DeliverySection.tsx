@@ -27,7 +27,7 @@ export function DeliverySection({
           value={form.customer_name}
           readOnly
           disabled
-          className="bg-slate-100 text-slate-500"
+          className="bg-slate-100 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400"
         />
 
         <Select

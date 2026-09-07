@@ -37,18 +37,18 @@ export function SelectedProductCard({
       : item.selected_bundle_id && item.bundle_quantity && item.bundle_quantity > 0;
 
   return (
-    <div className="bg-white rounded-[20px] p-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] border border-slate-900/5 flex flex-col gap-3">
+    <div className="bg-white dark:bg-surface rounded-[20px] p-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 transition-colors duration-200">
       <div className="flex justify-between items-start gap-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="bg-slate-100 text-slate-500 text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
+            <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full">
               {index + 1}
             </span>
             <h3 className="font-bold text-text-primary text-[15px] leading-tight">
               {item.product.name}
             </h3>
             {!isConfigured && !isViewMode && (
-              <span className="bg-orange-50 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded-full border border-orange-100 animate-pulse">
+              <span className="bg-orange-50 dark:bg-amber-950/60 text-orange-600 dark:text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-orange-100 dark:border-amber-800/40 animate-pulse">
                 Requires Config
               </span>
             )}
@@ -66,7 +66,7 @@ export function SelectedProductCard({
               type="button"
               onClick={() => onEdit(item)}
               aria-label="Edit product"
-              className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
+              className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors cursor-pointer"
             >
               <EditIcon />
             </button>
@@ -74,7 +74,7 @@ export function SelectedProductCard({
               type="button"
               onClick={() => onDelete(item.local_id)}
               aria-label="Delete product"
-              className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors"
+              className="w-8 h-8 rounded-full bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors cursor-pointer"
             >
               <TrashIcon />
             </button>
@@ -83,7 +83,7 @@ export function SelectedProductCard({
       </div>
 
       {isConfigured && (
-        <div className="ml-7 bg-slate-50 rounded-[12px] p-3 border border-slate-900/5">
+        <div className="ml-7 bg-slate-50 dark:bg-slate-800/50 rounded-[12px] p-3 border border-slate-900/5 dark:border-white/10 transition-colors">
           {item.order_type === 'bundle' ? (
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-center text-[13px]">

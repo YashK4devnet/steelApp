@@ -104,16 +104,16 @@ export function BookingsPage() {
   const isFiltering = Boolean(selectedDate || searchQuery.trim());
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] relative z-0 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-32 transition-colors duration-200">
       {/* Sticky Header with Title and Search/Date Filter */}
-      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
+      <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8 transition-colors duration-200">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4 mb-3">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => navigate('/dashboard', { replace: true })}
               aria-label="Back to dashboard"
-              className="w-10 h-10 shrink-0 bg-white rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] border border-slate-900/5 text-text-primary hover:bg-gray-50 active:scale-95 transition-all"
+              className="w-10 h-10 shrink-0 bg-white dark:bg-surface rounded-full flex items-center justify-center shadow-[0_2px_8px_rgba(15,23,42,0.04)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-text-primary hover:bg-gray-50 dark:hover:bg-slate-800 active:scale-95 transition-all cursor-pointer"
             >
               <ArrowLeftIcon />
             </button>
@@ -127,7 +127,7 @@ export function BookingsPage() {
             type="button"
             onClick={() => navigate('/bookings/new')}
             aria-label="Create new booking"
-            className="w-10 h-10 shrink-0 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(10,46,99,0.2)] hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all"
+            className="w-10 h-10 shrink-0 bg-primary text-white rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(10,46,99,0.2)] dark:shadow-[0_4px_12px_rgba(0,0,0,0.4)] hover:bg-primary/90 hover:scale-105 active:scale-95 transition-all cursor-pointer"
           >
             <PlusIcon />
           </button>
@@ -138,7 +138,7 @@ export function BookingsPage() {
           <div className="flex items-center gap-2">
             {/* Search Input */}
             <div className="relative flex-1">
-              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none">
                 <SearchIcon />
               </div>
               <input
@@ -146,14 +146,14 @@ export function BookingsPage() {
                 placeholder="Search reference, warehouse, customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-11 pl-10 pr-9 bg-white rounded-[14px] border border-slate-900/5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-slate-400 placeholder:font-normal"
+                className="w-full h-11 pl-10 pr-9 bg-white dark:bg-surface text-text-primary rounded-[14px] border border-slate-900/5 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] outline-none focus:border-primary transition-all text-sm font-medium placeholder:text-text-secondary placeholder:font-normal"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
                   aria-label="Clear search text"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -168,12 +168,12 @@ export function BookingsPage() {
               onClick={() => setIsCalendarOpen(!isCalendarOpen)}
               aria-label="Filter by date"
               aria-expanded={isCalendarOpen}
-              className={`h-11 px-3 sm:px-3.5 rounded-[14px] flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-[0_4px_16px_rgba(15,23,42,0.04)] border shrink-0 ${
+              className={`h-11 px-3 sm:px-3.5 rounded-[14px] flex items-center justify-center gap-1.5 text-xs font-bold transition-all shadow-[0_4px_16px_rgba(15,23,42,0.04)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.3)] border shrink-0 ${
                 selectedDate
                   ? 'bg-primary text-white border-primary shadow-primary/20'
                   : isCalendarOpen
-                  ? 'bg-slate-100 text-primary border-primary/20'
-                  : 'bg-white text-slate-600 hover:text-primary border-slate-900/5 hover:bg-slate-50 active:scale-95'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-primary dark:text-blue-400 border-primary/20 dark:border-blue-500/30'
+                  : 'bg-white dark:bg-surface text-slate-600 dark:text-slate-300 hover:text-primary dark:hover:text-blue-400 border-slate-900/5 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95'
               }`}
             >
               <CalendarIcon className="w-5 h-5" />
@@ -189,13 +189,13 @@ export function BookingsPage() {
           {isFiltering && (
             <div className="flex flex-wrap items-center gap-2 pt-0.5">
               {selectedDate && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold border border-primary/15 animate-fade-in">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 dark:bg-blue-500/20 text-primary dark:text-blue-400 rounded-full text-xs font-semibold border border-primary/15 dark:border-blue-500/30 animate-fade-in">
                   <CalendarIcon className="w-3.5 h-3.5" />
                   <span>Date: {formatDateBadge(selectedDate)}</span>
                   <button
                     type="button"
                     onClick={() => setSelectedDate(null)}
-                    className="hover:bg-primary/20 rounded-full p-0.5 ml-0.5 text-primary transition-colors"
+                    className="hover:bg-primary/20 rounded-full p-0.5 ml-0.5 text-primary dark:text-blue-400 transition-colors"
                     aria-label="Clear date filter"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -205,12 +205,12 @@ export function BookingsPage() {
                 </div>
               )}
               {searchQuery && (
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-semibold border border-slate-200 animate-fade-in">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full text-xs font-semibold border border-slate-200 dark:border-white/10 animate-fade-in">
                   <span>Search: "{searchQuery}"</span>
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="hover:bg-slate-200 rounded-full p-0.5 ml-0.5 transition-colors"
+                    className="hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full p-0.5 ml-0.5 transition-colors"
                     aria-label="Clear search filter"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -265,12 +265,12 @@ export function BookingsPage() {
             isRetrying={isFetching}
           />
         ) : bookings.length === 0 ? (
-          <div className="text-center py-10 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5">
+          <div className="text-center py-10 bg-white dark:bg-surface rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 transition-colors">
             <p className="text-text-secondary font-medium">No bookings found.</p>
           </div>
         ) : filteredBookings.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-white rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+          <div className="text-center py-12 px-4 bg-white dark:bg-surface rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col items-center gap-3 transition-colors">
+            <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500">
               <SearchIcon />
             </div>
             <div>
@@ -285,7 +285,7 @@ export function BookingsPage() {
                 setSelectedDate(null);
                 setSearchQuery('');
               }}
-              className="px-4 py-2 bg-primary/10 text-primary font-bold text-xs rounded-full hover:bg-primary/20 transition-all mt-1"
+              className="px-4 py-2 bg-primary/10 dark:bg-blue-500/20 text-primary dark:text-blue-400 font-bold text-xs rounded-full hover:bg-primary/20 dark:hover:bg-blue-500/30 transition-all mt-1 cursor-pointer"
             >
               Clear Filters
             </button>
@@ -300,7 +300,7 @@ export function BookingsPage() {
               return (
                 <div
                   key={booking.id}
-                  className="bg-white rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 flex flex-col gap-3 relative overflow-hidden"
+                  className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 relative overflow-hidden transition-colors duration-200"
                 >
                   <div className="flex justify-between items-start gap-2">
                     <div>
@@ -308,12 +308,12 @@ export function BookingsPage() {
                       <p className="text-xs font-semibold text-text-secondary mt-0.5">{booking.created_date}</p>
                     </div>
                     <div
-                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase ${
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide uppercase border ${
                         isCancelled
-                          ? 'bg-red-50 text-red-700'
+                          ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-400 border-transparent dark:border-red-800/40'
                           : !canEdit
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'bg-emerald-50 text-emerald-700'
+                            ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-400 border-transparent dark:border-blue-800/40'
+                            : 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 border-transparent dark:border-emerald-800/40'
                       }`}
                     >
                       {booking.state_label || (isCancelled ? 'Cancelled' : !canEdit ? 'Read-Only' : 'Editable')}
@@ -338,19 +338,19 @@ export function BookingsPage() {
                       </div>
                     )}
                     {booking.rejected_reason && (
-                      <div className="flex flex-col gap-0.5 mt-1 p-2.5 bg-red-50/70 rounded-[12px] border border-red-100">
-                        <span className="text-[11px] font-bold text-red-700 uppercase tracking-wide">Reject Reason</span>
-                        <span className="text-xs font-medium text-red-800">{booking.rejected_reason}</span>
+                      <div className="flex flex-col gap-0.5 mt-1 p-2.5 bg-red-50/70 dark:bg-red-950/40 rounded-[12px] border border-red-100 dark:border-red-800/40">
+                        <span className="text-[11px] font-bold text-red-700 dark:text-red-300 uppercase tracking-wide">Reject Reason</span>
+                        <span className="text-xs font-medium text-red-800 dark:text-red-200">{booking.rejected_reason}</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-900/5">
+                  <div className="flex justify-end gap-3 mt-3 pt-3 border-t border-slate-900/5 dark:border-white/10">
                     {isCancellable && !isCancelled && (
                       <button
                         type="button"
                         onClick={() => setCancelModalBooking(booking)}
-                        className="px-4 py-2 rounded-full border border-red-200 text-red-600 hover:bg-red-50 active:scale-95 text-xs font-bold transition-all"
+                        className="px-4 py-2 rounded-full border border-red-200 dark:border-red-800/40 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 active:scale-95 text-xs font-bold transition-all cursor-pointer"
                       >
                         Cancel Booking
                       </button>
@@ -359,7 +359,7 @@ export function BookingsPage() {
                       <button
                         type="button"
                         onClick={() => navigate(`/bookings/edit/${booking.id}`)}
-                        className="px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/95 active:scale-95 text-xs font-bold shadow-sm transition-all"
+                        className="px-4 py-2 rounded-full bg-primary text-white hover:bg-primary/95 active:scale-95 text-xs font-bold shadow-sm transition-all cursor-pointer"
                       >
                         Edit Booking
                       </button>
@@ -367,7 +367,7 @@ export function BookingsPage() {
                       <button
                         type="button"
                         onClick={() => navigate(`/bookings/view/${booking.id}`)}
-                        className="px-4 py-2 rounded-full bg-slate-800 text-white hover:bg-slate-700 active:scale-95 text-xs font-bold shadow-sm transition-all"
+                        className="px-4 py-2 rounded-full bg-slate-800 dark:bg-slate-700 text-white hover:bg-slate-700 dark:hover:bg-slate-600 active:scale-95 text-xs font-bold shadow-sm transition-all cursor-pointer"
                       >
                         View Details
                       </button>
@@ -381,8 +381,8 @@ export function BookingsPage() {
       </main>
 
       {cancelModalBooking && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-[24px] p-6 max-w-sm w-full shadow-2xl border border-slate-900/5 flex flex-col gap-4">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-surface rounded-[24px] p-6 max-w-sm w-full shadow-2xl border border-slate-900/5 dark:border-white/10 flex flex-col gap-4 transition-colors">
             <h3 className="text-lg font-bold text-text-primary">Cancel Booking?</h3>
             <p className="text-sm text-text-secondary font-medium">
               Are you sure you want to cancel booking <span className="font-bold text-text-primary">{cancelModalBooking.reference}</span>? This action cannot be undone.
@@ -391,7 +391,7 @@ export function BookingsPage() {
               <button
                 type="button"
                 onClick={() => setCancelModalBooking(null)}
-                className="px-4 py-2.5 rounded-full bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition-colors"
+                className="px-4 py-2.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 Keep Active
               </button>
@@ -399,7 +399,7 @@ export function BookingsPage() {
                 type="button"
                 onClick={handleCancel}
                 disabled={isCancelling}
-                className="px-4 py-2.5 rounded-full bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50"
+                className="px-4 py-2.5 rounded-full bg-red-600 text-white font-bold text-xs hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
               >
                 {isCancelling ? 'Cancelling...' : 'Confirm Cancel'}
               </button>
