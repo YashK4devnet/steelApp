@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
-import { useTheme } from '../../../hooks/useTheme';
-import { Toggle } from '../../../components/ui/Toggle';
 import { LogoutIcon, UserAvatarIcon } from '../components/Icons';
 import { LogoutModal } from '../../../components/ui/LogoutModal';
+import { ThemeToggleButton } from '../../../components/ui/ThemeToggleButton';
 
 export function ProfilePage() {
   const { user, logout } = useAuth();
-  const { isDark, toggleTheme } = useTheme();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const roleName = user?.role || 'User';
@@ -21,9 +19,17 @@ export function ProfilePage() {
           {/* Brand Identity */}
           <div className="flex items-center gap-2.5 min-w-0">
             <img 
-              src={isDark ? "/in-app-logo-dark.png" : "/in-app-logo.png"} 
+              src="/in-app-logo.png" 
               alt="RNE Logo" 
-              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0"
+              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0 dark:hidden"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <img 
+              src="/in-app-logo-dark.png" 
+              alt="RNE Logo" 
+              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0 hidden dark:block"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
@@ -39,13 +45,17 @@ export function ProfilePage() {
             </div>
           </div>
 
-          <button 
-            onClick={() => setShowLogoutModal(true)}
-            className="w-[42px] h-[42px] rounded-full bg-slate-50 dark:bg-slate-700/80 shadow-[0_4px_12px_rgba(220,38,38,0.08)] border border-slate-900/10 dark:border-white/10 flex items-center justify-center text-red-500 hover:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-950/50 hover:border-red-200/80 active:scale-95 transition-all duration-200"
-            title="Sign Out"
-          >
-            <LogoutIcon />
-          </button>
+          <div className="flex items-center gap-2.5 flex-shrink-0">
+            <ThemeToggleButton />
+
+            <button 
+              onClick={() => setShowLogoutModal(true)}
+              className="w-[42px] h-[42px] rounded-full bg-slate-50 dark:bg-slate-700/80 shadow-[0_4px_12px_rgba(220,38,38,0.08)] border border-slate-900/10 dark:border-white/10 flex items-center justify-center text-red-500 hover:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-950/50 hover:border-red-200/80 active:scale-95 transition-all duration-200"
+              title="Sign Out"
+            >
+              <LogoutIcon />
+            </button>
+          </div>
         </div>
       </header>
 
@@ -100,18 +110,6 @@ export function ProfilePage() {
 
           </div>
 
-          {/* Appearance Section */}
-          <div className="bg-white dark:bg-surface rounded-[24px] shadow-[0_8px_24px_rgba(15,23,42,0.04)] border border-slate-900/5 dark:border-white/10 p-5 flex flex-col gap-3 transition-colors duration-200">
-            <span className="text-[13px] font-medium text-text-secondary uppercase tracking-wider">
-              Preferences
-            </span>
-            <Toggle 
-              label="Dark Mode"
-              description="Switch between light and dark themes"
-              checked={isDark}
-              onChange={() => toggleTheme()}
-            />
-          </div>
         </div>
       </main>
 

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, startTransition } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { StatusBar, Style } from '@capacitor/status-bar';
 
@@ -41,7 +41,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const resolvedTheme: 'light' | 'dark' = theme === 'system' ? (systemIsDark ? 'dark' : 'light') : theme;
   const isDark = resolvedTheme === 'dark';
 
-  // Apply .dark class to root <html> element and sync native status bar
+  // Apply .dark class to root <html> element immediately
   useEffect(() => {
     const root = document.documentElement;
     if (isDark) {
@@ -51,8 +51,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
 
     // Sync native Android status bar if running inside Capacitor
+    // Defer slightly to avoid blocking the first frame of the toggle animation
     if (Capacitor.isNativePlatform()) {
-      (async () => {
+      const timer = setTimeout(async () => {
         try {
           // Style.Dark: Light icons (for dark backgrounds), Style.Light: Dark icons (for light backgrounds)
           await StatusBar.setStyle({
@@ -65,26 +66,37 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
           // Non-blocking in dev or environments where status bar plugin is unconfigured
           console.warn('[ThemeProvider] Could not update StatusBar:', err);
         }
-      })();
+      }, 80);
+      return () => clearTimeout(timer);
     }
   }, [isDark]);
 
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
+  const setTheme = useCallback((newTheme: Theme) => {
+    startTransition(() => {
+      setThemeState(newTheme);
+    });
     try {
       localStorage.setItem(THEME_STORAGE_KEY, newTheme);
     } catch {
       // Ignore localStorage quotas or disabled storage
     }
-  };
+  }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     const nextTheme: Theme = isDark ? 'light' : 'dark';
     setTheme(nextTheme);
-  };
+  }, [isDark, setTheme]);
+
+  const contextValue = useMemo(() => ({
+    theme,
+    resolvedTheme,
+    isDark,
+    setTheme,
+    toggleTheme,
+  }), [theme, resolvedTheme, isDark, setTheme, toggleTheme]);
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, isDark, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );

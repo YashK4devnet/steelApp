@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
-import { useTheme } from '../../hooks/useTheme';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
 import { PublicRoute } from '../guards/PublicRoute';
 import { MainLayout } from '../../components/layout/MainLayout';
@@ -106,22 +105,10 @@ function CapacitorNativeSetup() {
   const [showExitToast, setShowExitToast] = useState(false);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { isDark } = useTheme();
-
   useEffect(() => {
     locationRef.current = location.pathname;
     setShowExitToast(false);
   }, [location.pathname]);
-
-  // Synchronize native Android status bar icons on theme change and page navigation
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      StatusBar.setStyle({
-        style: isDark ? Style.Dark : Style.Light,
-      }).catch(() => {});
-      StatusBar.setOverlaysWebView({ overlay: true }).catch(() => {});
-    }
-  }, [isDark, location.pathname]);
 
   useEffect(() => {
     // Configure native status bar overlay

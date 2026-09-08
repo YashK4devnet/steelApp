@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../app/providers/AuthProvider';
-import { useTheme } from '../../../hooks/useTheme';
 import { useNotifications } from '../../../hooks/useNotifications';
 import { BellIcon } from '../components/Icons';
 import { LogoutIcon } from '../../profile/components/Icons';
@@ -11,10 +10,10 @@ import { CustomerDashboard } from '../components/CustomerDashboard';
 import { TransporterDashboard } from '../components/TransporterDashboard';
 import { LogoutModal } from '../../../components/ui/LogoutModal';
 import { NotificationSheet } from '../../../components/ui/NotificationSheet';
+import { ThemeToggleButton } from '../../../components/ui/ThemeToggleButton';
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
-  const { isDark } = useTheme();
   const { unreadCount } = useNotifications();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showNotificationSheet, setShowNotificationSheet] = useState(false);
@@ -34,9 +33,17 @@ export function DashboardPage() {
           {/* Brand Identity */}
           <div className="flex items-center gap-2.5 min-w-0">
             <img 
-              src={isDark ? "/in-app-logo-dark.png" : "/in-app-logo.png"} 
+              src="/in-app-logo.png" 
               alt="RNE Logo" 
-              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0"
+              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0 dark:hidden"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+            <img 
+              src="/in-app-logo-dark.png" 
+              alt="RNE Logo" 
+              className="h-8 sm:h-9 w-auto object-contain flex-shrink-0 hidden dark:block"
               onError={(e) => {
                 e.currentTarget.style.display = 'none';
               }}
@@ -54,6 +61,8 @@ export function DashboardPage() {
 
           {/* Action Buttons - Premium Pill Buttons */}
           <div className="flex items-center gap-2.5 flex-shrink-0">
+            <ThemeToggleButton />
+
             <button 
               onClick={() => setShowNotificationSheet(true)}
               className="relative w-[42px] h-[42px] rounded-full bg-slate-50 dark:bg-slate-700/80 shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-200 cursor-pointer"

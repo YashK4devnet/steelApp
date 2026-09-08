@@ -3,7 +3,6 @@ import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Card } from '../../../components/ui/Card';
 import { useAuth } from '../../../app/providers/AuthProvider';
-import { useTheme } from '../../../hooks/useTheme';
 import { EyeIcon, EyeOffIcon } from '../components/Icons';
 
 export function LoginPage() {
@@ -15,7 +14,6 @@ export function LoginPage() {
   const [isAppLoading, setIsAppLoading] = useState(true);
   
   const { login } = useAuth();
-  const { isDark } = useTheme();
 
   useEffect(() => {
     // Hide native Android splash screen with a smooth fade if running natively via Capacitor
@@ -58,9 +56,20 @@ export function LoginPage() {
           }`}
         >
           <img 
-            src={isDark ? "/logo-dark.png" : "/logo.png"} 
+            src="/logo.png" 
             alt="RNE Logo" 
-            className="w-[280px] sm:w-[300px] h-auto object-contain"
+            className="w-[280px] sm:w-[300px] h-auto object-contain dark:hidden"
+            onError={(e) => {
+              // Fallback text just in case the image is missing
+              e.currentTarget.style.display = 'none';
+              const nextEl = e.currentTarget.nextElementSibling as HTMLElement;
+              if (nextEl) nextEl.style.display = 'block';
+            }}
+          />
+          <img 
+            src="/logo-dark.png" 
+            alt="RNE Logo" 
+            className="w-[280px] sm:w-[300px] h-auto object-contain hidden dark:block"
             onError={(e) => {
               // Fallback text just in case the image is missing
               e.currentTarget.style.display = 'none';
