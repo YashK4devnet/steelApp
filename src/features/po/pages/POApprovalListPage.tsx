@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MOCK_PENDING_POS } from '../services/mockData';
+import { useQuery } from '@tanstack/react-query';
+import { getPendingPOApprovals } from '../services/poApi';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import type { VendorBookingItem } from '../types';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -36,25 +39,50 @@ const DocumentEmptyIcon = () => (
   </svg>
 );
 
+function formatApprovalDate(dateStr?: string): string {
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr.replace(' ', 'T'));
+    if (isNaN(d.getTime())) {
+      return dateStr.split(' ')[0];
+    }
+    return d.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return dateStr.split(' ')[0] || dateStr;
+  }
+}
+
 export function POApprovalListPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [pos, setPos] = useState(MOCK_PENDING_POS);
+
+  const {
+    data: pos = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<VendorBookingItem[]>({
+    queryKey: QUERY_KEYS.poApprovals,
+    queryFn: getPendingPOApprovals,
+  });
 
   const filteredPOs = pos.filter((po) => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
     return (
-      po.po_number.toLowerCase().includes(q) ||
+      po.name.toLowerCase().includes(q) ||
       po.vendor_name.toLowerCase().includes(q) ||
-      po.created_by.toLowerCase().includes(q)
+      ((po as any).created_by && String((po as any).created_by).toLowerCase().includes(q))
     );
   });
 
   const handleRefresh = async () => {
-    // Simulate refreshing pending POs list
-    await new Promise((res) => setTimeout(res, 600));
-    setPos([...MOCK_PENDING_POS]);
+    await refetch();
   };
 
   return (
@@ -75,9 +103,11 @@ export function POApprovalListPage() {
               <h1 className="text-[22px] sm:text-[24px] font-bold text-text-primary tracking-tight">
                 PO Approval
               </h1>
-              <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 px-2.5 py-0.5 rounded-full">
-                {filteredPOs.length} Pending
-              </span>
+              {!isLoading && (
+                <span className="text-[12px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/40 px-2.5 py-0.5 rounded-full">
+                  {filteredPOs.length} Pending
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -89,7 +119,7 @@ export function POApprovalListPage() {
           </div>
           <input
             type="text"
-            placeholder="Search by PO number, vendor or creator..."
+            placeholder="Search by PO number, vendor..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-12 pr-10 bg-white dark:bg-surface text-text-primary rounded-[16px] border border-slate-900/5 dark:border-white/10 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] outline-none focus:border-primary transition-colors text-[15px] font-medium placeholder:text-text-secondary placeholder:font-normal"
@@ -98,7 +128,7 @@ export function POApprovalListPage() {
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary p-1 text-xs font-bold"
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary p-1 text-xs font-bold cursor-pointer"
               aria-label="Clear search"
             >
               ✕
@@ -110,7 +140,51 @@ export function POApprovalListPage() {
       {/* List Content with PullToRefresh Gesture */}
       <PullToRefresh onRefresh={handleRefresh}>
         <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-3.5">
-          {filteredPOs.length === 0 ? (
+          {/* Loading Skeleton */}
+          {isLoading && (
+            <div className="flex flex-col gap-3.5">
+              {[1, 2, 3].map((item) => (
+                <div
+                  key={item}
+                  className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3.5 animate-pulse"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="h-5 w-32 bg-slate-200 dark:bg-slate-700/60 rounded-md" />
+                    <div className="h-4 w-24 bg-slate-100 dark:bg-slate-800 rounded-md" />
+                  </div>
+                  <div className="h-px bg-slate-100 dark:bg-white/5 -mx-1" />
+                  <div className="space-y-1.5">
+                    <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded" />
+                    <div className="h-5 w-48 bg-slate-200 dark:bg-slate-700/60 rounded-md" />
+                  </div>
+                  <div className="h-4 w-36 bg-slate-100 dark:bg-slate-800 rounded-md" />
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Error State */}
+          {!isLoading && isError && (
+            <div className="bg-white dark:bg-surface rounded-[24px] p-8 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-red-200 dark:border-red-900/40 text-center flex flex-col items-center justify-center gap-3 my-6">
+              <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center">
+                ✕
+              </div>
+              <h3 className="text-[17px] font-bold text-text-primary">Failed to load PO Approvals</h3>
+              <p className="text-[13px] text-text-secondary max-w-xs">
+                {(error as any)?.message || 'An error occurred while fetching pending approvals.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => refetch()}
+                className="mt-2 px-5 py-2.5 bg-primary text-white text-xs font-semibold rounded-full active:scale-95 transition-transform cursor-pointer"
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!isLoading && !isError && filteredPOs.length === 0 && (
             <div className="bg-white dark:bg-surface rounded-[24px] p-8 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 text-center flex flex-col items-center justify-center gap-3 my-6">
               <DocumentEmptyIcon />
               <h3 className="text-[17px] font-bold text-text-primary">
@@ -131,45 +205,65 @@ export function POApprovalListPage() {
                 </button>
               )}
             </div>
-          ) : (
-            filteredPOs.map((po) => (
-              <div
-                key={po.id}
-                onClick={() => navigate(`/po/approval/${po.id}`)}
-                className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 transition-all hover:border-slate-300 dark:hover:border-white/20 active:scale-[0.99] cursor-pointer group"
-              >
-                {/* Top Row: PO number on top-left, approval created date on top-right */}
-                <div className="flex items-center justify-between gap-3 min-w-0">
-                  <span className="text-[16px] font-bold text-text-primary tracking-tight truncate group-hover:text-primary transition-colors">
-                    {po.po_number}
-                  </span>
-                  <div className="flex items-center gap-1.5 text-[13px] font-medium text-text-secondary dark:text-slate-400 flex-shrink-0">
-                    <CalendarSmallIcon />
-                    <span>{po.created_date}</span>
+          )}
+
+          {/* PO Cards List */}
+          {!isLoading &&
+            !isError &&
+            filteredPOs.map((po) => {
+              const displayDate = formatApprovalDate(po.requested_date || po.booking_date);
+              const createdBy = (po as any).created_by || 'Purchase Dept';
+
+              return (
+                <div
+                  key={po.id}
+                  onClick={() => navigate(`/po/approval/${po.id}`)}
+                  className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 transition-all hover:border-slate-300 dark:hover:border-white/20 active:scale-[0.99] cursor-pointer group"
+                >
+                  {/* Top Row: PO number on top-left, approval created date on top-right */}
+                  <div className="flex items-center justify-between gap-3 min-w-0">
+                    <span className="text-[16px] font-bold text-text-primary tracking-tight truncate group-hover:text-primary transition-colors">
+                      {po.name}
+                    </span>
+                    <div className="flex items-center gap-1.5 text-[13px] font-medium text-text-secondary dark:text-slate-400 flex-shrink-0">
+                      <CalendarSmallIcon />
+                      <span>{displayDate}</span>
+                    </div>
+                  </div>
+
+                  {/* Subtle Divider */}
+                  <div className="h-px bg-slate-100 dark:bg-white/5 -mx-1" />
+
+                  {/* Vendor Name & Amount */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary/75 dark:text-slate-400/80">
+                        Vendor
+                      </span>
+                      <span className="text-[15px] font-semibold text-text-primary leading-snug truncate">
+                        {po.vendor_name}
+                      </span>
+                    </div>
+                    {typeof po.amount_total === 'number' && (
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary/75 dark:text-slate-400/80 block">
+                          Total
+                        </span>
+                        <span className="text-[14px] font-bold text-primary dark:text-blue-400">
+                          ₹ {po.amount_total.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Created By */}
+                  <div className="flex items-center gap-1.5 text-[13px] text-text-secondary dark:text-slate-400 pt-0.5">
+                    <span className="font-normal">Created by -</span>
+                    <span className="font-semibold text-text-primary">{createdBy}</span>
                   </div>
                 </div>
-
-                {/* Subtle Divider */}
-                <div className="h-px bg-slate-100 dark:bg-white/5 -mx-1" />
-
-                {/* Vendor Name */}
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary/75 dark:text-slate-400/80">
-                    Vendor
-                  </span>
-                  <span className="text-[15px] font-semibold text-text-primary leading-snug">
-                    {po.vendor_name}
-                  </span>
-                </div>
-
-                {/* Created By */}
-                <div className="flex items-center gap-1.5 text-[13px] text-text-secondary dark:text-slate-400 pt-0.5">
-                  <span className="font-normal">Created by -</span>
-                  <span className="font-semibold text-text-primary">{po.created_by}</span>
-                </div>
-              </div>
-            ))
-          )}
+              );
+            })}
         </main>
       </PullToRefresh>
     </div>

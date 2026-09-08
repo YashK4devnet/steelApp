@@ -9,4 +9,6 @@ export const QUERY_KEYS = {
   transporterQuotations: ['transporter', 'quotations'] as const,
   transporterQuotationDetail: (id: number | string) => ['transporter', 'quotation', String(id)] as const,
   transporterTruckTypes: ['transporter', 'truckTypes'] as const,
+  poApprovals: ['poApprovals'] as const,
+  poApprovalDetail: (id: number | string) => ['poApprovals', String(id)] as const,
 } as const;

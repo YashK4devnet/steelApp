@@ -2,7 +2,7 @@
 
 This document describes the REST-style HTTP endpoints for the **RNE
 application**. There is one app: screens and data change by the logged-in
-user's **role** (for example Security, Seller / Vendor, Transporter, Buyer, Admin).
+user's **role** (for example Security, Seller / Vendor, Transporter, Buyer, PO Approver, Admin).
 
 ## Authentication
 
@@ -1856,6 +1856,345 @@ curl -X POST "http://<odoo-host>/booking/customer/trucks/55/cancel" \
 
 ---
 
+## PO Approver APIs
+
+The endpoints in this section (`/booking/po-approver/...`) are **PO Approver-only**.
+The logged-in user must have the **PO Approver** app role. Other roles receive
+`403 Forbidden`.
+
+These APIs use the same Bearer token as the rest of the RNE app. They do **not**
+use an Odoo web session.
+
+---
+
+## 23. Vendor Booking Approval List
+
+Returns Vendor Bookings currently waiting for approval.
+
+**Endpoint**
+
+```text
+GET /booking/po-approver/bookings
+```
+
+**Authentication**
+
+Bearer token from `login`. **PO Approver role only.**
+
+**Behaviour**
+
+Returns `vendor.booking` records in state `waiting_for_approval`. Product-line
+details are not included. Use the booking `id` with the details API when the
+user opens one booking.
+
+**`bookings[]`**
+
+| Field            | Type    | Meaning |
+| ---------------- | ------- | ------- |
+| `id`             | integer | Vendor Booking ID. Send this to the details, PDF, approve, and reject APIs. |
+| `name`           | string  | Booking number. |
+| `booking_date`   | string  | Booking date (`YYYY-MM-DD`). |
+| `requested_date` | string  | Date/time the booking was sent for approval (`YYYY-MM-DD HH:MM:SS`). |
+| `vendor_id`      | integer | Vendor partner ID. |
+| `vendor_name`    | string  | Vendor name. |
+| `vendor_address` | string  | Vendor full address. |
+| `amount_total`   | number  | Total amount including tax. |
+| `state`          | string  | Current state (`waiting_for_approval`). |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/po-approver/bookings" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 1,
+  "bookings": [
+    {
+      "id": 12,
+      "name": "VB/2026/00012",
+      "booking_date": "2026-09-08",
+      "requested_date": "2026-09-08 09:15:00",
+      "vendor_id": 32,
+      "vendor_name": "ABC Steels",
+      "vendor_address": "ABC Steels, 123 Industrial Area, Bangalore 560001",
+      "amount_total": 118000.0,
+      "state": "waiting_for_approval"
+    }
+  ]
+}
+```
+
+---
+
+## 24. Vendor Booking Details
+
+Returns one Vendor Booking waiting for approval, including product lines and notes.
+
+**Endpoint**
+
+```text
+GET /booking/po-approver/bookings/<booking_id>
+```
+
+**Authentication**
+
+Bearer token from `login`. **PO Approver role only.**
+
+**Behaviour**
+
+Returns the list fields from section 23, plus totals, remark, and lines.
+
+Note lines added between product lines (`Add a note`) are included in `lines`
+in the same order as the Odoo form. Identify them with `display_type = "line_note"`.
+
+**Additional booking fields**
+
+| Field             | Type   | Meaning |
+| ----------------- | ------ | ------- |
+| `amount_untaxed`  | number | Total amount excluding tax. |
+| `amount_tax`      | number | Total tax amount. |
+| `total_qty`       | number | Total booked quantity (product lines only). |
+| `remark`          | string | Booking remark. |
+| `lines`           | array  | Product lines and note lines, in sequence. |
+
+**Product line (`display_type` is `false`)**
+
+| Field              | Type             | Meaning |
+| ------------------ | ---------------- | ------- |
+| `id`               | integer          | Line ID. |
+| `display_type`     | boolean/`false`  | `false` for a product line. |
+| `material_type_id` | integer or `false` | Material type ID. |
+| `material_type`    | string           | Material type name. |
+| `description`      | string           | Line description. |
+| `booked_quantity`  | number           | Booked quantity. |
+| `uom_id`           | integer or `false` | UOM ID. |
+| `uom`              | string           | UOM name (KG or Ton). |
+| `unit_price`       | number           | Unit price. |
+| `tax`              | string           | Tax names. Empty if none. |
+| `amount`           | number           | Line amount excluding tax. |
+
+**Note line (`display_type` is `line_note`)**
+
+| Field          | Type   | Meaning |
+| -------------- | ------ | ------- |
+| `id`           | integer | Line ID. |
+| `display_type` | string  | `line_note`. |
+| `name`         | string  | Note text. |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/po-approver/bookings/12" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "booking": {
+    "id": 12,
+    "name": "VB/2026/00012",
+    "booking_date": "2026-09-08",
+    "requested_date": "2026-09-08 09:15:00",
+    "vendor_id": 32,
+    "vendor_name": "ABC Steels",
+    "vendor_address": "ABC Steels, 123 Industrial Area, Bangalore 560001",
+    "amount_total": 118000.0,
+    "state": "waiting_for_approval",
+    "amount_untaxed": 100000.0,
+    "amount_tax": 18000.0,
+    "total_qty": 10.0,
+    "remark": "Urgent dispatch",
+    "lines": [
+      {
+        "id": 41,
+        "display_type": false,
+        "material_type_id": 1,
+        "material_type": "TMT",
+        "description": "12mm TMT",
+        "booked_quantity": 10.0,
+        "uom_id": 1,
+        "uom": "kg",
+        "unit_price": 10000.0,
+        "tax": "GST 18%",
+        "amount": 100000.0
+      },
+      {
+        "id": 42,
+        "display_type": "line_note",
+        "name": "Deliver in one lot"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 25. Vendor Booking PDF
+
+Downloads the existing Vendor Booking PDF report for a booking waiting for approval.
+
+**Endpoint**
+
+```text
+GET /booking/po-approver/bookings/<booking_id>/pdf
+```
+
+`POST` is also accepted on the same URL.
+
+**Authentication**
+
+Bearer token from `login`. **PO Approver role only.**
+
+**Behaviour**
+
+Generates the same Vendor Booking PDF used in Odoo and returns it as Base64
+so the mobile app can decode and save or display the file.
+
+| Field      | Type    | Meaning |
+| ---------- | ------- | ------- |
+| `booking_id` | integer | Vendor Booking ID. |
+| `filename` | string  | Suggested file name. |
+| `mimetype` | string  | Always `application/pdf`. |
+| `pdf`      | string  | PDF file as Base64. Decode this value to get the binary PDF. |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/po-approver/bookings/12/pdf" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "booking_id": 12,
+  "filename": "Booking Order - VB/2026/00012.pdf",
+  "mimetype": "application/pdf",
+  "pdf": "JVBERi0xLjQKJc..."
+}
+```
+
+---
+
+## 26. Vendor Booking Approve
+
+Approves a Vendor Booking that is waiting for approval.
+
+**Endpoint**
+
+```text
+POST /booking/po-approver/bookings/<booking_id>/approve
+```
+
+**Authentication**
+
+Bearer token from `login`. **PO Approver role only.**
+
+**Behaviour**
+
+Uses the same approval workflow as the Odoo **Approve** button. The logged-in
+user is stored as Approved By, and the approval date is stored automatically.
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/po-approver/bookings/12/approve" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Vendor booking approved successfully.",
+  "booking_id": 12,
+  "state": "approved",
+  "approved_by": "PO Approver",
+  "approved_date": "2026-09-08 10:20:00"
+}
+```
+
+---
+
+## 27. Vendor Booking Reject
+
+Rejects a Vendor Booking that is waiting for approval.
+
+**Endpoint**
+
+```text
+POST /booking/po-approver/bookings/<booking_id>/reject
+```
+
+**Authentication**
+
+Bearer token from `login`. **PO Approver role only.**
+
+**Request format**
+
+Send JSON (`application/json`) or form fields.
+
+| Field              | Type   | Required | Description |
+| ------------------ | ------ | -------- | ----------- |
+| `rejection_reason` | string | Yes      | Reason for rejection. `reason` is also accepted. |
+
+**Behaviour**
+
+Uses the same rejection workflow as the Odoo **Reject** action. The logged-in
+user is stored as Rejected By, with the rejection date and reason.
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/po-approver/bookings/12/reject" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{ "rejection_reason": "Rate is not acceptable" }'
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Vendor booking rejected successfully.",
+  "booking_id": 12,
+  "state": "rejected",
+  "rejected_by": "PO Approver",
+  "rejected_date": "2026-09-08 10:25:00",
+  "rejection_reason": "Rate is not acceptable"
+}
+```
+
+**Example Error Response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "Rejection reason is required."
+}
+```
+
+---
+
 ## HTTP Status Codes
 
 | Code | Meaning                                                            |
@@ -2011,7 +2350,13 @@ Common fields: `role` (`transporter`, `seller`, `security`, `buyer`), `truck_num
    - Call `GET /booking/customer/trucks` to list the customer's bookings.
    - Call `GET /booking/customer/trucks/<truck_id>` to show full details (including DIA lines).
    - Call `POST /booking/customer/trucks/<truck_id>/cancel` when `can_cancel` is `true`.
-6. Call `POST /booking/auth/logout` with the token header when the user signs
+6. **PO Approver flow** (shown when login `role` is PO Approver)
+   - Call `GET /booking/po-approver/bookings` to list Vendor Bookings waiting for approval.
+   - Call `GET /booking/po-approver/bookings/<booking_id>` to show full details, including product lines and notes.
+   - Call `GET /booking/po-approver/bookings/<booking_id>/pdf` to download the Vendor Booking PDF (decode the Base64 `pdf` field).
+   - Call `POST /booking/po-approver/bookings/<booking_id>/approve` to approve.
+   - Call `POST /booking/po-approver/bookings/<booking_id>/reject` with `rejection_reason` to reject.
+7. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.
    Also call `POST /booking/auth/unregister_device` with the current FCM token

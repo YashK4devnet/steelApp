@@ -750,3 +750,45 @@ This document logs the major architectural, feature, and design changes implemen
 - **Mobile Download Precautions Formulated**:
   - Outlined technical precautions for Capacitor Android WebView: Scoped Storage bypassing standard HTML5 download links, Bearer token injection over native HTTP, in-memory Base64 vs streaming to avoid low-memory crashes, and zero-permission app directory storage.
 
+## Phase 113: Removed Hardcoded PO Approver Dashboard Development Switch
+- **Role Override Decommissioning (`DashboardPage.tsx`)**:
+  - Removed `FORCE_PO_APPROVER_DASHBOARD` development override switch from `DashboardPage.tsx`.
+  - Re-anchored `isPOApprover` evaluation strictly to real backend authentication roles (`userRole.includes('po approver') || userRole.includes('approver') || userRole.includes('po_approver')`).
+  - Pre-aligned codebase for direct integration with backend Section 23-27 APIs documented in `.agents/README.md`.
+
+## Phase 114: Real Backend API Integration & Native File Downloader for PO Approver
+- **PO API Client Service (`src/features/po/services/poApi.ts`)**:
+  - Implemented full API integration matching Sections 23-27 of backend documentation (`.agents/README.md`):
+    - `getPendingPOApprovals`: `GET /booking/po-approver/bookings`
+    - `getPOApprovalDetail`: `GET /booking/po-approver/bookings/<booking_id>`
+    - `getPOApprovalPDF`: `GET /booking/po-approver/bookings/<booking_id>/pdf`
+    - `approvePO`: `POST /booking/po-approver/bookings/<booking_id>/approve`
+    - `rejectPO`: `POST /booking/po-approver/bookings/<booking_id>/reject` with `rejection_reason`
+- **Native PDF File Handling & Auto-Open (`src/utils/fileDownloader.ts`)**:
+  - Integrated `@capacitor-community/file-opener` (v8.0.1 for Capacitor 8):
+    - **Native Mobile (Android/iOS)**: Saves the PDF directly to the device's public `/storage/emulated/0/Download/` directory (with Documents fallback) and immediately triggers `FileOpener.open({ filePath, contentType: 'application/pdf' })`, auto-opening the document in the user's default PDF viewer without showing a share sheet.
+    - **Web Browser**: Direct download via browser download manager and auto-opens the PDF in a new viewer tab.
+- **Server PDF Availability Check & Alert (`src/features/po/pages/POApprovalDetailPage.tsx`)**:
+  - Explicitly validates whether the server returns a valid, non-empty Base64 PDF payload.
+  - If the server does not have the PDF available for that booking (404/500 or empty payload), alerts the user with a clear warning toast: `"The PDF document is currently unavailable for this booking on the server."`
+  - Eliminates fake/placeholder PDF generation and strictly preserves backend document authenticity.
+- **TanStack Query State & Mutation Hooks (`src/features/po/hooks/usePOMutations.ts`, `queryKeys.ts`)**:
+  - Registered `poApprovals` and `poApprovalDetail` query keys in `QUERY_KEYS`.
+  - Created `useApprovePO` and `useRejectPO` hooks that invalidate `poApprovals` on success.
+- **PO Approval List Screen (`src/features/po/pages/POApprovalListPage.tsx`)**:
+  - Connected `useQuery` to live backend bookings.
+  - Implemented animated pulse skeleton cards for loading states.
+  - Integrated error state card with retry action.
+  - Client-side live search and pull-to-refresh connected to query refetch.
+- **PO Approval Detail Screen (`src/features/po/pages/POApprovalDetailPage.tsx`)**:
+  - Connected `useQuery` to live booking details endpoint.
+  - Handled both product line items (`display_type: false`) and section note lines (`display_type: 'line_note'`).
+  - Wired header PDF action to real backend endpoint + native downloader.
+  - Connected Approve and Reject modals to live backend mutations with validation and toast notifications.
+  - **Immediate Post-Action Navigation**: Immediately navigates users out to `/po/approval` upon approving or rejecting a booking (with global toast confirmation) and removes the stale detail query cache to avoid 404 / empty data errors since processed bookings leave the pending state.
+- **PO Approver Dashboard (`src/features/dashboard/components/POApproverDashboard.tsx`)**:
+  - Added live badge displaying real-time pending approval count.
+- **Cleanup & Verification**:
+  - Removed obsolete mock dataset `src/features/po/services/mockData.ts`.
+  - Verified 100% type-safety and successful production bundle build (`npm run build`).
+

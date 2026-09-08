@@ -1,9 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getPendingPOApprovals } from '../../po/services/poApi';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 import { ClipboardCheckIcon, HistoryIcon } from './Icons';
 
 export function POApproverDashboard() {
   const navigate = useNavigate();
+
+  const { data: pos = [] } = useQuery({
+    queryKey: QUERY_KEYS.poApprovals,
+    queryFn: getPendingPOApprovals,
+    staleTime: 30000,
+  });
+
+  const pendingCount = pos.length;
 
   return (
     <div className="space-y-6">
@@ -12,8 +23,13 @@ export function POApproverDashboard() {
         {/* Tile 1: PO Approval (Primary Active Feature) */}
         <button 
           onClick={() => navigate('/po/approval')}
-          className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-start gap-4 w-full text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 active:scale-[0.98] group cursor-pointer"
+          className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-start gap-4 w-full text-left transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 active:scale-[0.98] group cursor-pointer relative overflow-hidden"
         >
+          {pendingCount > 0 && (
+            <span className="absolute top-4 right-4 bg-amber-500 text-white text-[11px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">
+              {pendingCount}
+            </span>
+          )}
           <div className="w-12 h-12 flex-shrink-0 bg-amber-100 dark:bg-amber-950/60 rounded-full flex items-center justify-center text-amber-600 dark:text-amber-400 shadow-sm group-hover:scale-105 transition-transform">
             <ClipboardCheckIcon className="w-6 h-6" />
           </div>

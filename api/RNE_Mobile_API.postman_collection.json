@@ -1,7 +1,7 @@
 {
     "info": {
-        "name": "Mobile API",
-        "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Transporter, Buyer, Admin).",
+      "name": "Mobile API",
+      "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Transporter, Buyer, PO Approver, Admin).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -345,7 +345,7 @@
                         "quotations"
                     ]
                 },
-                "description": "Transporter-only. List the logged-in transporter's quotation lines (excluding cancelled). Truck-line details are not included. The first quotation id is saved to 'quotation_line_id'."
+                "description": "Transporter-only. List the logged-in transporter's quotation lines (excluding draft, cancelled, and Closed). Truck-line details are not included. The first quotation id is saved to 'quotation_line_id'."
             },
             "response": []
         },
@@ -361,6 +361,10 @@
                             "if (jsonData && jsonData.quotation && jsonData.quotation.truck_lines && jsonData.quotation.truck_lines.length > 0) {",
                             "    pm.collectionVariables.set('quote_truck_line_id', jsonData.quotation.truck_lines[0].id);",
                             "    console.log('Quote truck line ID set to:', jsonData.quotation.truck_lines[0].id);",
+                            "    if (jsonData.quotation.truck_lines.length > 1) {",
+                            "        pm.collectionVariables.set('quote_truck_line_id_2', jsonData.quotation.truck_lines[1].id);",
+                            "        console.log('Second quote truck line ID set to:', jsonData.quotation.truck_lines[1].id);",
+                            "    }",
                             "}"
                         ]
                     }
@@ -390,7 +394,7 @@
                         "{{quotation_line_id}}"
                     ]
                 },
-                "description": "Transporter-only. Full quotation details including linked truck lines. The first truck line id is saved to 'quote_truck_line_id'."
+                "description": "Transporter-only. Full quotation details including linked truck lines. The first two truck line ids are saved to 'quote_truck_line_id' and 'quote_truck_line_id_2'."
             },
             "response": []
         },
@@ -458,7 +462,7 @@
                 ],
                 "body": {
                     "mode": "raw",
-                    "raw": "{\n  \"truck_line_id\": {{quote_truck_line_id}},\n  \"new_truck_type\": false,\n  \"proposed_truck_type_id\": {{proposed_truck_type_id}},\n  \"truck_capacity\": 16.5,\n  \"proposal_rate\": 24000\n}"
+                    "raw": "{\n  \"quotation_line_id\": {{quotation_line_id}},\n  \"available_truck_count\": 2,\n  \"truck_quotes\": [\n    {\n      \"truck_line_id\": {{quote_truck_line_id}},\n      \"new_truck_type\": false,\n      \"proposed_truck_type_id\": {{proposed_truck_type_id}},\n      \"truck_capacity\": 16.5,\n      \"proposal_rate\": 24000\n    },\n    {\n      \"truck_line_id\": {{quote_truck_line_id_2}},\n      \"new_truck_type\": true,\n      \"truck_type_name\": \"32 Ft Container\",\n      \"truck_capacity\": 20,\n      \"proposal_rate\": 26000\n    }\n  ]\n}"
                 },
                 "url": {
                     "raw": "{{baseUrl}}/booking/transporter/submit_truck_quote",
@@ -471,7 +475,7 @@
                         "submit_truck_quote"
                     ]
                 },
-                "description": "Transporter-only. Submit proposed truck type, capacity in tons, and integer proposal rate for a truck line in waiting_team_approval. Set new_truck_type true and send truck_type_name instead of proposed_truck_type_id to create a new truck type."
+                "description": "Transporter-only. Submit quotes for multiple truck lines on a quotation. Send quotation_line_id, available_truck_count, and truck_quotes. Each quote uses the same fields as before (truck_line_id, new_truck_type / proposed_truck_type_id or truck_type_name, truck_capacity, proposal_rate) and must be in waiting_team_approval. Truck lines on that quotation that are not included in truck_quotes are cancelled with reason 'Not submitted by transporter'."
             },
             "response": []
         },
@@ -931,6 +935,180 @@
                 "description": "Buyer only: cancel own truck booking when state is draft, accepted, rejected, or loading."
             },
             "response": []
+        },
+        {
+            "name": "15. PO Approver Vendor Booking List",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.status === 'success' && jsonData.bookings && jsonData.bookings.length) {",
+                            "    pm.collectionVariables.set('vendor_booking_id', jsonData.bookings[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/po-approver/bookings",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "po-approver",
+                        "bookings"
+                    ]
+                },
+                "description": "PO Approver only: list Vendor Bookings in waiting_for_approval. Saves the first booking id to vendor_booking_id."
+            },
+            "response": []
+        },
+        {
+            "name": "16. PO Approver Vendor Booking Details",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/po-approver/bookings/{{vendor_booking_id}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "po-approver",
+                        "bookings",
+                        "{{vendor_booking_id}}"
+                    ]
+                },
+                "description": "PO Approver only: full Vendor Booking details including product lines and notes."
+            },
+            "response": []
+        },
+        {
+            "name": "17. PO Approver Vendor Booking PDF",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/po-approver/bookings/{{vendor_booking_id}}/pdf",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "po-approver",
+                        "bookings",
+                        "{{vendor_booking_id}}",
+                        "pdf"
+                    ]
+                },
+                "description": "PO Approver only: returns the existing Vendor Booking PDF as Base64 in the pdf field."
+            },
+            "response": []
+        },
+        {
+            "name": "18. PO Approver Vendor Booking Approve",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/po-approver/bookings/{{vendor_booking_id}}/approve",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "po-approver",
+                        "bookings",
+                        "{{vendor_booking_id}}",
+                        "approve"
+                    ]
+                },
+                "description": "PO Approver only: approve a Vendor Booking waiting for approval. Uses the same Odoo approval workflow."
+            },
+            "response": []
+        },
+        {
+            "name": "19. PO Approver Vendor Booking Reject",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"rejection_reason\": \"Rate is not acceptable\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/po-approver/bookings/{{vendor_booking_id}}/reject",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "po-approver",
+                        "bookings",
+                        "{{vendor_booking_id}}",
+                        "reject"
+                    ]
+                },
+                "description": "PO Approver only: reject a Vendor Booking waiting for approval. rejection_reason is required."
+            },
+            "response": []
         }
     ],
     "variable": [
@@ -995,9 +1173,19 @@
             "description": "Filled automatically by Transporter Quotation Details (first truck line)."
         },
         {
+            "key": "quote_truck_line_id_2",
+            "value": "",
+            "description": "Filled automatically by Transporter Quotation Details (second truck line, if present)."
+        },
+        {
             "key": "proposed_truck_type_id",
             "value": "",
             "description": "Filled automatically by Active Truck Types (first truck type)."
+        },
+        {
+            "key": "vendor_booking_id",
+            "value": "",
+            "description": "Filled automatically by PO Approver Vendor Booking List (first booking)."
         }
     ]
 }

@@ -13,9 +13,6 @@ import { LogoutModal } from '../../../components/ui/LogoutModal';
 import { NotificationSheet } from '../../../components/ui/NotificationSheet';
 import { ThemeToggleButton } from '../../../components/ui/ThemeToggleButton';
 
-// Development override switch to preview the PO Approver dashboard (as documented in .agents/CHANGELOG.md)
-const FORCE_PO_APPROVER_DASHBOARD = true;
-
 export function DashboardPage() {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
@@ -23,7 +20,7 @@ export function DashboardPage() {
   const [showNotificationSheet, setShowNotificationSheet] = useState(false);
 
   const userRole = user?.role?.toLowerCase() || '';
-  const isPOApprover = FORCE_PO_APPROVER_DASHBOARD || userRole.includes('po approver') || userRole.includes('po_approver') || userRole.includes('approver');
+  const isPOApprover = userRole.includes('po approver') || userRole.includes('po_approver') || userRole.includes('approver');
   const isTransporter = userRole.includes('transporter');
   const isSecurity = userRole === 'security';
   const isAdmin = userRole === 'admin';
