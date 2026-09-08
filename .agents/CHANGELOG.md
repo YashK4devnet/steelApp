@@ -692,3 +692,61 @@ This document logs the major architectural, feature, and design changes implemen
 - **Contextual Action CTAs**: Replaced generic "View Details →" with explicit operational action triggers:
   - *"Submit Rates →"*, *"Assign Drivers →"*, *"View Quoted History →"*, *"Upload Bilty →"*, *"Submit Bill →"*, *"Report Arrival →"*, *"Report Outbound →"*, *"View Booking →"*.
 
+## Phase 109: PO Approver Role Dashboard & Development Force Override Switch
+- **PO Approver Role Architecture**:
+  - Introduced the new `"PO Approver"` role support within the dashboard role routing system.
+  - Implemented `FORCE_PO_APPROVER_DASHBOARD = true` development override switch in `DashboardPage.tsx` to automatically render the PO Approver dashboard directly during screen prototyping.
+- **PO Approver Dashboard Component (`POApproverDashboard.tsx`)**:
+  - Created `src/features/dashboard/components/POApproverDashboard.tsx` adhering strictly to the RNE Mobile 2-column action grid standard.
+  - **PO Approval Action Card**: Added the primary active tile for "PO Approval" with an amber/gold circular icon pill (`ClipboardCheckIcon`), bold title, and "Review & Authorize" subtitle.
+  - **Approval History Placeholder Card**: Added balanced secondary card with a dark-mode styled "Coming Soon" badge (`HistoryIcon`) to preserve the 2-column mobile grid aesthetic.
+- **Full Dark Mode Consistency**:
+  - Implemented complete dark mode styling across `POApproverDashboard.tsx` (`dark:bg-surface`, `dark:border-white/10`, `dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)]`, amber dark accents).
+  - Tested seamless integration with the header Sun/Moon morphing theme toggle.
+- **Icon Set Expansion (`Icons.tsx`)**:
+  - Added `ClipboardCheckIcon` and `HistoryIcon` SVGs to `src/features/dashboard/components/Icons.tsx`.
+
+## Phase 110: PO Approval List View & Minimalist Approval Cards
+- **PO Approval List Page (`POApprovalListPage.tsx`)**:
+  - Created `src/features/po/pages/POApprovalListPage.tsx` with sticky top header and Android back button integration popping to `/dashboard`.
+  - Added pending badge indicator (`N Pending`) in the header next to the page title.
+  - Built real-time search bar filtering across PO number, vendor name, and creator name with a quick-clear (`✕`) action.
+  - Integrated `PullToRefresh` touch gesture support for list re-fetching.
+- **Approved Card Specification**:
+  - Implemented the exact required card layout:
+    - **Top Left**: PO number in bold typography (`text-[16px] font-bold text-text-primary`).
+    - **Top Right**: Approval creation date with small calendar icon (`text-[13px] font-medium text-text-secondary`).
+    - **Divider**: Subtle horizontal rule dividing metadata from body.
+    - **Middle**: Vendor name (`text-[15px] font-semibold text-text-primary`) with uppercase label.
+    - **Bottom**: Creator tag (`Created by - {name}`).
+    - **No Status Badges**: Strictly omitted status indicators since the backend exclusively provides pending POs.
+- **Route & Navigation Hierarchy (`router/index.tsx`)**:
+  - Registered `/po/approval` with Level 1 page hierarchy mapping to parent `/dashboard`.
+- **Full Dark Mode Support**:
+  - Applied complete dark mode theme styling (`dark:from-[#0B1120]`, `dark:bg-surface`, `dark:border-white/10`, `dark:text-white`).
+
+## Phase 111: PO Approval Detailed View & Viewport-Pinned Sticky Action Bar
+- **Interactive Card Tap Navigation**:
+  - Connected `POApprovalListPage.tsx` card click handlers to dynamically route users to `/po/approval/:id`.
+- **PO Approval Detail Page (`POApprovalDetailPage.tsx`)**:
+  - Created `src/features/po/pages/POApprovalDetailPage.tsx` providing a comprehensive review layout for pending purchase orders.
+  - **PO Metadata Overview Card**: Reiterates PO Number, Creation Date, Vendor Name, Creator Name, and Delivery Destination.
+  - **Multi-Product Line Item Cards**: Designed structured product cards displaying Item Index (`#1`, `#2`), Material Type, Line Amount, Description box, and a 4-column metric grid (`Booked Qty`, `UoM`, `Unit Price`, `Taxes`).
+  - **Valuation Summary**: Renders Subtotal (pre-tax), Applicable GST Taxes, and Grand Total valuation.
+- **Fixed Viewport Sticky Action Bar**:
+  - Integrated a `fixed bottom-0 left-0 right-0 z-50` action bar pinned permanently to the viewport edge with background blur (`backdrop-blur-md`) and safe-area inset padding (`pb-[calc(env(safe-area-inset-bottom,0.75rem)+0.75rem)]`).
+  - Guaranteed action buttons remain **100% visible and never scroll** out of view regardless of product list length.
+  - **Approve Action**: Emerald primary button (`CheckCircleIcon`) opening approval confirmation modal.
+  - **Reject Action**: Red secondary pill button (`XCircleIcon`) opening rejection reason modal.
+- **Bottom Navigation Concealment (`MainLayout.tsx`)**:
+  - Configured `hideBottomNav` in `MainLayout.tsx` to hide bottom navigation on `/po/approval/` routes, preventing navbar clipping.
+- **Page Level Hierarchy (`router/index.tsx`)**:
+  - Mapped `/po/approval/:id` as Level 2 with parent `/po/approval`, ensuring native Android hardware back button pops cleanly to the PO list view.
+
+## Phase 112: PO PDF Download Action & Mobile Download Precautions
+- **Download PDF Action Header Integration (`POApprovalDetailPage.tsx`)**:
+  - Integrated a dedicated `"PDF"` download action button in the top right header (`DownloadIcon`, active spinning state, tactile feedback, and toast notification).
+  - Added preparation handler ready for backend file endpoint injection.
+- **Mobile Download Precautions Formulated**:
+  - Outlined technical precautions for Capacitor Android WebView: Scoped Storage bypassing standard HTML5 download links, Bearer token injection over native HTTP, in-memory Base64 vs streaming to avoid low-memory crashes, and zero-permission app directory storage.
+

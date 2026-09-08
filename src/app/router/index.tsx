@@ -26,6 +26,8 @@ const QuotesPage = React.lazy(() => import('../../features/transporter/pages/Quo
 const SubmitQuotePage = React.lazy(() => import('../../features/transporter/pages/SubmitQuotePage').then((m) => ({ default: m.SubmitQuotePage })));
 const AssignDriversPage = React.lazy(() => import('../../features/transporter/pages/AssignDriversPage').then((m) => ({ default: m.AssignDriversPage })));
 const TransporterLoadingTrucksPage = React.lazy(() => import('../../features/transporter/pages/TransporterLoadingTrucksPage').then((m) => ({ default: m.TransporterLoadingTrucksPage })));
+const POApprovalListPage = React.lazy(() => import('../../features/po/pages/POApprovalListPage').then((m) => ({ default: m.POApprovalListPage })));
+const POApprovalDetailPage = React.lazy(() => import('../../features/po/pages/POApprovalDetailPage').then((m) => ({ default: m.POApprovalDetailPage })));
 
 function PageLoadingFallback() {
   return (
@@ -59,9 +61,12 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/transporter/quotes/submit': { level: 2, parent: '/transporter/quotes' },
   '/transporter/quotes/assign-drivers': { level: 2, parent: '/transporter/quotes?tab=quoted' },
   '/transporter/upload-bilty': { level: 1, parent: '/dashboard' },
+  '/po/approval': { level: 1, parent: '/dashboard' },
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.match(/^\/po\/approval\/.+/)) return { level: 2, parent: '/po/approval' };
+  if (pathname.startsWith('/po/approval')) return PAGE_LEVEL_MAP['/po/approval'];
   if (pathname.startsWith('/transporter/upload-bilty')) return PAGE_LEVEL_MAP['/transporter/upload-bilty'];
   if (pathname.startsWith('/transporter/quotes/assign-drivers')) return PAGE_LEVEL_MAP['/transporter/quotes/assign-drivers'];
   if (pathname.startsWith('/transporter/quotes/submit')) return PAGE_LEVEL_MAP['/transporter/quotes/submit'];
@@ -199,6 +204,8 @@ export function AppRouter() {
               <Route path="/transporter/quotes/submit/:id" element={<SubmitQuotePage />} />
               <Route path="/transporter/quotes/assign-drivers/:id" element={<AssignDriversPage />} />
               <Route path="/transporter/upload-bilty" element={<TransporterLoadingTrucksPage />} />
+              <Route path="/po/approval" element={<POApprovalListPage />} />
+              <Route path="/po/approval/:id" element={<POApprovalDetailPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
