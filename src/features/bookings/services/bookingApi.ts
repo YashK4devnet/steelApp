@@ -438,41 +438,58 @@ export async function getBookingById(id: number): Promise<StoredBooking | null> 
 }
 
 export async function saveBooking(payload: SaveBookingPayload): Promise<{ success: boolean; reference: string; truck_id?: number }> {
-  const isNewTruckType = !!payload.is_new_truck_type;
+  const isSellerTruck = Boolean(payload.use_sellers_truck);
+  const isNewTruckType = !isSellerTruck && Boolean(payload.is_new_truck_type);
 
   const dia_details = (payload.products || []).map((p) => {
     const isBundle = p.order_type === 'bundle';
     const rawDia = p.dia || '12';
     const diaText = rawDia.toLowerCase().endsWith('mm') ? rawDia : `${rawDia}mm`;
 
-    return {
+    const item: Record<string, any> = {
       dia: diaText,
-      shape_id: p.shape_id || 1,
-      weight_type_id: p.weight_type_id || 3,
-      uom_id: p.uom_id || 1,
-      qty_selection: isBundle ? ('by_bundle' as const) : ('by_weight' as const),
-      ...(isBundle ? { bundle_qty: p.bundle_quantity || 1 } : { weight: p.weight || 0 }),
+      shape_id: p.shape_id ? Number(p.shape_id) : 1,
+      weight_type_id: p.weight_type_id ? Number(p.weight_type_id) : 3,
+      uom_id: p.uom_id ? Number(p.uom_id) : 1,
+      qty_selection: isBundle ? 'by_bundle' : 'by_weight',
     };
+
+    if (isBundle) {
+      item.bundle_qty = Number(p.bundle_quantity) || 1;
+    } else {
+      item.weight = Number(p.weight) || 0;
+    }
+
+    return item;
   });
 
-  const apiPayload = {
+  const apiPayload: Record<string, any> = {
     truck_id: payload.id || undefined,
-    warehouse_id: payload.pickup_warehouse_id,
-    ship_to_address_id: payload.ship_to_address_id,
-    is_same_as_ship_to: payload.bill_to_same_as_ship_to,
-    bill_to_address_id: payload.bill_to_same_as_ship_to ? undefined : payload.bill_to_address_id,
-    truck_number_plate: payload.truck_number_plate,
-    truck_capacity_ton: payload.truck_capacity || 0,
-    transporter_name: payload.transporter_name || undefined,
-    transporter_contact: payload.transporter_contact || undefined,
-    is_new_truck_type: isNewTruckType,
-    truck_type_id: isNewTruckType ? undefined : payload.truck_type_id,
-    truck_type: isNewTruckType ? payload.truck_type : undefined,
-    driver_name: payload.driver_name,
-    driver_contact: payload.driver_contact,
-    driver_licence_number: payload.driver_license_number || undefined,
+    is_seller_truck: isSellerTruck,
+    warehouse_id: payload.pickup_warehouse_id ? Number(payload.pickup_warehouse_id) : undefined,
+    ship_to_address_id: payload.ship_to_address_id ? Number(payload.ship_to_address_id) : undefined,
+    is_same_as_ship_to: Boolean(payload.bill_to_same_as_ship_to),
+    bill_to_address_id: payload.bill_to_same_as_ship_to ? undefined : (payload.bill_to_address_id ? Number(payload.bill_to_address_id) : undefined),
     dia_details,
   };
+
+  if (!isSellerTruck) {
+    apiPayload.truck_number_plate = payload.truck_number_plate;
+    apiPayload.truck_capacity_ton = Number(payload.truck_capacity) || 0;
+    if (payload.transporter_name) apiPayload.transporter_name = payload.transporter_name;
+    if (payload.transporter_contact) apiPayload.transporter_contact = payload.transporter_contact;
+    apiPayload.is_new_truck_type = isNewTruckType;
+    if (isNewTruckType) {
+      apiPayload.truck_type = payload.truck_type;
+    } else if (payload.truck_type_id) {
+      apiPayload.truck_type_id = Number(payload.truck_type_id);
+    }
+    apiPayload.driver_name = payload.driver_name;
+    apiPayload.driver_contact = payload.driver_contact;
+    if (payload.driver_license_number) {
+      apiPayload.driver_licence_number = payload.driver_license_number;
+    }
+  }
 
   try {
     const res = await apiRequest<{ status: string; message?: string; truck_id?: number; state?: string }>(

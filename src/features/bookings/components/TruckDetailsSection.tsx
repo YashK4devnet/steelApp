@@ -99,23 +99,23 @@ export function TruckDetailsSection({
         <Input
           id="truck_capacity"
           name="truck_capacity"
-          label="Truck Capacity (Tons)"
+          label="Truck Capacity (Tons) *"
           type="number"
           placeholder="e.g. 25"
           value={form.truck_capacity?.toString() || ''}
           onChange={(e) => onFormChange('truck_capacity', e.target.value ? Number(e.target.value) : null)}
           disabled={isViewMode}
+          error={errors.truck_capacity}
         />
 
         <Input
           id="transporter_name"
           name="transporter_name"
-          label="Transporter Name *"
+          label="Transporter Name"
           placeholder="Enter transporter name"
           value={form.transporter_name}
           onChange={(e) => onFormChange('transporter_name', e.target.value)}
           disabled={isViewMode}
-          error={errors.transporter_name}
         />
 
         <Input

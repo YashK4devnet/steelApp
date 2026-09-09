@@ -11,7 +11,6 @@ export function POApproverDashboard() {
   const { data: pos = [] } = useQuery({
     queryKey: QUERY_KEYS.poApprovals,
     queryFn: getPendingPOApprovals,
-    staleTime: 30000,
   });
 
   const pendingCount = pos.length;

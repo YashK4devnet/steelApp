@@ -1,35 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { TruckIcon, ReceiptIcon, FileTextIcon, WarehouseIcon } from './Icons';
 import { getLoadingTrucks } from '../../trucks/services/truckApi';
+import { QUERY_KEYS } from '../../../constants/queryKeys';
 
 export function SellerDashboard() {
   const navigate = useNavigate();
-  const [pendingCount, setPendingCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchCounts = async () => {
-      try {
-        const trucks = await getLoadingTrucks();
-        if (isMounted) {
-          const pending = trucks.filter(t => !t.is_submitted).length;
-          setPendingCount(pending);
-        }
-      } catch (err) {
-        console.warn('Failed to fetch seller loading trucks count:', err);
-        if (isMounted) {
-          setPendingCount(0);
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
+  const { data: trucks = [], isLoading: loading } = useQuery({
+    queryKey: QUERY_KEYS.loadingTrucks,
+    queryFn: getLoadingTrucks,
+  });
 
-    fetchCounts();
-    return () => { isMounted = false; };
-  }, []);
+  const pendingCount = trucks.filter((t) => !t.is_submitted).length;
 
   return (
     <div className="space-y-6">

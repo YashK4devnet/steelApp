@@ -6,6 +6,7 @@ import { useApprovePO, useRejectPO } from '../hooks/usePOMutations';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
 import { downloadPdfFile } from '../../../utils/fileDownloader';
 import { useToast } from '../../../app/providers/ToastProvider';
+import { PullToRefresh } from '../../../components/ui/PullToRefresh';
 import type { VendorBookingDetail, VendorBookingProductLine } from '../types';
 
 const ArrowLeftIcon = () => (
@@ -82,6 +83,17 @@ function formatDetailDate(dateStr?: string): string {
   }
 }
 
+function formatCreatedBy(createdBy?: unknown): string {
+  if (!createdBy) return 'Purchase Dept';
+  if (Array.isArray(createdBy) && createdBy.length > 1) {
+    return String(createdBy[1]);
+  }
+  if (typeof createdBy === 'string') {
+    return createdBy.trim() || 'Purchase Dept';
+  }
+  return String(createdBy);
+}
+
 export function POApprovalDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -102,7 +114,13 @@ export function POApprovalDetailPage() {
     queryKey: QUERY_KEYS.poApprovalDetail(id || ''),
     queryFn: () => getPOApprovalDetail(id!),
     enabled: Boolean(id),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
+
+  const handleRefresh = async () => {
+    await refetch();
+  };
 
   const approveMutation = useApprovePO();
   const rejectMutation = useRejectPO();
@@ -276,8 +294,9 @@ export function POApprovalDetailPage() {
         </div>
       </div>
 
-      {/* Main Detail Content Container */}
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-4">
+      {/* Main Detail Content Container with PullToRefresh Gesture */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-2 flex flex-col gap-4">
         {/* Section 1: Top PO Header Card */}
         <div className="bg-white dark:bg-surface rounded-[24px] p-5 sm:p-6 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-4 transition-colors">
           {/* Top Row: PO Number & Approval Requested Date */}
@@ -320,7 +339,7 @@ export function POApprovalDetailPage() {
                 Created by
               </span>
               <span className="text-[14px] font-semibold text-text-primary">
-                {(po as any).created_by || 'Purchase Dept'}
+                {formatCreatedBy(po.created_by)}
               </span>
             </div>
 
@@ -358,10 +377,14 @@ export function POApprovalDetailPage() {
             <div className="bg-white dark:bg-surface rounded-[24px] p-6 text-center text-text-secondary text-sm border border-slate-900/5 dark:border-white/10">
               No line items recorded for this purchase order.
             </div>
-          ) : (
-            lines.map((line, idx) => {
-              // Render Section Note Line
-              if (line.display_type === 'line_note') {
+          ) : (() => {
+            let productCounter = 0;
+            return lines.map((line, idx) => {
+              // Render Note Line (shown in the exact sequence received from server)
+              const isNote = line.display_type === 'line_note' || Boolean((line as any).display_type);
+
+              if (isNote) {
+                const noteText = (line as any).name || (line as any).description || (line as any).note || '';
                 return (
                   <div
                     key={line.id || `note-${idx}`}
@@ -370,12 +393,12 @@ export function POApprovalDetailPage() {
                     <div className="text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0">
                       <NoteIcon />
                     </div>
-                    <div className="flex flex-col gap-0.5">
+                    <div className="flex flex-col gap-0.5 min-w-0">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700/80 dark:text-amber-400/80">
-                        Section Note
+                        Notes
                       </span>
-                      <p className="text-[13px] font-medium text-text-primary leading-relaxed">
-                        {line.name}
+                      <p className="text-[13px] font-medium text-text-primary leading-relaxed whitespace-pre-wrap break-words">
+                        {noteText}
                       </p>
                     </div>
                   </div>
@@ -383,17 +406,20 @@ export function POApprovalDetailPage() {
               }
 
               // Render Product Line
+              productCounter += 1;
+              const productNumber = productCounter;
               const product = line as VendorBookingProductLine;
+
               return (
                 <div
                   key={product.id}
                   className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3.5 transition-colors"
                 >
-                  {/* Product Header: Counter, Material Type & Line Amount */}
+                  {/* Product Header: Counter, Material Type & Line Amount Without Tax */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2.5 min-w-0">
                       <span className="w-6 h-6 rounded-full bg-primary/10 dark:bg-blue-500/20 text-primary dark:text-blue-400 text-[11px] font-extrabold flex items-center justify-center flex-shrink-0 mt-0.5">
-                        {idx + 1}
+                        {productNumber}
                       </span>
                       <div className="min-w-0">
                         <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary/75 dark:text-slate-400/80">
@@ -407,7 +433,7 @@ export function POApprovalDetailPage() {
 
                     <div className="text-right flex-shrink-0">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary/75 dark:text-slate-400/80 block">
-                        Amount
+                        Amount Without Tax
                       </span>
                       <span className="text-[16px] font-extrabold text-primary dark:text-blue-400 tracking-tight">
                         ₹ {product.amount?.toLocaleString('en-IN') ?? '0'}
@@ -471,8 +497,8 @@ export function POApprovalDetailPage() {
                   </div>
                 </div>
               );
-            })
-          )}
+            });
+          })()}
         </div>
 
         {/* Section 3: Order Financial Summary Card */}
@@ -482,7 +508,7 @@ export function POApprovalDetailPage() {
           </span>
 
           <div className="flex items-center justify-between text-[14px]">
-            <span className="text-text-secondary dark:text-slate-400">Subtotal (Pre-Tax)</span>
+            <span className="text-text-secondary dark:text-slate-400">Amount Without Tax</span>
             <span className="font-semibold text-text-primary">
               ₹ {po.amount_untaxed?.toLocaleString('en-IN') ?? '0'}
             </span>
@@ -505,6 +531,7 @@ export function POApprovalDetailPage() {
           </div>
         </div>
       </main>
+      </PullToRefresh>
 
       {/* Sticky Bottom Action Bar (Fixed to Viewport, Never Scrolls) */}
       <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-surface/95 backdrop-blur-md border-t border-slate-900/10 dark:border-white/10 px-4 sm:px-6 lg:px-8 py-3.5 pb-[calc(env(safe-area-inset-bottom,0.75rem)+0.75rem)] shadow-[0_-8px_24px_rgba(15,23,42,0.08)] dark:shadow-[0_-8px_24px_rgba(0,0,0,0.4)] transition-colors duration-200">

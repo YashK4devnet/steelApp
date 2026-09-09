@@ -29,6 +29,7 @@ export interface VendorBookingItem {
   vendor_name: string;
   vendor_address: string;
   amount_total: number;
+  created_by?: string;
   state: string; // "waiting_for_approval"
 }
 

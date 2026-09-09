@@ -56,6 +56,17 @@ function formatApprovalDate(dateStr?: string): string {
   }
 }
 
+function formatCreatedBy(createdBy?: unknown): string {
+  if (!createdBy) return 'Purchase Dept';
+  if (Array.isArray(createdBy) && createdBy.length > 1) {
+    return String(createdBy[1]);
+  }
+  if (typeof createdBy === 'string') {
+    return createdBy.trim() || 'Purchase Dept';
+  }
+  return String(createdBy);
+}
+
 export function POApprovalListPage() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,10 +85,12 @@ export function POApprovalListPage() {
   const filteredPOs = pos.filter((po) => {
     const q = searchQuery.toLowerCase().trim();
     if (!q) return true;
+    const createdBy = formatCreatedBy(po.created_by).toLowerCase();
     return (
       po.name.toLowerCase().includes(q) ||
       po.vendor_name.toLowerCase().includes(q) ||
-      ((po as any).created_by && String((po as any).created_by).toLowerCase().includes(q))
+      (po.vendor_address && po.vendor_address.toLowerCase().includes(q)) ||
+      createdBy.includes(q)
     );
   });
 
@@ -212,7 +225,7 @@ export function POApprovalListPage() {
             !isError &&
             filteredPOs.map((po) => {
               const displayDate = formatApprovalDate(po.requested_date || po.booking_date);
-              const createdBy = (po as any).created_by || 'Purchase Dept';
+              const createdBy = formatCreatedBy(po.created_by);
 
               return (
                 <div
@@ -236,11 +249,11 @@ export function POApprovalListPage() {
 
                   {/* Vendor Name & Amount */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex flex-col gap-0.5 min-w-0">
+                    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary/75 dark:text-slate-400/80">
                         Vendor
                       </span>
-                      <span className="text-[15px] font-semibold text-text-primary leading-snug truncate">
+                      <span className="text-[15px] font-semibold text-text-primary leading-snug">
                         {po.vendor_name}
                       </span>
                     </div>
@@ -255,6 +268,13 @@ export function POApprovalListPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Vendor Full Address */}
+                  {po.vendor_address && (
+                    <p className="text-[12px] sm:text-[13px] text-text-secondary dark:text-slate-400 leading-relaxed -mt-1 break-words">
+                      {po.vendor_address}
+                    </p>
+                  )}
 
                   {/* Created By */}
                   <div className="flex items-center gap-1.5 text-[13px] text-text-secondary dark:text-slate-400 pt-0.5">

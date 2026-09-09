@@ -12,12 +12,30 @@ import { POApproverDashboard } from '../components/POApproverDashboard';
 import { LogoutModal } from '../../../components/ui/LogoutModal';
 import { NotificationSheet } from '../../../components/ui/NotificationSheet';
 import { ThemeToggleButton } from '../../../components/ui/ThemeToggleButton';
+import { PullToRefresh } from '../../../components/ui/PullToRefresh';
+import { useQueryClient } from '@tanstack/react-query';
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) {
+    return 'Good Morning,';
+  }
+  if (hour < 17) {
+    return 'Good Afternoon,';
+  }
+  return 'Good Evening,';
+}
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
   const { unreadCount } = useNotifications();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showNotificationSheet, setShowNotificationSheet] = useState(false);
+  const queryClient = useQueryClient();
+
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries();
+  };
 
   const userRole = user?.role?.toLowerCase() || '';
   const isPOApprover = userRole.includes('po approver') || userRole.includes('po_approver') || userRole.includes('approver');
@@ -69,7 +87,6 @@ export function DashboardPage() {
               onClick={() => setShowNotificationSheet(true)}
               className="relative w-[42px] h-[42px] rounded-full bg-slate-50 dark:bg-slate-700/80 shadow-[0_4px_12px_rgba(15,23,42,0.05)] border border-slate-900/10 dark:border-white/10 flex items-center justify-center text-slate-600 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-200 cursor-pointer"
               title="Notifications"
-              aria-label="Notifications"
             >
               <BellIcon />
               {unreadCount > 0 && (
@@ -90,13 +107,14 @@ export function DashboardPage() {
         </div>
       </header>
 
-      {/* Main App Sheet Canvas (Soft Layered Gradient Container Spanning Bottom Screen) */}
-      <main className="flex-1 w-full bg-gradient-to-b from-[#EEF3FA] via-[#F1F5F9] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] rounded-t-[28px] sm:rounded-t-[36px] shadow-[0_-8px_30px_rgba(15,23,42,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] border-t border-slate-900/10 dark:border-white/10 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32 transition-colors duration-200">
+      {/* Main App Sheet Canvas wrapped in PullToRefresh */}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="flex-1 w-full bg-gradient-to-b from-[#EEF3FA] via-[#F1F5F9] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] rounded-t-[28px] sm:rounded-t-[36px] shadow-[0_-8px_30px_rgba(15,23,42,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] border-t border-slate-900/10 dark:border-white/10 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32 transition-colors duration-200">
         <div className="max-w-[1200px] mx-auto">
           {/* User Greeting Section */}
           <div className="mb-6 sm:mb-8">
             <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
-              Good Morning,
+              {getGreeting()}
             </p>
             <h2 className="text-[26px] sm:text-[30px] font-bold text-text-primary tracking-tight leading-snug break-words pr-2">
               {user?.name} 👋
@@ -127,6 +145,7 @@ export function DashboardPage() {
           )}
         </div>
       </main>
+      </PullToRefresh>
 
       {/* Reusable Custom Logout Modal */}
       <LogoutModal 

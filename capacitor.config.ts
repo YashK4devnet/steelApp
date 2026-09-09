@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.fourdevnet.steelapp',
-  appName: 'Steel App',
+  appName: 'RNEAPP',
   webDir: 'dist',
   plugins: {
     StatusBar: {

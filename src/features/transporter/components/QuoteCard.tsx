@@ -79,7 +79,6 @@ export function QuoteCard({ quote, onSubmitQuote, onAssignDrivers }: QuoteCardPr
   const { data: detail } = useQuery({
     queryKey: QUERY_KEYS.transporterQuotationDetail(quote.id),
     queryFn: () => getQuotationDetail(quote.id),
-    staleTime: 30000,
   });
 
   const truckLines = detail?.truck_lines || quote.truck_lines || [];

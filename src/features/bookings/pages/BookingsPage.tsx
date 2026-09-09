@@ -4,6 +4,7 @@ import { useBookings } from '../hooks/useBookings';
 import { BOOKING_STATUS } from '../constants';
 import { DateFilterCalendar } from '../components/DateFilterCalendar';
 import { QueryErrorState } from '../../../components/ui/QueryErrorState';
+import { PullToRefresh } from '../../../components/ui/PullToRefresh';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -69,6 +70,10 @@ export function BookingsPage() {
     handleCancel,
     refreshBookings,
   } = useBookings();
+
+  const handleRefresh = async () => {
+    await refreshBookings();
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -249,7 +254,8 @@ export function BookingsPage() {
         </div>
       </div>
 
-      <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-32">
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-32">
         {loading ? (
           <div className="flex justify-center p-10">
             <svg className="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -379,6 +385,7 @@ export function BookingsPage() {
           </div>
         )}
       </main>
+      </PullToRefresh>
 
       {cancelModalBooking && (
         <div className="fixed inset-0 z-50 bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in">

@@ -19,8 +19,9 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
         }),
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 5, // 5 minutes fresh data
-            gcTime: 1000 * 60 * 30, // 30 minutes garbage collection
+            staleTime: 0, // No caching: always fetch fresh data
+            gcTime: 0,
+            refetchOnMount: 'always',
             retry: (failureCount, error: unknown) => {
               // Extract HTTP status if available
               const status = (error as { status?: number })?.status;

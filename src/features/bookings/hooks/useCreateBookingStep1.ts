@@ -14,7 +14,8 @@ import {
   getCustomerDetails, 
   getCustomerAddresses, 
   getTruckTypes,
-  getBookingById 
+  getBookingById,
+  syncMasterData 
 } from '../services/bookingApi';
 import { INITIAL_BOOKING_FORM_STATE } from '../constants';
 
@@ -38,6 +39,7 @@ export function useCreateBookingStep1() {
 
     const init = async () => {
       try {
+        await syncMasterData();
         const [whs, cust, addrs, tTypes] = await Promise.all([
           getWarehouses(),
           getCustomerDetails(),
@@ -191,7 +193,9 @@ export function useCreateBookingStep1() {
         }
       }
       if (!form.truck_number_plate) newErrors.truck_number_plate = 'Number plate is required';
-      if (!form.transporter_name) newErrors.transporter_name = 'Transporter name is required';
+      if (!form.truck_capacity || Number(form.truck_capacity) <= 0) {
+        newErrors.truck_capacity = 'Truck capacity (in tons) is required';
+      }
       if (!form.driver_name) newErrors.driver_name = 'Driver name is required';
       if (!form.driver_contact) newErrors.driver_contact = 'Driver contact is required';
     }
@@ -204,6 +208,7 @@ export function useCreateBookingStep1() {
       'bill_to_address_id',
       'truck_type',
       'truck_number_plate',
+      'truck_capacity',
       'transporter_name',
       'driver_name',
       'driver_contact',

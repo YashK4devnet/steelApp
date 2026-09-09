@@ -71,7 +71,7 @@ export function ProfilePage() {
               {user?.name}
             </h1>
             <p className="text-text-secondary text-[15px] font-medium capitalize text-center w-full">
-              {roleName} {user?.employee_id ? `• #${user.employee_id}` : ''}
+              {roleName}
             </p>
           </div>
 

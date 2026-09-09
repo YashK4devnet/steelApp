@@ -792,3 +792,58 @@ This document logs the major architectural, feature, and design changes implemen
   - Removed obsolete mock dataset `src/features/po/services/mockData.ts`.
   - Verified 100% type-safety and successful production bundle build (`npm run build`).
 
+## Phase 115: Profile ID Cleanup & PO Approval Presentation Refinements
+- **Profile Identification Removal (`ProfilePage.tsx`)**:
+  - Removed raw internal employee/user ID numbers from profile views across all roles for a cleaner, professional account card.
+- **PO Approval Full Vendor Address (`POApprovalListPage.tsx`)**:
+  - Enhanced PO list cards to display the vendor's complete physical address without text truncation.
+- **Sequential Note Rendering & Product Labeling (`POApprovalDetailPage.tsx`)**:
+  - Renamed note sections from "Section Notes" to "Notes".
+  - Refactored rendering logic to interleave internal notes (`display_type: 'line_note'`) in the exact chronological sequence received from the server, while preserving continuous numeric indexing (`#1, #2...`) for physical products.
+  - Standardized financial line-item labels to `"Amount Without Tax"` across the product breakdown and valuation summary to clearly distinguish base cost from GST.
+
+## Phase 116: Global Zero-Cache Policy & Pull-to-Refresh Expansion
+- **Eliminated Global Stale Cache (`src/app/providers/QueryProvider.tsx`)**:
+  - Overhauled default query options from `staleTime: 1000 * 60 * 5` (5 minutes) to `staleTime: 0`.
+  - Added global `refetchOnMount: 'always'` and `gcTime: 0`, guaranteeing that returning to any screen or tab immediately fetches live server data.
+  - Removed hardcoded local `staleTime: 30000` overrides in `POApproverDashboard.tsx` and `QuoteCard.tsx`.
+- **Expanded Mobile Pull-to-Refresh (`PullToRefresh.tsx`)**:
+  - Integrated `PullToRefresh` into `POApprovalDetailPage.tsx` for on-demand detail refreshes.
+  - Integrated `PullToRefresh` into `BookingsPage.tsx` (Customer/Buyer dashboard).
+  - Integrated `PullToRefresh` into `DashboardPage.tsx` (Role Dashboard), allowing users across all roles to swipe down to invalidate queries and refresh all pending counters.
+- **Reactive Seller Dashboard (`SellerDashboard.tsx`)**:
+  - Replaced one-time `useState` + `useEffect` fetch with React Query (`useQuery` with `QUERY_KEYS.loadingTrucks`).
+  - Ensured pending loading truck badges update automatically when a vendor bill is submitted or when the dashboard is pulled to refresh.
+
+## Phase 117: Customer Booking API Alignment (`POST /booking/customer/truck-request`)
+- **Resolved Missing `is_seller_truck` Payload Field (`bookingApi.ts`)**:
+  - Added `is_seller_truck: Boolean(payload.use_sellers_truck)` to `apiPayload` in `saveBooking`.
+  - Omitted truck and driver fields when `is_seller_truck` is `true`, adhering to backend server requirements.
+- **Form Validation & Requirement Alignments (`useCreateBookingStep1.ts`, `TruckDetailsSection.tsx`)**:
+  - Enforced mandatory `truck_capacity_ton` validation when `!use_sellers_truck` to prevent server rejection (`"Truck Capacity is required"`).
+  - Made `transporter_name` optional in frontend validation and label styling, aligning with backend specification (`Required: No`).
+  - Cast DIA line fields (`shape_id`, `weight_type_id`, `uom_id`, `weight`, `bundle_qty`) to explicit numbers and ensured `mm` suffix on `dia`.
+- **Live Customer Master Data Sync**:
+  - Added `await syncMasterData()` invocation inside `useCreateBookingStep1.ts` initialization, ensuring fresh warehouses, addresses, and truck types are retrieved rather than relying solely on login-time `localStorage`.
+
+## Phase 118: PO Approver Backend `created_by` Integration
+- **Type Definitions (`src/features/po/types.ts`)**:
+  - Added `created_by?: string` to `VendorBookingItem`.
+- **Creator Formatting & Live Search (`POApprovalListPage.tsx`, `POApprovalDetailPage.tsx`)**:
+  - Implemented `formatCreatedBy()` to parse backend values (supporting string names, Odoo `[id, name]` tuples, and defaulting to `"Purchase Dept"`).
+  - Wired `created_by` into client-side list searching.
+  - Displayed dynamic creator information in both PO list cards and detail overview cards.
+
+## Phase 119: Comprehensive Mobile-Only Client User Guide (`USER_GUIDE.md`)
+- **Business-Focused Documentation**:
+  - Rewrote `USER_GUIDE.md` for a mobile-only audience, removing technical/developer terminology (APIs, endpoints, JSON, Odoo, PWA details).
+  - Added structured screenshot placeholders (`[INSERT SCREENSHOT HERE: ...]`) throughout each operational chapter.
+  - Authored step-by-step modular role guides for:
+    - **Overview & Getting Started** (Device requirements, app permissions, sign-in)
+    - **Security Personnel** (Inbound & Outbound truck arrival and exit reporting)
+    - **Vendor / Seller Partner** (Monitoring loading trucks, submitting vendor bills and E-Way bills)
+    - **Buyer / Customer** (Tracking bookings, 2-step booking creation with DIA steel parameters)
+    - **Transporter Partner** (Quotes, driver assignments, digital Bilty / LR uploads)
+    - **Purchase Order Approver** (Queue inspection, line items without tax, sequential notes, approve/reject decisions)
+
+
