@@ -41,6 +41,7 @@ export function resolveNotificationRoute(data: Record<string, unknown> = {}): st
   const quotationLineId = data.quotation_line_id || data.quote_id;
   const truckLineId = data.truck_line_id;
   const truckId = data.truck_id;
+  const bookingId = data.booking_id || data.vendor_booking_id || (String(data.type).startsWith('po_') || data.role === 'po_approver' ? data.id : undefined);
 
   switch (type) {
     // 1. Transporter: New Quotation Request -> Submit Quote page
@@ -77,8 +78,15 @@ export function resolveNotificationRoute(data: Record<string, unknown> = {}): st
     case 'customer_truck_cancelled':
       return truckId ? `/bookings/view/${truckId}` : '/bookings';
 
+    // 11. PO Approver: Vendor Booking Waiting for Approval -> PO Approval Detail page
+    case 'po_approver_vendor_booking_approval':
+      return bookingId ? `/po/approval/${bookingId}` : '/po/approval';
+
     default:
       // Fallback by role or prefix
+      if (type.startsWith('po_') || type.startsWith('po-')) {
+        return bookingId ? `/po/approval/${bookingId}` : '/po/approval';
+      }
       if (type.startsWith('transporter_')) {
         return quotationLineId ? `/transporter/quotes/submit/${quotationLineId}` : '/transporter/quotes';
       }
@@ -90,6 +98,9 @@ export function resolveNotificationRoute(data: Record<string, unknown> = {}): st
       }
       if (type.startsWith('customer_')) {
         return '/bookings';
+      }
+      if (data.role === 'po_approver' || data.role === 'po approver' || String(data.role).includes('approver')) {
+        return bookingId ? `/po/approval/${bookingId}` : '/po/approval';
       }
       if (data.role === 'transporter') return '/transporter/quotes';
       if (data.role === 'seller') return '/trucks/loading';

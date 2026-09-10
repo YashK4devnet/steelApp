@@ -846,4 +846,16 @@ This document logs the major architectural, feature, and design changes implemen
     - **Transporter Partner** (Quotes, driver assignments, digital Bilty / LR uploads)
     - **Purchase Order Approver** (Queue inspection, line items without tax, sequential notes, approve/reject decisions)
 
-
+## Phase 120: PO Approver Push Notification Integration & Deep Linking
+- **Notification Route Resolution (`src/services/notificationStorage.ts`)**:
+  - Added deep-link routing for `po_approver_vendor_booking_approval` push notification payloads as specified in `.agents/README.md`.
+  - Maps `booking_id` from the notification payload to direct destination `/po/approval/:id`, with safe fallback to `/po/approval` list view if the booking ID is not present.
+  - Added fallback routing for `po_` / `po-` type prefixes and `po_approver` / `po approver` roles.
+- **Role Safeguards & Android Notification Channel (`src/services/pushNotificationService.ts`)**:
+  - Enhanced `matchesUserRole` to recognize `po_approver`, `po approver`, and `approver` role aliases, ensuring push notifications and in-app foreground toasts are only displayed if the currently logged-in user matches the intended recipient role.
+  - Created dedicated high-priority Android notification channel `po_approvals` ("PO Approvals") with heads-up banners, sound, vibration, and amber brand lighting (`#D97706`).
+  - Captured `booking_id` and `booking_number` into navigation state on notification tap for seamless deep-link transitions.
+- **In-App Notification Center Presentation (`src/components/ui/NotificationSheet.tsx`)**:
+  - Added `ClipboardCheckIcon` with warm amber visual styling (`bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400`) for PO approval alerts.
+  - Configured `PO Approval` category badge, dynamic title (`PO Approval: <booking_number>`), descriptive preview body, and `Review & Approve →` CTA.
+  - Added entity chip formatting for PO items (`PO #<booking_number>`) with clipboard icon.

@@ -41,6 +41,14 @@ const AlertCircleIcon = () => (
   </svg>
 );
 
+const ClipboardCheckIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    <path d="m9 14 2 2 4-4" />
+  </svg>
+);
+
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const seconds = Math.floor(diff / 1000);
@@ -57,6 +65,17 @@ function formatRelativeTime(timestamp: number): string {
 
 function getNotificationIcon(notif: AppNotification) {
   const type = String(notif.type || notif.data?.type || '').toLowerCase();
+  if (
+    type.includes('po_approver') ||
+    type.includes('vendor_booking') ||
+    type.startsWith('po_') ||
+    type.startsWith('po-')
+  ) {
+    return {
+      icon: <ClipboardCheckIcon />,
+      bg: 'bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400',
+    };
+  }
   if (type.includes('approved') || type.includes('accepted')) {
     return {
       icon: <CheckCircleIcon />,
@@ -182,6 +201,13 @@ function getNotificationPresentation(notif: AppNotification): NotificationPresen
       defaultBody = 'This truck booking line has been cancelled.';
       actionLabel = 'View Booking →';
       break;
+
+    case 'po_approver_vendor_booking_approval':
+      category = { text: 'PO Approval', bg: 'bg-amber-100 dark:bg-amber-950/60', textCol: 'text-amber-800 dark:text-amber-300' };
+      defaultTitle = bookingNumber ? `PO Approval: ${bookingNumber}` : 'Vendor Booking Waiting for Approval';
+      defaultBody = `Vendor booking ${bookingNumber ? '#' + bookingNumber : ''} is waiting for your review and authorization.`;
+      actionLabel = 'Review & Approve →';
+      break;
   }
 
   // Build metadata chips from payload
@@ -193,7 +219,8 @@ function getNotificationPresentation(notif: AppNotification): NotificationPresen
     chips.push({ label: 'Type', text: truckType, icon: '📐' });
   }
   if (bookingNumber) {
-    chips.push({ label: 'Booking', text: `Order #${bookingNumber}`, icon: '📦' });
+    const isPO = type.includes('po') || data.role === 'po_approver' || data.role === 'po approver';
+    chips.push({ label: isPO ? 'PO' : 'Booking', text: `${isPO ? 'PO' : 'Order'} #${bookingNumber}`, icon: isPO ? '📋' : '📦' });
   } else if (quotationLineId) {
     chips.push({ label: 'Quote', text: `Quote #${quotationLineId}`, icon: '📄' });
   } else if (truckLineId || truckId) {

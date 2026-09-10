@@ -2214,7 +2214,7 @@ device token so the backend can send push notifications to that user.
 
 These endpoints use the same Bearer token as the rest of the RNE APIs. They
 are available to every role. The backend sends role-specific pushes (Security,
-Seller, Transporter, Buyer) to registered devices.
+Seller, Transporter, Buyer, PO Approver) to registered devices.
 
 ### Register Device
 
@@ -2304,8 +2304,9 @@ FCM `data` values are strings. On notification tap, read `type` and navigate:
 | `customer_truck_accepted` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
 | `customer_truck_rejected` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
 | `customer_truck_cancelled` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
+| `po_approver_vendor_booking_approval` | Vendor Booking details (waiting for approval) | `booking_id` → `GET /booking/po-approver/bookings/<id>` |
 
-Common fields: `role` (`transporter`, `seller`, `security`, `buyer`), `truck_number`, `truck_type`. Transporter quotation types also include `booking_id` and `booking_number`.
+Common fields: `role` (`transporter`, `seller`, `security`, `buyer`, `po_approver`), `truck_number`, `truck_type`. Transporter quotation types and PO Approver types also include `booking_id` and `booking_number`.
 
 ---
 

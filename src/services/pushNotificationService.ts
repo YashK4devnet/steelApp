@@ -22,6 +22,8 @@ function matchesUserRole(userRole?: string, targetRole?: string): boolean {
   if ((t === 'seller' || t === 'vendor') && (u === 'seller' || u === 'vendor')) return true;
   if (t === 'transporter' && u.includes('transporter')) return true;
   if (t === 'security' && u.includes('security')) return true;
+  const isPOApprover = (r: string) => r.includes('po approver') || r.includes('po_approver') || r.includes('approver');
+  if (isPOApprover(t) && isPOApprover(u)) return true;
   return false;
 }
 
@@ -74,7 +76,7 @@ export const pushNotificationService = {
     isInitialized = true;
 
     try {
-      // 1. Create Android Notification Channel for High-Priority Alerts
+      // 1. Create Android Notification Channels for High-Priority Alerts
       if (Capacitor.getPlatform() === 'android') {
         await PushNotifications.createChannel({
           id: 'transporter_quotes',
@@ -86,6 +88,18 @@ export const pushNotificationService = {
           vibration: true,
           lights: true,
           lightColor: '#0A2E63',
+        });
+
+        await PushNotifications.createChannel({
+          id: 'po_approvals',
+          name: 'PO Approvals',
+          description: 'High-priority alerts for vendor bookings waiting for PO approval',
+          importance: 5, // High priority (sound + heads-up banner)
+          visibility: 1,
+          sound: 'default',
+          vibration: true,
+          lights: true,
+          lightColor: '#D97706',
         });
       }
 
@@ -201,7 +215,11 @@ export const pushNotificationService = {
             truck_type: data.truck_type,
           };
         }
-        if (data.booking_id) navState.booking_id = data.booking_id;
+        if (data.booking_id) {
+          navState.booking_id = data.booking_id;
+        } else if ((data.type === 'po_approver_vendor_booking_approval' || String(data.type).startsWith('po_')) && data.id) {
+          navState.booking_id = data.id;
+        }
         if (data.booking_number) navState.booking_number = data.booking_number;
 
         if (onNavigate) {
