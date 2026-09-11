@@ -107,45 +107,45 @@ export function DashboardPage() {
         </div>
       </header>
 
-      {/* Main App Sheet Canvas wrapped in PullToRefresh */}
-      <PullToRefresh onRefresh={handleRefresh}>
-        <main className="flex-1 w-full bg-gradient-to-b from-[#EEF3FA] via-[#F1F5F9] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] rounded-t-[28px] sm:rounded-t-[36px] shadow-[0_-8px_30px_rgba(15,23,42,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] border-t border-slate-900/10 dark:border-white/10 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32 transition-colors duration-200">
-        <div className="max-w-[1200px] mx-auto">
-          {/* User Greeting Section */}
-          <div className="mb-6 sm:mb-8">
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
-              {getGreeting()}
-            </p>
-            <h2 className="text-[26px] sm:text-[30px] font-bold text-text-primary tracking-tight leading-snug break-words pr-2">
-              {user?.name} 👋
-            </h2>
-            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-xs font-semibold text-primary dark:text-blue-400 bg-primary/10 dark:bg-blue-500/20 px-3 py-1 rounded-full">
-                {user?.login}
-              </span>
+      {/* Main App Sheet Canvas (Soft Layered Gradient Container Spanning Bottom Screen) */}
+      <main className="flex-1 w-full bg-gradient-to-b from-[#EEF3FA] via-[#F1F5F9] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] rounded-t-[28px] sm:rounded-t-[36px] shadow-[0_-8px_30px_rgba(15,23,42,0.06)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.4)] border-t border-slate-900/10 dark:border-white/10 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32 transition-colors duration-200">
+        <PullToRefresh onRefresh={handleRefresh}>
+          <div className="max-w-[1200px] mx-auto">
+            {/* User Greeting Section */}
+            <div className="mb-6 sm:mb-8">
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-1">
+                {getGreeting()}
+              </p>
+              <h2 className="text-[26px] sm:text-[30px] font-bold text-text-primary tracking-tight leading-snug break-words pr-2">
+                {user?.name} 👋
+              </h2>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="text-xs font-semibold text-primary dark:text-blue-400 bg-primary/10 dark:bg-blue-500/20 px-3 py-1 rounded-full">
+                  {user?.login}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-text-secondary mt-2 font-normal">
+                What would you like to do today?
+              </p>
             </div>
-            <p className="text-xs sm:text-sm text-text-secondary mt-2 font-normal">
-              What would you like to do today?
-            </p>
-          </div>
 
-          {/* Role Content */}
-          {isPOApprover ? (
-            <POApproverDashboard />
-          ) : isTransporter ? (
-            <TransporterDashboard />
-          ) : isSecurity ? (
-            <SecurityDashboard />
-          ) : isAdmin ? (
-            <ManagerDashboard />
-          ) : isSeller ? (
-            <SellerDashboard />
-          ) : (
-            <CustomerDashboard />
-          )}
-        </div>
+            {/* Role Content */}
+            {isPOApprover ? (
+              <POApproverDashboard />
+            ) : isTransporter ? (
+              <TransporterDashboard />
+            ) : isSecurity ? (
+              <SecurityDashboard />
+            ) : isAdmin ? (
+              <ManagerDashboard />
+            ) : isSeller ? (
+              <SellerDashboard />
+            ) : (
+              <CustomerDashboard />
+            )}
+          </div>
+        </PullToRefresh>
       </main>
-      </PullToRefresh>
 
       {/* Reusable Custom Logout Modal */}
       <LogoutModal 

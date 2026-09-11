@@ -859,3 +859,10 @@ This document logs the major architectural, feature, and design changes implemen
   - Added `ClipboardCheckIcon` with warm amber visual styling (`bg-amber-100 text-amber-600 dark:bg-amber-950/60 dark:text-amber-400`) for PO approval alerts.
   - Configured `PO Approval` category badge, dynamic title (`PO Approval: <booking_number>`), descriptive preview body, and `Review & Approve →` CTA.
   - Added entity chip formatting for PO items (`PO #<booking_number>`) with clipboard icon.
+
+## Phase 121: Dashboard Sheet Canvas Viewport Spanning & PullToRefresh Nesting Fix
+- **Direct Flex Child Layout Restoration (`src/features/dashboard/pages/DashboardPage.tsx`)**:
+  - Repositioned `<PullToRefresh>` inside the `<main>` sheet canvas element, restoring `<main>` as the direct `flex-1` child of `<div className="min-h-screen flex flex-col">`.
+  - Re-enabled native flexbox stretch behavior across all role dashboards (`Security`, `Seller`, `Customer`, `Transporter`, `PO Approver`), guaranteeing the top-rounded sheet canvas background, borders, and shadows stretch 100% down to the bottom of the viewport even when content is short.
+  - Aligned dashboard pull-to-refresh badge placement to render neatly within the sheet canvas below the top header.
+
