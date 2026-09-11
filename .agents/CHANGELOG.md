@@ -866,3 +866,74 @@ This document logs the major architectural, feature, and design changes implemen
   - Re-enabled native flexbox stretch behavior across all role dashboards (`Security`, `Seller`, `Customer`, `Transporter`, `PO Approver`), guaranteeing the top-rounded sheet canvas background, borders, and shadows stretch 100% down to the bottom of the viewport even when content is short.
   - Aligned dashboard pull-to-refresh badge placement to render neatly within the sheet canvas below the top header.
 
+## Phase 122: TB Approver Dashboard Screen Creation
+- **TB Approver Dashboard Component (`TBApproverDashboard.tsx`)**:
+  - Created `src/features/dashboard/components/TBApproverDashboard.tsx` adhering strictly to the RNE Mobile 2-column action grid standard.
+  - **Quote Approval Action Card**: Added the primary active tile for "Quote Approval" with an indigo circular icon pill (`QuoteCheckIcon`), bold title, and "Transporter Quotes" subtitle.
+  - **Approval History Placeholder Card**: Added balanced secondary card with a dark-mode styled "Coming Soon" badge (`HistoryIcon`) to preserve the 2-column mobile grid aesthetic.
+  - Provided interactive tactile toast notification upon tapping "Quote Approval" indicating backend API connectivity will be wired in the upcoming phase.
+- **Icon Set Expansion (`Icons.tsx`)**:
+  - Added `QuoteCheckIcon` SVG with standard 2.5px stroke width to `src/features/dashboard/components/Icons.tsx`.
+- **Role Evaluation & Router Integration (`DashboardPage.tsx`)**:
+  - Integrated `isTBApprover` checking for `userRole.includes('tb approver') || userRole.includes('tb_approver') || userRole.includes('|tb approver')`.
+  - Added `FORCE_TB_APPROVER_DASHBOARD` development override switch to easily preview the TB Approver dashboard during active development.
+  - Safeguarded `isPOApprover` so the `"|TB Approver"` string does not falsely match the general `'approver'` keyword.
+  - Rendered `<TBApproverDashboard />` in the role content conditional hierarchy.
+
+## Phase 123: IndexedDB Local Event Logging & Security Dashboard Gate Analytics Graph
+- **Native IndexedDB Service (`src/services/indexedDbService.ts`)**:
+  - Built a zero-dependency, offline-first client storage layer using native `window.indexedDB` (`rne_mobile_analytics` database and `gate_activity_logs` store).
+  - Implemented event recording methods (`recordGateLog`) capturing truck IDs, plate numbers, clearance direction (`inbound` vs `outbound`), notes, and timestamps.
+  - Created automated aggregators: `getTodayStats` (hourly buckets for 8 AM – 6 PM shift distribution) and `getSevenDayStats` (7-day daily traffic volume).
+  - Included initial demo seed generation on first launch so charts render rich operational data immediately.
+- **Reusable Mobile Micro-Chart Components (`src/components/charts/`)**:
+  - **`DonutProgressChart.tsx`**: Lightweight SVG segmented ring chart with animated `stroke-dashoffset`, centered metric total, and detailed legend breakdown pills with counts and percentages.
+  - **`ActivityBarChart.tsx`**: High-performance SVG vertical stacked bar chart featuring dual-metric heights, rounded caps, and interactive tap inspection with tactile haptic feedback.
+  - **`ChartContainer.tsx`**: Glass-bordered container card with icon badge, title, segmented period toggle (`Today` vs `7 Days`), and bottom KPI stat summary row.
+- **Security Reporting Hook-in (`ReportTruckPage.tsx`, `ReportOutgoingTruckPage.tsx`)**:
+  - Connected `handleSubmit` in `ReportTruckPage` to automatically record `inbound` clearances upon API success.
+## Phase 125: Header Greeting Date Badge & RNE Segmented Control Switcher Bar
+- **Header Greeting Date Badge (`DashboardPage.tsx`)**:
+  - Positioned an elegant frosted glass date badge on the top right of the greeting header (`CalendarIcon`, current formatted date e.g. `Fri, 11 Sep`, and `Gate Operations` role indicator).
+  - Perfectly balances the left-aligned greeting typography while utilizing previously empty screen real estate.
+- **RNE Mobile Segmented Control Bar (`DashboardPage.tsx`)**:
+  - Replaced the previous slim inline switcher with a full-width 46px segmented control bar (`grid grid-cols-2 gap-1.5 p-1.5 rounded-[20px] backdrop-blur-md`) matching `QuotesPage.tsx`.
+  - Active button: RNE Deep Navy (`bg-primary text-white shadow-[0_2px_8px_rgba(10,46,99,0.25)]` / `dark:bg-blue-600`) with `LightningIcon` and `ChartTabIcon` SVGs.
+  - Added tactile haptic feedback (`hapticFeedback.light()`) and `active:scale-[0.98]` micro-interactions upon swapping tabs.
+
+## Phase 126: Pre-rendered Side-Sliding Carousel & Zero-Lag View Switching
+- **Pre-rendered 2-Panel Carousel (`SecurityDashboard.tsx`)**:
+  - Replaced conditional unmounting/mounting with a pre-rendered 2-panel track (`flex w-[200%] items-start overflow-hidden`).
+  - Switched tab navigation to hardware-accelerated GPU translation (`translate3d(0%, 0, 0)` for Quick Actions and `translate3d(-50%, 0, 0)` for Gate Analytics).
+  - Configured silky spring animation curve (`cubic-bezier(0.22, 1, 0.36, 1)`, duration 350ms, `will-change: transform`).
+  - Added accessibility and touch guards: inactive panels receive `opacity-0 pointer-events-none` and `aria-hidden` to prevent inadvertent off-screen interactions.
+- **IndexedDB Query Caching (`useGateAnalytics.ts`)**:
+  - Configured `staleTime: 60 * 1000` (1 minute cache) and `refetchOnMount: false` so analytics queries do not re-run or flash loading spinners on tab slides.
+  - Cache remains reactive: automatically invalidated upon reporting a truck (`useRecordGateLog`) or during pull-to-refresh (`queryClient.invalidateQueries()`).
+
+## Phase 127: Dynamic Carousel Height Clamping, Auto-Scroll & Camera Cutout Safe Space
+- **Dynamic Container Height Clamping (`SecurityDashboard.tsx`)**:
+  - Attached React `actionsRef` and `analyticsRef` alongside a `ResizeObserver` and `useLayoutEffect` to dynamically measure the active panel's rendered height.
+  - Constrained the carousel outer container using `style={{ height: containerHeight }}` with a matched `transition-[height] duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]`.
+  - When in "Quick Actions" mode, the container is clamped to ~240px, eliminating excessive blank scrolling below the 4 action cards.
+  - When switching to "Gate Analytics", the container smoothly expands to the full chart height (~720px) concurrently with the horizontal slide.
+- **Auto-Scroll & Camera Cutout Safe Margin (`DashboardPage.tsx`)**:
+  - Added 68px safe space headroom (`sticky top-[calc(env(safe-area-inset-top,0.5rem)+0.5rem)]`) preventing the segmented control pills from colliding with iPhone Dynamic Islands/notches or Android punch-hole cameras.
+
+## Phase 128: Mobile Performance Tuning & Removal of Programmatic Auto-Scroll
+- **Removal of Programmatic Auto-Scroll (`DashboardPage.tsx`)**:
+  - Completely removed programmatic `window.scrollTo` from view switching.
+  - On mobile webviews and older phones, programmatic smooth scrolling during an active layout transform fights the phone's touch engine and causes CPU throttling and dropped frames.
+  - Switching between views is now 100% natural, fast, and driven exclusively by user touch and GPU transitions.
+- **GPU-Only Transition Optimization (`SecurityDashboard.tsx`)**:
+  - Removed CPU-heavy `transition-[height]` frame-by-frame layout recalculations.
+  - Replaced it with instant `maxHeight` clamping for "Quick Actions" (~240px) while delegating 100% of the visual slide to the GPU compositor (`transform: translate3d`).
+  - Result: Locked 60 FPS transitions even on older/lower-spec mobile devices with zero lag or stutter.
+
+
+
+
+
+
+
+

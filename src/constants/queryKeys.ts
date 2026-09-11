@@ -11,4 +11,6 @@ export const QUERY_KEYS = {
   transporterTruckTypes: ['transporter', 'truckTypes'] as const,
   poApprovals: ['poApprovals'] as const,
   poApprovalDetail: (id: number | string) => ['poApprovals', String(id)] as const,
+  gateAnalytics: (period: string) => ['gateAnalytics', period] as const,
 } as const;
+

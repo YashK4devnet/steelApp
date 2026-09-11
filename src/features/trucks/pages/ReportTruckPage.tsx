@@ -5,6 +5,7 @@ import { Input } from '../../../components/ui/Input';
 import { ImageUpload } from '../components/ImageUpload';
 import { useReportTruckArrival } from '../hooks/useTruckMutations';
 import { dispatchGlobalToast } from '../../../app/providers/ToastProvider';
+import { indexedDbService } from '../../../services/indexedDbService';
 
 const ArrowLeftIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -78,6 +79,19 @@ export function ReportTruckPage() {
 
       await reportMutation.mutateAsync(payload);
       
+      // Record gate action log to IndexedDB for security analytics
+      try {
+        await indexedDbService.recordGateLog({
+          truckId: parseInt(id, 10),
+          truckPlate: truckPlate || 'Inbound Truck',
+          action: 'inbound',
+          reportingDateTime: formattedTime,
+          note: note,
+        });
+      } catch (err) {
+        console.warn('[ReportTruck] Failed to write gate log to IndexedDB:', err);
+      }
+
       setShowSuccess(true);
       dispatchGlobalToast({
         type: 'success',
