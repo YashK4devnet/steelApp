@@ -949,10 +949,36 @@ This document logs the major architectural, feature, and design changes implemen
   - Configured route `/tb-approver/quotes` in `src/app/router/index.tsx` under `PAGE_LEVEL_MAP`.
   - Connected "Quote Approval" button in `src/features/dashboard/components/TBApproverDashboard.tsx` to navigate directly to `/tb-approver/quotes`.
 
+## Phase 130: TB Approver Quotation Detail & Individual Truck Approval/Rejection
+- **Mutation Hooks (`src/features/tb-approver/hooks/useTBApproverMutations.ts`)**:
+  - `useApproveTBApproverTruck`: calls `POST /booking/tb-approver/trucks/<truck_line_id>/approve`. On success, displays toast, triggers success haptics, and invalidates detail and list query caches.
+  - `useRejectTBApproverTruck`: calls `POST /booking/tb-approver/trucks/<truck_line_id>/reject` sending required `rejection_reason`.
+- **Truck Card Component (`src/features/tb-approver/components/TBApproverTruckCard.tsx`)**:
+  - Individual proposal card featuring index `#`, Line ID, proposed rate with asking rate delta comparison (e.g. `₹1,000 below asking rate` or `+₹500 above asking rate`), proposed vs requested truck types, capacity in tons, and driver/vehicle details.
+  - Individual action buttons: `[ ✕ Reject ]` and `[ ✓ Approve ]`.
+- **Action Confirmation Modals (`src/features/tb-approver/components/TBApproverActionModals.tsx`)**:
+  - `ApproveTruckModal`: Confirmation dialog showing proposed rate, truck specifications, and confirm/cancel actions.
+  - `RejectTruckModal`: Form modal requiring non-empty `rejection_reason` textarea before submission.
+- **Detail Review Page (`src/features/tb-approver/pages/TBApproverQuoteDetailPage.tsx`)**:
+  - Sticky header with back navigation, booking number, and team approval status badge.
+  - Quotation Overview Card: Transporter information, route locations (Pickup $\rightarrow$ Delivery), asking rate, and proposed/requested truck counts.
+  - Dynamic truck list rendering: individual truck cards with interactive approval/rejection workflows, and an "All Trucks Processed" empty state if all trucks are resolved.
+- **Navigation & Routing**:
+  - Configured route `/tb-approver/quotes/:id` in `src/app/router/index.tsx` with hierarchy level 2.
+  - Updated `handleReviewQuote` in `TBApproverQuoteListPage.tsx` to navigate directly to `/tb-approver/quotes/${quote.id}`.
 
 
-
-
+## Phase 131: TB Approver Push Notification Handling
+- **Route Resolution (`src/services/notificationStorage.ts`)**:
+  - Handled `tb_approver_truck_quote_team_approval` notification type mapping to `/tb-approver/quotes/${quotation_line_id}` (or fallback `/tb-approver/quotes`).
+  - Added role and prefix fallback cases for `tb_approver`, `tb_`, and `data.role === 'tb_approver'`.
+- **Push Notification Service (`src/services/pushNotificationService.ts`)**:
+  - Updated role matching to identify TB Approver (`isTBApprover`) independently and guarded `isPOApprover` against substring collisions on `approver`.
+  - Registered Android notification channel `tb_approvals` with high importance, alert sound, vibration, and indigo accent color (`#4F46E5`).
+  - Added `quotation_line_id` and `transporter_name` payload extraction in `pushNotificationActionPerformed` for deep link state.
+- **In-App Notification Sheet (`src/components/ui/NotificationSheet.tsx`)**:
+  - Added dedicated `QuoteCheckIcon` and indigo theme styling for TB Approver notifications.
+  - Implemented `getNotificationPresentation` case for `tb_approver_truck_quote_team_approval` displaying booking number, transporter name, truck details, and direct action link `"Review Trucks →"`.
 
 
 

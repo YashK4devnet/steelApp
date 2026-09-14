@@ -79,8 +79,8 @@ export function TBApproverQuoteListPage() {
   }, [activeTab]);
 
   const handleReviewQuote = (quote: TBApproverQuotation) => {
-    // Will navigate to detail page once built in the upcoming phase
-    info(`Opening quotation ${quote.booking_number} with ${quote.proposed_truck_count} proposed truck(s). Detail review page is in progress.`, 'Truck Quotation Review');
+    hapticFeedback.light();
+    navigate(`/tb-approver/quotes/${quote.id}`);
   };
 
   const handleRefresh = async () => {

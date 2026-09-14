@@ -22,7 +22,9 @@ function matchesUserRole(userRole?: string, targetRole?: string): boolean {
   if ((t === 'seller' || t === 'vendor') && (u === 'seller' || u === 'vendor')) return true;
   if (t === 'transporter' && u.includes('transporter')) return true;
   if (t === 'security' && u.includes('security')) return true;
-  const isPOApprover = (r: string) => r.includes('po approver') || r.includes('po_approver') || r.includes('approver');
+  const isTBApprover = (r: string) => r.includes('tb approver') || r.includes('tb_approver') || r.includes('|tb approver');
+  if (isTBApprover(t) && isTBApprover(u)) return true;
+  const isPOApprover = (r: string) => !isTBApprover(r) && (r.includes('po approver') || r.includes('po_approver') || r.includes('approver'));
   if (isPOApprover(t) && isPOApprover(u)) return true;
   return false;
 }
@@ -100,6 +102,18 @@ export const pushNotificationService = {
           vibration: true,
           lights: true,
           lightColor: '#D97706',
+        });
+
+        await PushNotifications.createChannel({
+          id: 'tb_approvals',
+          name: 'TB Approvals',
+          description: 'High-priority alerts for Transport Booking quotations waiting for Team Approval',
+          importance: 5, // High priority (sound + heads-up banner)
+          visibility: 1,
+          sound: 'default',
+          vibration: true,
+          lights: true,
+          lightColor: '#4F46E5', // Indigo
         });
       }
 
@@ -221,6 +235,8 @@ export const pushNotificationService = {
           navState.booking_id = data.id;
         }
         if (data.booking_number) navState.booking_number = data.booking_number;
+        if (data.quotation_line_id) navState.quotation_line_id = data.quotation_line_id;
+        if (data.transporter_name) navState.transporter_name = data.transporter_name;
 
         if (onNavigate) {
           onNavigate(targetRoute, navState);

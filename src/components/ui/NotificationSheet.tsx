@@ -49,6 +49,14 @@ const ClipboardCheckIcon = () => (
   </svg>
 );
 
+const QuoteCheckIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <path d="M14 2v6h6" />
+    <path d="m9 15 2 2 4-4" />
+  </svg>
+);
+
 function formatRelativeTime(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const seconds = Math.floor(diff / 1000);
@@ -65,6 +73,17 @@ function formatRelativeTime(timestamp: number): string {
 
 function getNotificationIcon(notif: AppNotification) {
   const type = String(notif.type || notif.data?.type || '').toLowerCase();
+  if (
+    type.includes('tb_approver') ||
+    type.includes('tb_') ||
+    notif.data?.role === 'tb_approver' ||
+    notif.data?.role === 'tb approver'
+  ) {
+    return {
+      icon: <QuoteCheckIcon />,
+      bg: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400',
+    };
+  }
   if (
     type.includes('po_approver') ||
     type.includes('vendor_booking') ||
@@ -208,10 +227,22 @@ function getNotificationPresentation(notif: AppNotification): NotificationPresen
       defaultBody = `Vendor booking ${bookingNumber ? '#' + bookingNumber : ''} is waiting for your review and authorization.`;
       actionLabel = 'Review & Approve →';
       break;
+
+    case 'tb_approver_truck_quote_team_approval':
+      category = { text: 'TB Approval', bg: 'bg-indigo-100 dark:bg-indigo-950/60', textCol: 'text-indigo-700 dark:text-indigo-300' };
+      defaultTitle = bookingNumber ? `Team Approval: ${bookingNumber}` : 'Quotation Waiting for Team Approval';
+      defaultBody = (typeof data.transporter_name === 'string' && data.transporter_name)
+        ? `${data.transporter_name} submitted truck quote proposals for ${bookingNumber ? '#' + bookingNumber : 'booking'}. Review and approve truck rates.`
+        : `Truck quotes submitted for ${bookingNumber ? '#' + bookingNumber : 'booking'}. Review and approve truck rates.`;
+      actionLabel = 'Review Trucks →';
+      break;
   }
 
   // Build metadata chips from payload
   const chips: { label: string; text: string; icon?: string }[] = [];
+  if (data.transporter_name && typeof data.transporter_name === 'string') {
+    chips.push({ label: 'Transporter', text: data.transporter_name, icon: '🏢' });
+  }
   if (truckNumber) {
     chips.push({ label: 'Truck', text: truckNumber, icon: '🚚' });
   }

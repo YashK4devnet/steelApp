@@ -82,8 +82,15 @@ export function resolveNotificationRoute(data: Record<string, unknown> = {}): st
     case 'po_approver_vendor_booking_approval':
       return bookingId ? `/po/approval/${bookingId}` : '/po/approval';
 
+    // 12. TB Approver: Quotation Waiting for Team Approval -> TB Approver Quotation Detail page
+    case 'tb_approver_truck_quote_team_approval':
+      return quotationLineId ? `/tb-approver/quotes/${quotationLineId}` : '/tb-approver/quotes';
+
     default:
       // Fallback by role or prefix
+      if (type.startsWith('tb_approver') || type.startsWith('tb_') || data.role === 'tb_approver' || data.role === 'tb approver') {
+        return quotationLineId ? `/tb-approver/quotes/${quotationLineId}` : '/tb-approver/quotes';
+      }
       if (type.startsWith('po_') || type.startsWith('po-')) {
         return bookingId ? `/po/approval/${bookingId}` : '/po/approval';
       }
@@ -98,6 +105,9 @@ export function resolveNotificationRoute(data: Record<string, unknown> = {}): st
       }
       if (type.startsWith('customer_')) {
         return '/bookings';
+      }
+      if (data.role === 'tb_approver' || data.role === 'tb approver' || String(data.role).includes('tb approver')) {
+        return quotationLineId ? `/tb-approver/quotes/${quotationLineId}` : '/tb-approver/quotes';
       }
       if (data.role === 'po_approver' || data.role === 'po approver' || String(data.role).includes('approver')) {
         return bookingId ? `/po/approval/${bookingId}` : '/po/approval';

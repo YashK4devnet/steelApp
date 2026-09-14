@@ -29,6 +29,7 @@ const TransporterLoadingTrucksPage = React.lazy(() => import('../../features/tra
 const POApprovalListPage = React.lazy(() => import('../../features/po/pages/POApprovalListPage').then((m) => ({ default: m.POApprovalListPage })));
 const POApprovalDetailPage = React.lazy(() => import('../../features/po/pages/POApprovalDetailPage').then((m) => ({ default: m.POApprovalDetailPage })));
 const TBApproverQuoteListPage = React.lazy(() => import('../../features/tb-approver/pages/TBApproverQuoteListPage').then((m) => ({ default: m.TBApproverQuoteListPage })));
+const TBApproverQuoteDetailPage = React.lazy(() => import('../../features/tb-approver/pages/TBApproverQuoteDetailPage').then((m) => ({ default: m.TBApproverQuoteDetailPage })));
 
 function PageLoadingFallback() {
   return (
@@ -67,6 +68,7 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.match(/^\/tb-approver\/quotes\/.+/)) return { level: 2, parent: '/tb-approver/quotes' };
   if (pathname.startsWith('/tb-approver/quotes')) return PAGE_LEVEL_MAP['/tb-approver/quotes'];
   if (pathname.match(/^\/po\/approval\/.+/)) return { level: 2, parent: '/po/approval' };
   if (pathname.startsWith('/po/approval')) return PAGE_LEVEL_MAP['/po/approval'];
@@ -210,6 +212,7 @@ export function AppRouter() {
               <Route path="/po/approval" element={<POApprovalListPage />} />
               <Route path="/po/approval/:id" element={<POApprovalDetailPage />} />
               <Route path="/tb-approver/quotes" element={<TBApproverQuoteListPage />} />
+              <Route path="/tb-approver/quotes/:id" element={<TBApproverQuoteDetailPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>
