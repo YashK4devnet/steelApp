@@ -3,13 +3,17 @@ import { useAuth } from '../../../app/providers/AuthProvider';
 import { LogoutIcon, UserAvatarIcon } from '../components/Icons';
 import { LogoutModal } from '../../../components/ui/LogoutModal';
 import { ThemeToggleButton } from '../../../components/ui/ThemeToggleButton';
+import { formatBase64Image } from '../../../utils/image';
 
 export function ProfilePage() {
   const { user, logout } = useAuth();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
 
   const roleName = user?.role || 'User';
   const isSeller = !user?.employee_id || user?.role?.toLowerCase().includes('seller') || user?.role?.toLowerCase().includes('vendor');
+  const avatarUrl = formatBase64Image(user?.image_256);
+  const showCustomAvatar = Boolean(avatarUrl && !imageLoadError);
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#1E293B] relative z-0 flex flex-col transition-colors duration-200">
@@ -64,8 +68,19 @@ export function ProfilePage() {
         <div className="max-w-[1200px] mx-auto flex flex-col gap-6">
           {/* Header Profile Section - Center Aligned */}
           <div className="flex flex-col items-center justify-center text-center mt-2 mb-2">
-            <div className="w-24 h-24 bg-slate-50 dark:bg-surface rounded-full flex items-center justify-center shadow-[0_4px_16px_rgba(15,23,42,0.05)] border border-slate-900/5 dark:border-white/10 mb-4">
-              <UserAvatarIcon />
+            <div className="w-24 h-24 sm:w-28 sm:h-28 bg-slate-100 dark:bg-surface rounded-full flex items-center justify-center shadow-[0_8px_24px_rgba(15,23,42,0.08)] border-2 border-white dark:border-slate-800 mb-4 overflow-hidden relative">
+              {showCustomAvatar ? (
+                <img
+                  src={avatarUrl!}
+                  alt={user?.name || 'User Profile'}
+                  className="w-full h-full object-cover rounded-full select-none"
+                  onError={() => setImageLoadError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-slate-400">
+                  <UserAvatarIcon />
+                </div>
+              )}
             </div>
             <h1 className="text-[28px] font-bold text-text-primary tracking-tight mb-1 text-center w-full">
               {user?.name}

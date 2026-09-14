@@ -1020,3 +1020,14 @@ This document logs the major architectural, feature, and design changes implemen
     - `LoadedTrucksPage.tsx`, `OutgoingTrucksPage.tsx`, `LoadingTrucksPage.tsx` (Security inbound/outbound truck lists)
     - `TransporterLoadingTrucksPage.tsx` (Transporter active truck list)
 
+## Phase 135: User Profile Avatar (`image_256`) Integration
+- **Type Definitions (`src/types/index.ts`)**:
+  - Added `image_256?: string | false | null` to the `User` data model.
+- **Image Decoding Utility (`src/utils/image.ts`)**:
+  - Implemented `formatBase64Image` to decode Odoo's binary base64 strings into browser-renderable Data URIs.
+  - Automatically detects MIME types via magic byte headers (`image/png` for `iVBOR...`, `image/jpeg` for `/9j/...`, etc.) and handles raw vs prefixed base64 strings.
+- **Profile Tab Display (`src/features/profile/pages/ProfilePage.tsx`)**:
+  - Rendered the decoded `image_256` user avatar in a rounded card with border and drop shadow.
+  - Added graceful fallback to `UserAvatarIcon` if `image_256` is empty or if an image load error occurs.
+
+

@@ -12,4 +12,5 @@ export interface User {
   employee_address_id?: number;
   employee_address_name?: string;
   role?: string;
+  image_256?: string | false | null;
 }
