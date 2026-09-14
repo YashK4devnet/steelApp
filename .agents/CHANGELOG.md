@@ -978,8 +978,15 @@ This document logs the major architectural, feature, and design changes implemen
   - Added `quotation_line_id` and `transporter_name` payload extraction in `pushNotificationActionPerformed` for deep link state.
 - **In-App Notification Sheet (`src/components/ui/NotificationSheet.tsx`)**:
   - Added dedicated `QuoteCheckIcon` and indigo theme styling for TB Approver notifications.
-  - Implemented `getNotificationPresentation` case for `tb_approver_truck_quote_team_approval` displaying booking number, transporter name, truck details, and direct action link `"Review Trucks →"`.
 
-
-
-
+## Phase 132: TB Approver Quote Detail Polish (Hide Task Bar & Requested Truck Type)
+- **Navigation Bar (`src/components/layout/MainLayout.tsx`)**:
+  - Added `location.pathname.includes('/tb-approver/quotes/')` to `hideBottomNav`, cleanly hiding the bottom navigation task bar in the TB Approver quote detail view while preserving it on the list page.
+- **Requested Truck Type Display (`src/features/tb-approver/components/TBApproverTruckCard.tsx`)**:
+  - Added `defaultRequestedTruckType` support to `TBApproverTruckCardProps`.
+  - Updated Truck Specifications grid to display both **Requested Type** (`truckLine.requested_truck_type_name || defaultRequestedTruckType`) and **Proposed Type** side-by-side with dedicated icons.
+  - Formatted truck capacity into a dedicated spec chip.
+- **Overview Card & Modals (`src/features/tb-approver/pages/TBApproverQuoteDetailPage.tsx`, `TBApproverActionModals.tsx`)**:
+  - Adjusted page padding from `pb-32` to responsive safe-area padding `pb-12 pb-[calc(env(safe-area-inset-bottom,1rem)+2rem)]`.
+  - Rendered `Requested Truck Type` metric in the quotation summary header card.
+  - Displayed requested truck type details in `ApproveTruckModal` and `RejectTruckModal`.

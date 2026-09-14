@@ -23,6 +23,7 @@ interface ApproveTruckModalProps {
   isLoading: boolean;
   truckLine: TBApproverTruckLine | null;
   rateBaseLabel?: string;
+  defaultRequestedTruckType?: string;
 }
 
 export function ApproveTruckModal({
@@ -32,6 +33,7 @@ export function ApproveTruckModal({
   isLoading,
   truckLine,
   rateBaseLabel = 'Truck',
+  defaultRequestedTruckType,
 }: ApproveTruckModalProps) {
   if (!isOpen || !truckLine) return null;
 
@@ -56,6 +58,16 @@ export function ApproveTruckModal({
             <div className="flex justify-between">
               <span>Truck Line ID:</span>
               <span className="font-bold text-text-primary">#{truckLine.id}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Requested Type:</span>
+              <span className="font-bold text-text-primary">
+                {truckLine.requested_truck_type_name || defaultRequestedTruckType || 'Standard'}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span>Proposed Type:</span>
+              <span className="font-bold text-text-primary">{truckLine.proposed_truck_type || 'Standard'}</span>
             </div>
             <div className="flex justify-between">
               <span>Capacity:</span>
@@ -104,6 +116,7 @@ interface RejectTruckModalProps {
   isLoading: boolean;
   truckLine: TBApproverTruckLine | null;
   rateBaseLabel?: string;
+  defaultRequestedTruckType?: string;
 }
 
 export function RejectTruckModal({
@@ -112,6 +125,7 @@ export function RejectTruckModal({
   onConfirm,
   isLoading,
   truckLine,
+  defaultRequestedTruckType,
 }: RejectTruckModalProps) {
   const [reason, setReason] = useState('');
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
@@ -133,6 +147,7 @@ export function RejectTruckModal({
   };
 
   const isInvalid = hasAttemptedSubmit && !reason.trim();
+  const requestedTypeName = truckLine.requested_truck_type_name || defaultRequestedTruckType;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
@@ -146,7 +161,8 @@ export function RejectTruckModal({
           </h3>
           <p className="text-[13px] text-text-secondary mt-1.5 leading-relaxed">
             Please provide a rejection reason for{' '}
-            <span className="font-bold text-text-primary">Truck #{truckLine.id}</span> ({truckLine.proposed_truck_type}).
+            <span className="font-bold text-text-primary">Truck #{truckLine.id}</span> ({truckLine.proposed_truck_type || 'Truck'})
+            {requestedTypeName ? ` [Requested: ${requestedTypeName}]` : ''}.
           </p>
         </div>
 

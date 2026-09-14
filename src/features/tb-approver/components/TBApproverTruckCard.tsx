@@ -37,6 +37,7 @@ interface TBApproverTruckCardProps {
   index: number;
   askingRate: number;
   rateBaseLabel?: string;
+  defaultRequestedTruckType?: string;
   onApprove: (truckLine: TBApproverTruckLine) => void;
   onReject: (truckLine: TBApproverTruckLine) => void;
   isActionLoading?: boolean;
@@ -47,6 +48,7 @@ export function TBApproverTruckCard({
   index,
   askingRate,
   rateBaseLabel = 'Truck',
+  defaultRequestedTruckType,
   onApprove,
   onReject,
   isActionLoading = false,
@@ -55,6 +57,7 @@ export function TBApproverTruckCard({
   const isBelow = diff < 0;
   const isMatch = diff === 0;
   const isAbove = diff > 0;
+  const requestedTypeName = truckLine.requested_truck_type_name || defaultRequestedTruckType || 'Standard';
 
   return (
     <div className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-4 transition-all">
@@ -121,26 +124,41 @@ export function TBApproverTruckCard({
       <div className="grid grid-cols-2 gap-2 text-xs">
         <div className="p-3 rounded-[16px] bg-slate-50 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
-            Proposed Truck Type
+            Requested Type
           </span>
           <div className="flex items-center gap-1.5 mt-1">
-            <div className="text-primary dark:text-blue-400 shrink-0">
+            <div className="text-slate-400 dark:text-slate-500 shrink-0">
               <TruckIcon className="w-3.5 h-3.5" />
             </div>
-            <p className="font-bold text-text-primary truncate">
-              {truckLine.proposed_truck_type || 'Standard'}
+            <p className="font-bold text-text-primary truncate" title={requestedTypeName}>
+              {requestedTypeName}
             </p>
           </div>
         </div>
 
         <div className="p-3 rounded-[16px] bg-slate-50 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
-            Capacity
+            Proposed Type
           </span>
-          <p className="font-extrabold text-text-primary mt-1 text-[13px]">
-            {truckLine.truck_capacity} Tons
-          </p>
+          <div className="flex items-center gap-1.5 mt-1">
+            <div className="text-primary dark:text-blue-400 shrink-0">
+              <TruckIcon className="w-3.5 h-3.5" />
+            </div>
+            <p className="font-bold text-text-primary truncate" title={truckLine.proposed_truck_type}>
+              {truckLine.proposed_truck_type || 'Standard'}
+            </p>
+          </div>
         </div>
+      </div>
+
+      {/* Truck Capacity */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 rounded-[16px] bg-slate-50 dark:bg-slate-800/30 border border-slate-900/5 dark:border-white/5 text-xs">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+          Truck Capacity
+        </span>
+        <span className="font-extrabold text-text-primary text-[13px]">
+          {truckLine.truck_capacity} Tons
+        </span>
       </div>
 
       {/* Driver & Vehicle Details if provided */}

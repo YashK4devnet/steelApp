@@ -36,7 +36,8 @@ export function MainLayout() {
     location.pathname.includes('/bookings/view') ||
     location.pathname.includes('/transporter/quotes/submit') ||
     location.pathname.includes('/transporter/quotes/assign-drivers') ||
-    location.pathname.includes('/po/approval/');
+    location.pathname.includes('/po/approval/') ||
+    location.pathname.includes('/tb-approver/quotes/');
 
   return (
     <>

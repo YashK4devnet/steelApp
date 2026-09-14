@@ -121,7 +121,7 @@ export function TBApproverQuoteDetailPage() {
   const askingRate = quotation?.asking_rate || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-32">
+    <div className="min-h-screen bg-gradient-to-b from-[#EEF3FA] to-[#FFFFFF] dark:from-[#0B1120] dark:via-[#0E172A] dark:to-[#070B14] relative z-0 pb-12 pb-[calc(env(safe-area-inset-bottom,1rem)+2rem)]">
       {/* Sticky Top Header */}
       <div className="sticky top-0 z-20 bg-gradient-to-b from-[#EEF3FA] via-[#EEF3FA]/95 to-transparent dark:from-[#0B1120] dark:via-[#0B1120]/95 dark:to-transparent pt-[calc(env(safe-area-inset-top,2rem)+1rem)] pb-4 px-4 sm:px-6 lg:px-8">
         <div className="max-w-[1200px] mx-auto flex items-center justify-between gap-4">
@@ -218,7 +218,7 @@ export function TBApproverQuoteDetailPage() {
               </div>
 
               {/* Terms & Metrics */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
                 <div className="p-3 rounded-[16px] bg-slate-50 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                     Asking Rate
@@ -236,6 +236,15 @@ export function TBApproverQuoteDetailPage() {
                   <p className="text-[16px] font-extrabold text-text-primary mt-0.5">
                     {quotation.proposed_truck_count || 0} / {quotation.requested_truck_count || 0}{' '}
                     <span className="text-[11px] font-semibold text-text-secondary">Proposed</span>
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-[16px] bg-slate-50 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5 col-span-2 sm:col-span-1">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+                    Requested Truck Type
+                  </span>
+                  <p className="text-[14px] font-bold text-text-primary mt-0.5 truncate">
+                    {quotation.requested_truck_type || 'Standard'}
                   </p>
                 </div>
               </div>
@@ -283,6 +292,7 @@ export function TBApproverQuoteDetailPage() {
                     index={idx}
                     askingRate={askingRate}
                     rateBaseLabel={rateBaseLabel}
+                    defaultRequestedTruckType={quotation.requested_truck_type}
                     onApprove={(tl) => setSelectedApproveTruck(tl)}
                     onReject={(tl) => setSelectedRejectTruck(tl)}
                     isActionLoading={approveMutation.isPending || rejectMutation.isPending}
@@ -302,6 +312,7 @@ export function TBApproverQuoteDetailPage() {
         isLoading={approveMutation.isPending}
         truckLine={selectedApproveTruck}
         rateBaseLabel={rateBaseLabel}
+        defaultRequestedTruckType={quotation?.requested_truck_type}
       />
 
       {/* Reject Confirmation Modal with Reason Input */}
@@ -312,6 +323,7 @@ export function TBApproverQuoteDetailPage() {
         isLoading={rejectMutation.isPending}
         truckLine={selectedRejectTruck}
         rateBaseLabel={rateBaseLabel}
+        defaultRequestedTruckType={quotation?.requested_truck_type}
       />
     </div>
   );
