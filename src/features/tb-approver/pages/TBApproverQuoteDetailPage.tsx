@@ -175,11 +175,11 @@ export function TBApproverQuoteDetailPage() {
                   <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-secondary">
                     Quoting Transporter
                   </span>
-                  <p className="text-sm font-bold text-text-primary truncate">
+                  <p className="text-sm font-bold text-text-primary">
                     {quotation.transporter_name || 'Assigned Transporter'}
                   </p>
                   {quotation.transporter_address && (
-                    <p className="text-[11px] text-text-secondary truncate mt-0.5">
+                    <p className="text-[11px] text-text-secondary break-words leading-relaxed mt-0.5">
                       {quotation.transporter_address}
                     </p>
                   )}
@@ -197,7 +197,7 @@ export function TBApproverQuoteDetailPage() {
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-secondary">Pickup:</span>
                       <span className="text-xs font-bold text-text-primary">{quotation.pickup_location_code}</span>
                     </div>
-                    <p className="text-[11px] text-text-secondary truncate mt-0.5">{quotation.pickup_location_name}</p>
+                    <p className="text-[11px] text-text-secondary break-words leading-relaxed mt-0.5">{quotation.pickup_location_name}</p>
                   </div>
                 </div>
 
@@ -212,7 +212,7 @@ export function TBApproverQuoteDetailPage() {
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-secondary">Delivery:</span>
                       <span className="text-xs font-bold text-text-primary">{quotation.delivery_address_code}</span>
                     </div>
-                    <p className="text-[11px] text-text-secondary truncate mt-0.5">{quotation.delivery_address_name}</p>
+                    <p className="text-[11px] text-text-secondary break-words leading-relaxed mt-0.5">{quotation.delivery_address_name}</p>
                   </div>
                 </div>
               </div>
@@ -243,7 +243,7 @@ export function TBApproverQuoteDetailPage() {
                   <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
                     Requested Truck Type
                   </span>
-                  <p className="text-[14px] font-bold text-text-primary mt-0.5 truncate">
+                  <p className="text-[14px] font-bold text-text-primary mt-0.5 break-words">
                     {quotation.requested_truck_type || 'Standard'}
                   </p>
                 </div>

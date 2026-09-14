@@ -1030,4 +1030,18 @@ This document logs the major architectural, feature, and design changes implemen
   - Rendered the decoded `image_256` user avatar in a rounded card with border and drop shadow.
   - Added graceful fallback to `UserAvatarIcon` if `image_256` is empty or if an image load error occurs.
 
+## Phase 136: TB Approver Views Polish (Truck ID Removal, Full Addresses & Section Renaming)
+- **Truck ID Cleanup**:
+  - Removed line ID mentions (`Line ID: {truckLine.id}`) from `TBApproverTruckCard.tsx`.
+  - Removed `Truck Line ID: #{truckLine.id}` row from `ApproveTruckModal` in `TBApproverActionModals.tsx`.
+  - Replaced `Truck #{truckLine.id}` with the proposed truck type name in `RejectTruckModal` in `TBApproverActionModals.tsx`.
+- **Full Address Rendering**:
+  - Removed `truncate` and applied `break-words leading-relaxed` for transporter address, pickup location, and delivery address in both `TBApproverQuoteCard.tsx` and `TBApproverQuoteDetailPage.tsx`.
+  - Allowed transporter name and requested truck type to wrap naturally without clipping.
+- **Requested Truck Type Label**:
+  - Added dedicated `<span className="font-bold text-text-primary">Requested Truck Type:</span>` label in the footer of `TBApproverQuoteCard.tsx` ahead of the requested truck type value.
+- **Tab & Section Renaming**:
+  - Renamed tab header from "Waiting to Submit" to "Awaiting Proposal" in `TBApproverQuoteListPage.tsx`.
+  - Updated empty-state title to `'No Quotations Awaiting Proposal'` and description to `'No bookings are currently awaiting transporter proposals.'`.
+
 

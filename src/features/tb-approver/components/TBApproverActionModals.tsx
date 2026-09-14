@@ -56,10 +56,6 @@ export function ApproveTruckModal({
           </p>
           <div className="mt-3 p-2.5 rounded-[14px] bg-slate-50 dark:bg-slate-800/50 border border-slate-900/5 dark:border-white/5 text-[11px] text-text-secondary text-left flex flex-col gap-1">
             <div className="flex justify-between">
-              <span>Truck Line ID:</span>
-              <span className="font-bold text-text-primary">#{truckLine.id}</span>
-            </div>
-            <div className="flex justify-between">
               <span>Requested Type:</span>
               <span className="font-bold text-text-primary">
                 {truckLine.requested_truck_type_name || defaultRequestedTruckType || 'Standard'}
@@ -161,7 +157,7 @@ export function RejectTruckModal({
           </h3>
           <p className="text-[13px] text-text-secondary mt-1.5 leading-relaxed">
             Please provide a rejection reason for{' '}
-            <span className="font-bold text-text-primary">Truck #{truckLine.id}</span> ({truckLine.proposed_truck_type || 'Truck'})
+            <span className="font-bold text-text-primary">{truckLine.proposed_truck_type || 'Truck Proposal'}</span>
             {requestedTypeName ? ` [Requested: ${requestedTypeName}]` : ''}.
           </p>
         </div>

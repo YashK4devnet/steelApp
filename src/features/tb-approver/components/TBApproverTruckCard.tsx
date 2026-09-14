@@ -71,9 +71,6 @@ export function TBApproverTruckCard({
             <h4 className="text-[15px] font-bold text-text-primary leading-tight">
               Truck Proposal #{index + 1}
             </h4>
-            <span className="text-[11px] font-semibold text-text-secondary">
-              Line ID: {truckLine.id}
-            </span>
           </div>
         </div>
 

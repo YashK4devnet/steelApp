@@ -101,11 +101,11 @@ export function TBApproverQuoteCard({ quote, onReview }: TBApproverQuoteCardProp
           <BuildingIcon className="w-3.5 h-3.5" />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-text-primary truncate">
+          <p className="text-xs font-bold text-text-primary">
             {quote.transporter_name || 'Assigned Transporter'}
           </p>
           {quote.transporter_address && (
-            <p className="text-[11px] font-normal text-text-secondary truncate mt-0.5">
+            <p className="text-[11px] font-normal text-text-secondary break-words leading-relaxed mt-0.5">
               {quote.transporter_address}
             </p>
           )}
@@ -122,9 +122,9 @@ export function TBApproverQuoteCard({ quote, onReview }: TBApproverQuoteCardProp
           <div className="min-w-0 flex-1 leading-tight">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-secondary">Pickup:</span>
-              <span className="text-xs font-bold text-text-primary truncate">{quote.pickup_location_code || 'WH'}</span>
+              <span className="text-xs font-bold text-text-primary">{quote.pickup_location_code || 'WH'}</span>
             </div>
-            <p className="text-[11px] text-text-secondary truncate mt-0.5">{quote.pickup_location_name}</p>
+            <p className="text-[11px] text-text-secondary break-words leading-relaxed mt-0.5">{quote.pickup_location_name}</p>
           </div>
         </div>
 
@@ -139,9 +139,9 @@ export function TBApproverQuoteCard({ quote, onReview }: TBApproverQuoteCardProp
           <div className="min-w-0 flex-1 leading-tight">
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-secondary">Delivery:</span>
-              <span className="text-xs font-bold text-text-primary truncate">{quote.delivery_address_code || 'DEST'}</span>
+              <span className="text-xs font-bold text-text-primary">{quote.delivery_address_code || 'DEST'}</span>
             </div>
-            <p className="text-[11px] text-text-secondary truncate mt-0.5">{quote.delivery_address_name}</p>
+            <p className="text-[11px] text-text-secondary break-words leading-relaxed mt-0.5">{quote.delivery_address_name}</p>
           </div>
         </div>
       </div>
@@ -182,9 +182,12 @@ export function TBApproverQuoteCard({ quote, onReview }: TBApproverQuoteCardProp
           <div className="text-text-secondary shrink-0">
             <TruckIcon className="w-3.5 h-3.5" />
           </div>
-          <span className="text-xs font-semibold text-text-secondary truncate">
-            {quote.requested_truck_type || 'Standard Truck'}
-          </span>
+          <div className="flex flex-wrap items-center gap-1 text-xs">
+            <span className="font-bold text-text-primary">Requested Truck Type:</span>
+            <span className="font-semibold text-text-secondary">
+              {quote.requested_truck_type || 'Standard Truck'}
+            </span>
+          </div>
         </div>
 
         {hasProposedTrucks ? (

@@ -146,7 +146,7 @@ export function TBApproverQuoteListPage() {
                   : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/50'
               }`}
             >
-              <span>Waiting to Submit</span>
+              <span>Awaiting Proposal</span>
               <span className={`text-[11px] font-extrabold px-2 py-0.5 rounded-full ${
                 activeTab === 'pending' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
               }`}>
@@ -214,14 +214,14 @@ export function TBApproverQuoteListPage() {
                     ? 'No Matching Quotations' 
                     : activeTab === 'approval' 
                       ? 'No Quotations Waiting for Approval' 
-                      : 'No Quotations Awaiting Submission'}
+                      : 'No Quotations Awaiting Proposal'}
                 </h3>
                 <p className="text-xs text-text-secondary mt-1 max-w-sm">
                   {isFiltering 
                     ? 'Try adjusting your search terms.' 
                     : activeTab === 'approval'
                       ? 'All submitted transporter truck proposals have been reviewed.'
-                      : 'No bookings are currently pending transporter quotation submissions.'}
+                      : 'No bookings are currently awaiting transporter proposals.'}
                 </p>
               </div>
               {isFiltering && (
