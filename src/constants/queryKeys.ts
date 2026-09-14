@@ -12,5 +12,7 @@ export const QUERY_KEYS = {
   poApprovals: ['poApprovals'] as const,
   poApprovalDetail: (id: number | string) => ['poApprovals', String(id)] as const,
   gateAnalytics: (period: string) => ['gateAnalytics', period] as const,
+  tbApproverQuotations: ['tbApprover', 'quotations'] as const,
+  tbApproverQuotationDetail: (id: number | string) => ['tbApprover', 'quotation', String(id)] as const,
 } as const;
 

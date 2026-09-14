@@ -930,6 +930,26 @@ This document logs the major architectural, feature, and design changes implemen
   - Replaced it with instant `maxHeight` clamping for "Quick Actions" (~240px) while delegating 100% of the visual slide to the GPU compositor (`transform: translate3d`).
   - Result: Locked 60 FPS transitions even on older/lower-spec mobile devices with zero lag or stutter.
 
+## Phase 129: TB Approver Quotation List Implementation
+- **Type Definitions (`src/features/tb-approver/types.ts`)**:
+  - Created `TBApproverQuotation`, `TBApproverTruckLine`, `TBApproverQuotationsResponse`, and `TBApproverQuotationDetailResponse` models reflecting section 28 of `.agents/README.md`.
+- **API Service (`src/features/tb-approver/services/tbApproverApi.ts`)**:
+  - Built `getTBApproverQuotations()` calling `GET /booking/tb-approver/quotations`.
+  - Added skeleton functions `getTBApproverQuotationDetail()`, `approveTBApproverTruck()`, and `rejectTBApproverTruck()` for upcoming detail review workflows.
+  - Added `tbApproverQuotations` and `tbApproverQuotationDetail` query keys to `src/constants/queryKeys.ts`.
+- **State Management Hook (`src/features/tb-approver/hooks/useTBApproverQuotes.ts`)**:
+  - Partitioned quotations into two distinct tabs based on `proposed_truck_count`:
+    - **Waiting for Approval (`approval`)**: `(q.proposed_truck_count || 0) > 0` (transporters have proposed trucks for review).
+    - **Waiting to be Submitted (`pending`)**: `(q.proposed_truck_count || 0) === 0` (pending transporter quotation).
+  - Integrated search query filter across booking number, transporter name, pickup/delivery route codes, and truck types.
+- **Card & List View UI (`src/features/tb-approver/`)**:
+  - Created `TBApproverQuoteCard.tsx` with booking number, transporter details, route locations, asking rate, truck progress pill, and review action button.
+  - Created `TBApproverQuoteListPage.tsx` with 46px tactile segmented control bar (`[ Waiting Approval ({count}) | Waiting to Submit ({count}) ]`), search bar, Pull-to-Refresh, skeleton loading state, and error handling.
+- **Routing & Dashboard Hookup**:
+  - Configured route `/tb-approver/quotes` in `src/app/router/index.tsx` under `PAGE_LEVEL_MAP`.
+  - Connected "Quote Approval" button in `src/features/dashboard/components/TBApproverDashboard.tsx` to navigate directly to `/tb-approver/quotes`.
+
+
 
 
 

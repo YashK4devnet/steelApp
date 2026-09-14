@@ -28,6 +28,7 @@ const AssignDriversPage = React.lazy(() => import('../../features/transporter/pa
 const TransporterLoadingTrucksPage = React.lazy(() => import('../../features/transporter/pages/TransporterLoadingTrucksPage').then((m) => ({ default: m.TransporterLoadingTrucksPage })));
 const POApprovalListPage = React.lazy(() => import('../../features/po/pages/POApprovalListPage').then((m) => ({ default: m.POApprovalListPage })));
 const POApprovalDetailPage = React.lazy(() => import('../../features/po/pages/POApprovalDetailPage').then((m) => ({ default: m.POApprovalDetailPage })));
+const TBApproverQuoteListPage = React.lazy(() => import('../../features/tb-approver/pages/TBApproverQuoteListPage').then((m) => ({ default: m.TBApproverQuoteListPage })));
 
 function PageLoadingFallback() {
   return (
@@ -62,9 +63,11 @@ export const PAGE_LEVEL_MAP: Record<string, PageLevelConfig> = {
   '/transporter/quotes/assign-drivers': { level: 2, parent: '/transporter/quotes?tab=quoted' },
   '/transporter/upload-bilty': { level: 1, parent: '/dashboard' },
   '/po/approval': { level: 1, parent: '/dashboard' },
+  '/tb-approver/quotes': { level: 1, parent: '/dashboard' },
 };
 
 export function getPageConfig(pathname: string): PageLevelConfig {
+  if (pathname.startsWith('/tb-approver/quotes')) return PAGE_LEVEL_MAP['/tb-approver/quotes'];
   if (pathname.match(/^\/po\/approval\/.+/)) return { level: 2, parent: '/po/approval' };
   if (pathname.startsWith('/po/approval')) return PAGE_LEVEL_MAP['/po/approval'];
   if (pathname.startsWith('/transporter/upload-bilty')) return PAGE_LEVEL_MAP['/transporter/upload-bilty'];
@@ -206,6 +209,7 @@ export function AppRouter() {
               <Route path="/transporter/upload-bilty" element={<TransporterLoadingTrucksPage />} />
               <Route path="/po/approval" element={<POApprovalListPage />} />
               <Route path="/po/approval/:id" element={<POApprovalDetailPage />} />
+              <Route path="/tb-approver/quotes" element={<TBApproverQuoteListPage />} />
               <Route path="/profile" element={<ProfilePage />} />
             </Route>
           </Route>

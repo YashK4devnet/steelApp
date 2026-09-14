@@ -1,12 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { QuoteCheckIcon, HistoryIcon } from './Icons';
-import { useToast } from '../../../app/providers/ToastProvider';
+import { hapticFeedback } from '../../../utils/haptics';
 
 export function TBApproverDashboard() {
-  const { info } = useToast();
+  const navigate = useNavigate();
 
   const handleQuoteApprovalClick = () => {
-    info('Quote Approval API integration will be wired in the upcoming phase.', 'Quotes to Approve');
+    hapticFeedback.light();
+    navigate('/tb-approver/quotes');
   };
 
   return (

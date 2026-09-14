@@ -1,7 +1,7 @@
 {
     "info": {
       "name": "Mobile API",
-      "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Transporter, Buyer, PO Approver, Admin).",
+      "description": "Postman collection for the RNE application APIs. One app; data and screens depend on the user's role (Security, Seller, Transporter, Buyer, PO Approver, TB Approver, Admin).",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
@@ -1109,6 +1109,163 @@
                 "description": "PO Approver only: reject a Vendor Booking waiting for approval. rejection_reason is required."
             },
             "response": []
+        },
+        {
+            "name": "20. TB Approver Quotation List",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.status === 'success' && jsonData.quotations && jsonData.quotations.length) {",
+                            "    pm.collectionVariables.set('tb_quotation_line_id', jsonData.quotations[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/tb-approver/quotations",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "tb-approver",
+                        "quotations"
+                    ]
+                },
+                "description": "TB Approver only: list quotations with truck lines waiting for Team Approval. Saves the first quotation id to tb_quotation_line_id."
+            },
+            "response": []
+        },
+        {
+            "name": "21. TB Approver Quotation Details",
+            "event": [
+                {
+                    "listen": "test",
+                    "script": {
+                        "type": "text/javascript",
+                        "exec": [
+                            "const jsonData = pm.response.json();",
+                            "if (jsonData && jsonData.status === 'success' && jsonData.quotation && jsonData.quotation.truck_lines && jsonData.quotation.truck_lines.length) {",
+                            "    pm.collectionVariables.set('tb_truck_line_id', jsonData.quotation.truck_lines[0].id);",
+                            "}"
+                        ]
+                    }
+                }
+            ],
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/tb-approver/quotations/{{tb_quotation_line_id}}",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "tb-approver",
+                        "quotations",
+                        "{{tb_quotation_line_id}}"
+                    ]
+                },
+                "description": "TB Approver only: quotation details plus truck lines in waiting_team_approval. Saves the first truck line id to tb_truck_line_id."
+            },
+            "response": []
+        },
+        {
+            "name": "22. TB Approver Team Approve",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    }
+                ],
+                "url": {
+                    "raw": "{{baseUrl}}/booking/tb-approver/trucks/{{tb_truck_line_id}}/approve",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "tb-approver",
+                        "trucks",
+                        "{{tb_truck_line_id}}",
+                        "approve"
+                    ]
+                },
+                "description": "TB Approver only: Team Approve a truck quotation waiting for team approval. Uses the same Odoo Team Approve workflow."
+            },
+            "response": []
+        },
+        {
+            "name": "23. TB Approver Team Reject",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}"
+                    },
+                    {
+                        "key": "X-Odoo-Database",
+                        "value": "{{db}}"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                    }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"rejection_reason\": \"Rate is not acceptable\"\n}"
+                },
+                "url": {
+                    "raw": "{{baseUrl}}/booking/tb-approver/trucks/{{tb_truck_line_id}}/reject",
+                    "host": [
+                        "{{baseUrl}}"
+                    ],
+                    "path": [
+                        "booking",
+                        "tb-approver",
+                        "trucks",
+                        "{{tb_truck_line_id}}",
+                        "reject"
+                    ]
+                },
+                "description": "TB Approver only: reject a truck quotation at Team Approval. rejection_reason is required."
+            },
+            "response": []
         }
     ],
     "variable": [
@@ -1186,6 +1343,16 @@
             "key": "vendor_booking_id",
             "value": "",
             "description": "Filled automatically by PO Approver Vendor Booking List (first booking)."
+        },
+        {
+            "key": "tb_quotation_line_id",
+            "value": "",
+            "description": "Filled automatically by TB Approver Quotation List (first quotation)."
+        },
+        {
+            "key": "tb_truck_line_id",
+            "value": "",
+            "description": "Filled automatically by TB Approver Quotation Details (first waiting truck line)."
         }
     ]
 }

@@ -2,7 +2,7 @@
 
 This document describes the REST-style HTTP endpoints for the **RNE
 application**. There is one app: screens and data change by the logged-in
-user's **role** (for example Security, Seller / Vendor, Transporter, Buyer, PO Approver, Admin).
+user's **role** (for example Security, Seller / Vendor, Transporter, Buyer, PO Approver, TB Approver, Admin).
 
 ## Authentication
 
@@ -511,10 +511,17 @@ This list is meant for the transporter's booking / quotation screen.
 | ------------------------ | ------- | -------------------------------------------------------- |
 | `id`                     | integer | Quotation line ID. Send this when opening a quotation.   |
 | `booking_number`         | string  | Transport booking number.                                |
+| `transporter_id`         | integer | Transporter partner ID.                                  |
+| `transporter_name`       | string  | Transporter name.                                        |
+| `transporter_address`    | string  | Transporter full address.                                |
 | `pickup_location_id`     | integer | Pickup location partner ID.                              |
 | `pickup_location_name`   | string  | Full contact address of the pickup location.             |
+| `pickup_location_code`   | string  | Pickup location code.                                    |
 | `delivery_address_id`    | integer | Delivery location partner ID.                            |
 | `delivery_address_name`  | string  | Full contact address of the delivery location.           |
+| `delivery_address_code`  | string  | Delivery location code.                                  |
+| `requested_truck_type_id`| integer or `false` | Requested truck type ID from the booking.     |
+| `requested_truck_type`   | string  | Requested truck type name from the booking.              |
 | `by_truck`               | boolean | `true` if the booking is by truck count; `false` if by weight. |
 | `asking_rate`            | integer | Asking rate on the quotation line.                       |
 | `requested_truck_count`  | integer | Trucks requested on the booking.                         |
@@ -549,10 +556,17 @@ curl -X GET "http://<odoo-host>/booking/transporter/quotations" \
     {
       "id": 41,
       "booking_number": "TB/2026/00012",
+      "transporter_id": 88,
+      "transporter_name": "ABC Transport",
+      "transporter_address": "ABC Transport, 45 Logistics Park, Bangalore 560001",
       "pickup_location_id": 32,
       "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
+      "pickup_location_code": "WH-01",
       "delivery_address_id": 45,
       "delivery_address_name": "Main Warehouse, 123 Industrial Area, Bangalore 560001",
+      "delivery_address_code": "WH-02",
+      "requested_truck_type_id": 7,
+      "requested_truck_type": "20 Ft Container",
       "by_truck": true,
       "asking_rate": 25000,
       "requested_truck_count": 3,
@@ -641,10 +655,17 @@ curl -X GET "http://<odoo-host>/booking/transporter/quotations/41" \
   "quotation": {
     "id": 41,
     "booking_number": "TB/2026/00012",
+    "transporter_id": 88,
+    "transporter_name": "ABC Transport",
+    "transporter_address": "ABC Transport, 45 Logistics Park, Bangalore 560001",
     "pickup_location_id": 32,
     "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
+    "pickup_location_code": "WH-01",
     "delivery_address_id": 45,
     "delivery_address_name": "Main Warehouse, 123 Industrial Area, Bangalore 560001",
+    "delivery_address_code": "WH-02",
+    "requested_truck_type_id": 7,
+    "requested_truck_type": "20 Ft Container",
     "by_truck": true,
     "asking_rate": 25000,
     "requested_truck_count": 3,
@@ -2195,6 +2216,306 @@ curl -X POST "http://<odoo-host>/booking/po-approver/bookings/12/reject" \
 
 ---
 
+## TB Approver APIs
+
+The endpoints in this section (`/booking/tb-approver/...`) are **TB Approver-only**.
+The logged-in user must have the **TB Approver** app role. Other roles receive
+`403 Forbidden`.
+
+These APIs use the same Bearer token as the rest of the RNE app. They do **not**
+use an Odoo web session.
+
+The TB Approver reviews Transport Booking quotations waiting for **Team Approval**.
+The approver cannot edit quotation or truck data. Management Approval is not
+part of this mobile flow.
+
+---
+
+## 28. TB Approver Quotation List
+
+Returns Transport Booking quotations that currently have truck lines waiting for Team Approval.
+
+**Endpoint**
+
+```text
+GET /booking/tb-approver/quotations
+```
+
+**Authentication**
+
+Bearer token from `login`. **TB Approver role only.**
+
+**Behaviour**
+
+Returns `transport.booking.quotation.line` records that are not `draft`,
+`cancelled`, or Closed (`done`), and that have at least one truck line in
+`waiting_team_approval`. There is no transporter-specific filter.
+
+Product/truck-line details are not included. Use the quotation line `id` with
+the details API when the user opens one quotation.
+
+**`quotations[]`**
+
+| Field                     | Type    | Meaning |
+| ------------------------- | ------- | ------- |
+| `id`                      | integer | Quotation line ID. Send this to the details API. |
+| `booking_number`          | string  | Transport booking number. |
+| `transporter_id`          | integer | Transporter partner ID. |
+| `transporter_name`        | string  | Transporter name. |
+| `transporter_address`     | string  | Transporter full address. |
+| `pickup_location_id`      | integer | Pickup location partner ID. |
+| `pickup_location_name`    | string  | Pickup location full address. |
+| `pickup_location_code`    | string  | Pickup location code. |
+| `delivery_address_id`     | integer | Delivery location partner ID. |
+| `delivery_address_name`   | string  | Delivery location full address. |
+| `delivery_address_code`   | string  | Delivery location code. |
+| `requested_truck_type_id` | integer or `false` | Requested truck type ID. |
+| `requested_truck_type`    | string  | Requested truck type name. |
+| `by_truck`                | boolean | `true` if the booking is by truck count. |
+| `asking_rate`             | integer | Asking rate. |
+| `requested_truck_count`   | integer | Trucks requested on the booking. |
+| `proposed_truck_count`    | integer | Trucks already quoted by the transporter. |
+| `approved_truck_count`    | integer | Trucks already approved for this quotation. |
+| `state`                   | string  | Quotation line state. |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/tb-approver/quotations" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "count": 1,
+  "quotations": [
+    {
+      "id": 41,
+      "booking_number": "TB/2026/00012",
+      "transporter_id": 88,
+      "transporter_name": "ABC Transport",
+      "transporter_address": "ABC Transport, 45 Logistics Park, Bangalore 560001",
+      "pickup_location_id": 32,
+      "pickup_location_name": "Vendor Godown, 123 Industrial Area, Bangalore 560001",
+      "pickup_location_code": "WH-01",
+      "delivery_address_id": 45,
+      "delivery_address_name": "Main Warehouse, 123 Industrial Area, Bangalore 560001",
+      "delivery_address_code": "WH-02",
+      "requested_truck_type_id": 7,
+      "requested_truck_type": "20 Ft Container",
+      "by_truck": true,
+      "asking_rate": 25000,
+      "requested_truck_count": 3,
+      "proposed_truck_count": 2,
+      "approved_truck_count": 0,
+      "state": "waiting_team_approval"
+    }
+  ]
+}
+```
+
+---
+
+## 29. TB Approver Quotation Details
+
+Returns one quotation and the truck lines currently waiting for Team Approval.
+
+**Endpoint**
+
+```text
+GET /booking/tb-approver/quotations/<quotation_line_id>
+```
+
+**Authentication**
+
+Bearer token from `login`. **TB Approver role only.**
+
+**Behaviour**
+
+Returns the list fields from section 28, plus `truck_lines`.
+
+Only truck lines in `waiting_team_approval` are included. Cancelled truck lines
+are not returned. Truck lines are included even if the transporter has not yet
+filled quote details. After the transporter submits
+`POST /booking/transporter/submit_truck_quote`, those quote values appear here.
+
+**`truck_lines[]`**
+
+| Field                        | Type    | Description |
+| ---------------------------- | ------- | ----------- |
+| `id`                         | integer | Truck line ID. Send this as `truck_line_id` on approve/reject. |
+| `proposal_rate`              | integer | Proposed rate. `0` if not yet submitted. |
+| `proposed_truck_type_id`     | integer or `false` | Proposed truck type ID. |
+| `proposed_truck_type`        | string  | Proposed truck type name. |
+| `truck_number`               | string  | Truck number plate. Empty until driver details are submitted. |
+| `truck_capacity`             | number  | Truck capacity in tons. |
+| `driver_name`                | string  | Driver name. |
+| `driver_contact`             | string  | Driver contact. |
+| `driver_license`             | string  | Driver license number. |
+| `state`                      | string  | Truck line status (`waiting_team_approval`). |
+| `requested_truck_type_name`  | string  | Requested truck type from the booking. |
+
+**Example Request**
+
+```bash
+curl -X GET "http://<odoo-host>/booking/tb-approver/quotations/41" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "quotation": {
+    "id": 41,
+    "booking_number": "TB/2026/00012",
+    "transporter_name": "ABC Transport",
+    "asking_rate": 25000,
+    "state": "waiting_team_approval",
+    "truck_lines": [
+      {
+        "id": 201,
+        "proposal_rate": 24000,
+        "proposed_truck_type_id": 7,
+        "proposed_truck_type": "20 Ft Container",
+        "truck_number": "",
+        "truck_capacity": 16.5,
+        "driver_name": "",
+        "driver_contact": "",
+        "driver_license": "",
+        "state": "waiting_team_approval",
+        "requested_truck_type_name": "20 Ft Container"
+      }
+    ]
+  }
+}
+```
+
+**Example Error Response** (`404 Not Found`)
+
+```json
+{
+  "status": "error",
+  "message": "Quotation not found."
+}
+```
+
+---
+
+## 30. TB Approver Team Approve
+
+Approves one truck quotation that is waiting for Team Approval.
+
+**Endpoint**
+
+```text
+POST /booking/tb-approver/trucks/<truck_line_id>/approve
+```
+
+**Authentication**
+
+Bearer token from `login`. **TB Approver role only.**
+
+**Behaviour**
+
+Uses the same Team Approval workflow as the Odoo **Team Approve** button.
+The truck must already have the required quote details (proposal rate, proposed
+truck type, and truck capacity). Existing transporter approval notifications
+are preserved.
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/tb-approver/trucks/201/approve" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb"
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Truck quotation approved successfully.",
+  "truck_line_id": 201,
+  "quotation_line_id": 41,
+  "state": "waiting_management_approval",
+  "approved_by": "TB Approver",
+  "approved_date": "2026-09-11 10:20:00"
+}
+```
+
+---
+
+## 31. TB Approver Team Reject
+
+Rejects one truck quotation at the Team Approval stage.
+
+**Endpoint**
+
+```text
+POST /booking/tb-approver/trucks/<truck_line_id>/reject
+```
+
+**Authentication**
+
+Bearer token from `login`. **TB Approver role only.**
+
+**Request format**
+
+Send JSON (`application/json`) or form fields.
+
+| Field              | Type   | Required | Description |
+| ------------------ | ------ | -------- | ----------- |
+| `rejection_reason` | string | Yes      | Reason for rejection. `reason` is also accepted. |
+
+**Behaviour**
+
+Uses the same rejection workflow as the Odoo **Reject** action, without opening
+the backend wizard. Existing transporter rejection notifications are preserved.
+
+**Example Request**
+
+```bash
+curl -X POST "http://<odoo-host>/booking/tb-approver/trucks/201/reject" \
+  -H "Authorization: Bearer a1b2c3d4..." \
+  -H "X-Odoo-Database: mydb" \
+  -H "Content-Type: application/json" \
+  -d '{ "rejection_reason": "Rate is not acceptable" }'
+```
+
+**Example Success Response** (`200 OK`)
+
+```json
+{
+  "status": "success",
+  "message": "Truck quotation rejected successfully.",
+  "truck_line_id": 201,
+  "quotation_line_id": 41,
+  "state": "rejected",
+  "rejected_by": "TB Approver",
+  "rejected_date": "2026-09-11 10:25:00",
+  "rejection_reason": "Rate is not acceptable"
+}
+```
+
+**Example Error Response** (`400 Bad Request`)
+
+```json
+{
+  "status": "error",
+  "message": "Rejection reason is required."
+}
+```
+
+---
+
 ## HTTP Status Codes
 
 | Code | Meaning                                                            |
@@ -2214,7 +2535,7 @@ device token so the backend can send push notifications to that user.
 
 These endpoints use the same Bearer token as the rest of the RNE APIs. They
 are available to every role. The backend sends role-specific pushes (Security,
-Seller, Transporter, Buyer, PO Approver) to registered devices.
+Seller, Transporter, Buyer, PO Approver, TB Approver) to registered devices.
 
 ### Register Device
 
@@ -2305,8 +2626,9 @@ FCM `data` values are strings. On notification tap, read `type` and navigate:
 | `customer_truck_rejected` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
 | `customer_truck_cancelled` | Customer truck details | `truck_id` → `GET /booking/customer/trucks/<id>` |
 | `po_approver_vendor_booking_approval` | Vendor Booking details (waiting for approval) | `booking_id` → `GET /booking/po-approver/bookings/<id>` |
+| `tb_approver_truck_quote_team_approval` | TB Approver quotation details (waiting for Team Approval) | `quotation_line_id` → `GET /booking/tb-approver/quotations/<id>` |
 
-Common fields: `role` (`transporter`, `seller`, `security`, `buyer`, `po_approver`), `truck_number`, `truck_type`. Transporter quotation types and PO Approver types also include `booking_id` and `booking_number`.
+Common fields: `role` (`transporter`, `seller`, `security`, `buyer`, `po_approver`, `tb_approver`), `truck_number`, `truck_type`. Transporter quotation types, PO Approver types, and TB Approver types also include `booking_id` and `booking_number`. TB Approver notifications also include `transporter_name`.
 
 ---
 
@@ -2357,7 +2679,12 @@ Common fields: `role` (`transporter`, `seller`, `security`, `buyer`, `po_approve
    - Call `GET /booking/po-approver/bookings/<booking_id>/pdf` to download the Vendor Booking PDF (decode the Base64 `pdf` field).
    - Call `POST /booking/po-approver/bookings/<booking_id>/approve` to approve.
    - Call `POST /booking/po-approver/bookings/<booking_id>/reject` with `rejection_reason` to reject.
-7. Call `POST /booking/auth/logout` with the token header when the user signs
+7. **TB Approver flow** (shown when login `role` is TB Approver)
+   - Call `GET /booking/tb-approver/quotations` to list quotations waiting for Team Approval.
+   - Call `GET /booking/tb-approver/quotations/<quotation_line_id>` to show quotation details and waiting truck lines.
+   - Call `POST /booking/tb-approver/trucks/<truck_line_id>/approve` to Team Approve a truck quotation.
+   - Call `POST /booking/tb-approver/trucks/<truck_line_id>/reject` with `rejection_reason` to reject a truck quotation.
+8. Call `POST /booking/auth/logout` with the token header when the user signs
    out, then discard the token locally. The token itself remains valid on the
    server and will be returned again on the next login.
    Also call `POST /booking/auth/unregister_device` with the current FCM token
