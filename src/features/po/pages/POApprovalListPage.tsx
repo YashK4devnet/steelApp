@@ -231,7 +231,7 @@ export function POApprovalListPage() {
                 <div
                   key={po.id}
                   onClick={() => navigate(`/po/approval/${po.id}`)}
-                  className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 transition-all hover:border-slate-300 dark:hover:border-white/20 active:scale-[0.99] cursor-pointer group"
+                  className="animate-filter-scale bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 transition-all hover:border-slate-300 dark:hover:border-white/20 active:scale-[0.99] cursor-pointer group"
                 >
                   {/* Top Row: PO number on top-left, approval created date on top-right */}
                   <div className="flex items-center justify-between gap-3 min-w-0">

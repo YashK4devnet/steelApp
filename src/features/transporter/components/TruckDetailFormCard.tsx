@@ -1,12 +1,7 @@
 import React, { useState } from 'react';
 import type { ProposedTruckDetail, PricingBase, ActiveTruckType } from '../types';
 import { PRICING_BASE_OPTIONS } from '../constants';
-
-const ChevronDownIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400 pointer-events-none">
-    <polyline points="6 9 12 15 18 9"></polyline>
-  </svg>
-);
+import { Select } from '../../../components/ui/Select';
 
 interface TruckDetailFormCardProps {
   index: number;
@@ -89,29 +84,20 @@ export function TruckDetailFormCard({ index, truck, truckTypes = [], onUpdate }:
               className="w-full h-11 px-3.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[12px] outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 text-xs sm:text-sm font-semibold text-text-primary transition-all"
             />
           ) : (
-            <div className="relative">
-              <select
-                value={truck.proposed_truck_type_id ?? ''}
-                onChange={handleTruckTypeSelect}
-                className="w-full h-11 pl-3.5 pr-9 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-white/10 rounded-[12px] appearance-none outline-none focus:border-primary focus:bg-white dark:focus:bg-slate-800 text-xs sm:text-sm font-semibold text-text-primary cursor-pointer transition-all"
-              >
-                <option value="">Select active truck type</option>
-                {truckTypes.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.name}
-                  </option>
-                ))}
-                {truck.vehicle_type && !truckTypes.some((t) => t.name.toLowerCase() === truck.vehicle_type?.toLowerCase() || t.id === truck.proposed_truck_type_id) && (
-                  <option value={truck.proposed_truck_type_id ?? truck.vehicle_type}>
-                    {truck.vehicle_type}
-                  </option>
-                )}
-                <option value="__custom__">+ Enter custom truck type...</option>
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                <ChevronDownIcon />
-              </div>
-            </div>
+            <Select
+              value={truck.proposed_truck_type_id ?? (truck.vehicle_type ? truck.vehicle_type : '')}
+              onChange={handleTruckTypeSelect}
+              placeholder="Select active truck type"
+              sheetTitle="Select Truck Type"
+              className="h-11 rounded-[12px]"
+              options={[
+                ...truckTypes.map((type) => ({ value: type.id, label: type.name })),
+                ...(truck.vehicle_type && !truckTypes.some((t) => t.name.toLowerCase() === truck.vehicle_type?.toLowerCase() || t.id === truck.proposed_truck_type_id)
+                  ? [{ value: truck.proposed_truck_type_id ?? truck.vehicle_type, label: truck.vehicle_type }]
+                  : []),
+                { value: '__custom__', label: '+ Enter custom truck type...', badge: 'Custom' },
+              ]}
+            />
           )}
         </div>
 

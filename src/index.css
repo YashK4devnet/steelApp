@@ -160,4 +160,23 @@ body {
 .animate-slide-in-left {
   animation: slideInFromLeft 0.22s cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
   will-change: transform, opacity;
-}
+}
+
+/* GPU-Accelerated Search & Filter Scale Entrance */
+@keyframes filterScaleIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.96, 0.96, 1);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.animate-filter-scale {
+  animation: filterScaleIn 0.14s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform, opacity;
+  transform-origin: center center;
+}
+

@@ -306,7 +306,7 @@ export function BookingsPage() {
               return (
                 <div
                   key={booking.id}
-                  className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 relative overflow-hidden transition-colors duration-200"
+                  className="animate-filter-scale bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col gap-3 relative overflow-hidden transition-colors duration-200"
                 >
                   <div className="flex justify-between items-start gap-2">
                     <div>

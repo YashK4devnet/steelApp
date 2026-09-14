@@ -990,3 +990,33 @@ This document logs the major architectural, feature, and design changes implemen
   - Adjusted page padding from `pb-32` to responsive safe-area padding `pb-12 pb-[calc(env(safe-area-inset-bottom,1rem)+2rem)]`.
   - Rendered `Requested Truck Type` metric in the quotation summary header card.
   - Displayed requested truck type details in `ApproveTruckModal` and `RejectTruckModal`.
+
+## Phase 133: Custom Mobile Bottom Sheet Select Picker
+- **Custom Select Component (`src/components/ui/Select.tsx`)**:
+  - Replaced native HTML `<select>` (which triggered Android's legacy alert dialog) with a custom **Mobile Bottom Sheet Picker**.
+  - **Visuals**: Animated slide-up bottom drawer with backdrop blur, drag handle, option counts, and close button.
+  - **Real-Time Search**: Automatically includes a quick search/filter input when options exceed 5 items.
+  - **Ergonomics & Haptics**: High-comfort tap targets with selected indicator, checkmark badges, and `hapticFeedback.selection()`.
+  - **Backwards Compatibility**: Emits standard synthetic `change` events with `target: { value, name, id }`, ensuring zero refactoring across existing booking forms.
+  - **Portal Stacking**: Renders into `document.body` via React Portal with `z-[70]` to overlay nested sheets smoothly.
+- **Transporter Quotation (`src/features/transporter/components/TruckDetailFormCard.tsx`)**:
+  - Upgraded Proposed Truck Type dropdown to use the new `Select` bottom sheet picker instead of the raw `<select>` element.
+- **Select Trigger & Focus Polish (`src/components/ui/Select.tsx`)**:
+  - Pinned the down arrow icon flush to the far right using `absolute right-4 top-1/2 -translate-y-1/2` with safe `pr-11` text padding to prevent any truncation collision.
+  - Removed search bar auto-focus upon bottom sheet opening, keeping mobile virtual keyboards retracted until tapped by user.
+
+## Phase 134: Lightweight GPU-Accelerated Filter Scale Animations
+- **CSS Utility (`src/index.css`)**:
+  - Created `@keyframes filterScaleIn` and `.animate-filter-scale` with `scale3d(0.96, 0.96, 1) -> scale3d(1, 1, 1)` and `opacity: 0 -> 1` over 140ms (`cubic-bezier(0.16, 1, 0.3, 1)`).
+  - Enforced `will-change: transform, opacity` and hardware compositor layer to ensure zero layout reflows and eliminate typing stutter on mobile devices.
+- **Select Option Items (`src/components/ui/Select.tsx`)**:
+  - Applied `.animate-filter-scale` to bottom sheet option buttons for responsive feedback while filtering.
+- **Card Lists Everywhere**:
+  - Integrated `.animate-filter-scale` across all search-filtered lists:
+    - `TBApproverQuoteCard.tsx` (TB Approver quotations list)
+    - `QuoteCard.tsx` (Transporter quotations list)
+    - `POApprovalListPage.tsx` (Purchase orders approval list)
+    - `BookingsPage.tsx` (Bookings list)
+    - `LoadedTrucksPage.tsx`, `OutgoingTrucksPage.tsx`, `LoadingTrucksPage.tsx` (Security inbound/outbound truck lists)
+    - `TransporterLoadingTrucksPage.tsx` (Transporter active truck list)
+

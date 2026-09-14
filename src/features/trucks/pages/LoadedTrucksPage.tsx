@@ -124,7 +124,7 @@ export function LoadedTrucksPage() {
             filteredTrucks.map((truck) => (
               <div 
                 key={truck.id}
-                className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col sm:flex-row gap-5 transition-colors duration-200"
+                className="animate-filter-scale bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.3)] border border-slate-900/5 dark:border-white/10 flex flex-col sm:flex-row gap-5 transition-colors duration-200"
               >
                 {/* Icon & Primary Info */}
                 <div className="flex flex-row items-center gap-4 flex-1">
