@@ -58,6 +58,7 @@ export function useTBApproverQuotes() {
     return list.filter((item) => {
       const bookingNumber = (item.booking_number || '').toLowerCase();
       const transporterName = (item.transporter_name || '').toLowerCase();
+      const transporterPhone = (item.transporter_phone || '').toLowerCase();
       const pickupName = (item.pickup_location_name || '').toLowerCase();
       const pickupCode = (item.pickup_location_code || '').toLowerCase();
       const deliveryName = (item.delivery_address_name || '').toLowerCase();
@@ -67,6 +68,7 @@ export function useTBApproverQuotes() {
       return (
         bookingNumber.includes(query) ||
         transporterName.includes(query) ||
+        transporterPhone.includes(query) ||
         pickupName.includes(query) ||
         pickupCode.includes(query) ||
         deliveryName.includes(query) ||

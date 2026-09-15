@@ -4,6 +4,7 @@ export interface TBApproverQuotation {
   transporter_id: number;
   transporter_name: string;
   transporter_address?: string;
+  transporter_phone?: string;
   pickup_location_id: number;
   pickup_location_name: string;
   pickup_location_code: string;

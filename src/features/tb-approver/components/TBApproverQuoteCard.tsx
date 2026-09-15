@@ -37,6 +37,12 @@ const BuildingIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => 
   </svg>
 );
 
+const PhoneIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+  </svg>
+);
+
 const ArrowRightIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <line x1="5" y1="12" x2="19" y2="12" />
@@ -96,20 +102,44 @@ export function TBApproverQuoteCard({ quote, onReview }: TBApproverQuoteCardProp
       </div>
 
       {/* Transporter Info */}
-      <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-[16px] bg-slate-50 dark:bg-slate-800/50 border border-slate-900/5 dark:border-white/5">
-        <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
-          <BuildingIcon className="w-3.5 h-3.5" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-text-primary">
-            {quote.transporter_name || 'Assigned Transporter'}
-          </p>
-          {quote.transporter_address && (
-            <p className="text-[11px] font-normal text-text-secondary break-words leading-relaxed mt-0.5">
-              {quote.transporter_address}
+      <div className="flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-[16px] bg-slate-50 dark:bg-slate-800/50 border border-slate-900/5 dark:border-white/5">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="w-7 h-7 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+            <BuildingIcon className="w-3.5 h-3.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-bold text-text-primary truncate">
+              {quote.transporter_name || 'Assigned Transporter'}
             </p>
-          )}
+            {quote.transporter_phone && (
+              <p className="text-[11px] font-medium text-text-secondary flex items-center gap-1 mt-0.5">
+                <PhoneIcon className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <span>{quote.transporter_phone}</span>
+              </p>
+            )}
+            {quote.transporter_address && (
+              <p className="text-[11px] font-normal text-text-secondary break-words leading-relaxed mt-0.5">
+                {quote.transporter_address}
+              </p>
+            )}
+          </div>
         </div>
+
+        {quote.transporter_phone && (
+          <a
+            href={`tel:${quote.transporter_phone}`}
+            onClick={(e) => {
+              e.stopPropagation();
+              hapticFeedback.light();
+            }}
+            aria-label={`Call transporter at ${quote.transporter_phone}`}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-700 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/50 transition-all shrink-0 cursor-pointer shadow-sm"
+            title={`Call ${quote.transporter_phone}`}
+          >
+            <PhoneIcon className="w-3.5 h-3.5" />
+            <span>Call</span>
+          </a>
+        )}
       </div>
 
       {/* Route: Pickup -> Delivery */}

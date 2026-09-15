@@ -20,6 +20,9 @@ import { hapticFeedback } from '../../../utils/haptics';
 // Development override switch to preview the TB Approver dashboard (as documented in .agents/CHANGELOG.md)
 const FORCE_TB_APPROVER_DASHBOARD = false;
 
+// Feature flag: Hide the security analytics dashboard and switch for now (developmental feature)
+const SHOW_SECURITY_ANALYTICS_DASHBOARD = false;
+
 const CalendarIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
@@ -162,7 +165,7 @@ export function DashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-text-secondary mt-2 font-normal">
-                  {dashboardView === 'analytics'
+                  {SHOW_SECURITY_ANALYTICS_DASHBOARD && dashboardView === 'analytics'
                     ? 'Shift throughput & gate clearance performance'
                     : 'What would you like to do today?'}
                 </p>
@@ -181,7 +184,7 @@ export function DashboardPage() {
             </div>
 
             {/* Segmented Control Bar (for Roles with Analytics) */}
-            {isSecurity && (
+            {SHOW_SECURITY_ANALYTICS_DASHBOARD && isSecurity && (
               <div 
                 ref={segmentedControlRef}
                 className="sticky top-[calc(env(safe-area-inset-top,0.5rem)+0.5rem)] z-20 mb-6 bg-white/95 dark:bg-surface/95 backdrop-blur-md p-1.5 rounded-[20px] border border-slate-900/10 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.35)] grid grid-cols-2 gap-1.5 scroll-mt-[calc(env(safe-area-inset-top,1rem)+1rem)] transition-all"
