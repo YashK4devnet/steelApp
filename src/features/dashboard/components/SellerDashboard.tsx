@@ -1,11 +1,16 @@
-import React from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { TruckIcon, ReceiptIcon, FileTextIcon, WarehouseIcon } from './Icons';
 import { getLoadingTrucks } from '../../trucks/services/truckApi';
 import { QUERY_KEYS } from '../../../constants/queryKeys';
+import { SellerDispatchAnalyticsCard } from './SellerDispatchAnalyticsCard';
 
-export function SellerDashboard() {
+interface SellerDashboardProps {
+  viewMode?: 'actions' | 'analytics';
+}
+
+function SellerActionGrid() {
   const navigate = useNavigate();
 
   const { data: trucks = [], isLoading: loading } = useQuery({
@@ -22,9 +27,9 @@ export function SellerDashboard() {
         {/* Card 1: Loading Trucks (Active) */}
         <button 
           onClick={() => navigate('/trucks/loading')}
-          className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-start gap-4 group cursor-pointer outline-none focus:ring-2 focus:ring-blue-500 w-full text-left active:scale-[0.98] transition-all duration-150 relative overflow-hidden"
+          className="bg-white dark:bg-surface rounded-[24px] p-5 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:shadow-[0_8px_24px_rgba(0,0,0,0.35)] border border-slate-900/5 dark:border-white/10 flex flex-col items-start gap-4 group cursor-pointer outline-none focus:ring-2 focus:ring-primary w-full text-left active:scale-[0.98] transition-all duration-150 relative overflow-hidden"
         >
-          <div className="w-12 h-12 flex-shrink-0 bg-blue-100 dark:bg-blue-950/60 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
+          <div className="w-12 h-12 flex-shrink-0 bg-primary/10 dark:bg-blue-950/60 rounded-full flex items-center justify-center text-primary dark:text-blue-400 transition-colors">
             <TruckIcon className="w-6 h-6" />
           </div>
           <div className="flex flex-col gap-1 w-full">
@@ -34,7 +39,11 @@ export function SellerDashboard() {
             {loading ? (
               <div className="h-5 w-20 bg-slate-100 dark:bg-slate-800 rounded-full animate-pulse mt-0.5" />
             ) : (
-              <span className="text-[12px] font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-transparent dark:border-blue-800/40 px-2.5 py-0.5 rounded-full w-fit">
+              <span className={`text-[12px] font-medium px-2.5 py-0.5 rounded-full w-fit ${
+                pendingCount > 0
+                  ? 'text-accent dark:text-red-400 bg-accent/10 dark:bg-red-950/60 border border-transparent dark:border-red-800/40'
+                  : 'text-primary dark:text-blue-400 bg-primary/10 dark:bg-blue-950/60 border border-transparent dark:border-blue-800/40'
+              }`}>
                 {pendingCount ?? 0} Pending
               </span>
             )}
@@ -46,7 +55,7 @@ export function SellerDashboard() {
           <div className="absolute top-0 right-0 bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-[16px]">
             Coming Soon
           </div>
-          <div className="w-12 h-12 flex-shrink-0 bg-emerald-50 dark:bg-emerald-950/40 rounded-full flex items-center justify-center text-emerald-400 dark:text-emerald-500/60">
+          <div className="w-12 h-12 flex-shrink-0 bg-slate-100 dark:bg-slate-800/60 rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500">
             <ReceiptIcon className="w-6 h-6" />
           </div>
           <div>
@@ -61,7 +70,7 @@ export function SellerDashboard() {
           <div className="absolute top-0 right-0 bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-[16px]">
             Coming Soon
           </div>
-          <div className="w-12 h-12 flex-shrink-0 bg-amber-50 dark:bg-amber-950/40 rounded-full flex items-center justify-center text-amber-400 dark:text-amber-500/60">
+          <div className="w-12 h-12 flex-shrink-0 bg-slate-100 dark:bg-slate-800/60 rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500">
             <FileTextIcon className="w-6 h-6" />
           </div>
           <div>
@@ -76,7 +85,7 @@ export function SellerDashboard() {
           <div className="absolute top-0 right-0 bg-slate-800 dark:bg-slate-700 text-white dark:text-slate-200 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-bl-[16px]">
             Coming Soon
           </div>
-          <div className="w-12 h-12 flex-shrink-0 bg-purple-50 dark:bg-purple-950/40 rounded-full flex items-center justify-center text-purple-400 dark:text-purple-500/60">
+          <div className="w-12 h-12 flex-shrink-0 bg-slate-100 dark:bg-slate-800/60 rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500">
             <WarehouseIcon className="w-6 h-6" />
           </div>
           <div>
@@ -86,6 +95,36 @@ export function SellerDashboard() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function SellerDashboard({ viewMode = 'actions' }: SellerDashboardProps) {
+  const isAnalytics = viewMode === 'analytics';
+  const prevModeRef = useRef<'actions' | 'analytics'>(viewMode);
+  const [slideDirection, setSlideDirection] = useState<'right' | 'left'>('right');
+
+  useEffect(() => {
+    if (prevModeRef.current !== viewMode) {
+      if (viewMode === 'analytics') {
+        setSlideDirection('right');
+      } else {
+        setSlideDirection('left');
+      }
+      prevModeRef.current = viewMode;
+    }
+  }, [viewMode]);
+
+  return (
+    <div 
+      key={viewMode}
+      className={`w-full ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
+    >
+      {isAnalytics ? (
+        <SellerDispatchAnalyticsCard />
+      ) : (
+        <SellerActionGrid />
+      )}
     </div>
   );
 }

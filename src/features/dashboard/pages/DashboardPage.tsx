@@ -16,12 +16,7 @@ import { ThemeToggleButton } from '../../../components/ui/ThemeToggleButton';
 import { PullToRefresh } from '../../../components/ui/PullToRefresh';
 import { useQueryClient } from '@tanstack/react-query';
 import { hapticFeedback } from '../../../utils/haptics';
-
-// Development override switch to preview the TB Approver dashboard (as documented in .agents/CHANGELOG.md)
-const FORCE_TB_APPROVER_DASHBOARD = false;
-
-// Feature flag: Hide the security analytics dashboard and switch for now (developmental feature)
-const SHOW_SECURITY_ANALYTICS_DASHBOARD = false;
+import { DASHBOARD_CONFIG } from '../../../config/features';
 
 const CalendarIcon = ({ className = 'w-3.5 h-3.5' }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
@@ -76,13 +71,18 @@ export function DashboardPage() {
   };
 
   const userRole = user?.role?.toLowerCase() || '';
-  const isTBApprover = FORCE_TB_APPROVER_DASHBOARD || userRole.includes('tb approver') || userRole.includes('tb_approver') || userRole.includes('|tb approver');
-  const isPOApprover = !isTBApprover && (userRole.includes('po approver') || userRole.includes('po_approver') || userRole.includes('approver'));
-  const isTransporter = userRole.includes('transporter');
-  const isSecurity = userRole === 'security';
-  const isAdmin = userRole === 'admin';
-  const isSeller = userRole.includes('seller') || userRole.includes('vendor');
-  const isBuyer = userRole === 'buyer' || userRole === 'customer';
+  const effectiveRole = DASHBOARD_CONFIG.DEV_FORCE_ROLE || userRole;
+  const isTBApprover = effectiveRole.includes('tb approver') || effectiveRole.includes('tb_approver') || effectiveRole.includes('|tb approver');
+  const isPOApprover = !isTBApprover && (effectiveRole.includes('po approver') || effectiveRole.includes('po_approver') || effectiveRole.includes('approver'));
+  const isTransporter = effectiveRole.includes('transporter');
+  const isSecurity = effectiveRole === 'security';
+  const isAdmin = effectiveRole === 'admin';
+  const isSeller = effectiveRole.includes('seller') || effectiveRole.includes('vendor');
+  const isBuyer = effectiveRole === 'buyer' || effectiveRole === 'customer';
+
+  const showSecurityAnalytics = DASHBOARD_CONFIG.features.securityAnalytics;
+  const showSellerAnalytics = DASHBOARD_CONFIG.features.sellerAnalytics;
+  const hasAnalytics = (showSecurityAnalytics && isSecurity) || (showSellerAnalytics && isSeller);
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#1E293B] relative z-0 flex flex-col transition-colors duration-200">
@@ -165,8 +165,10 @@ export function DashboardPage() {
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-text-secondary mt-2 font-normal">
-                  {SHOW_SECURITY_ANALYTICS_DASHBOARD && dashboardView === 'analytics'
-                    ? 'Shift throughput & gate clearance performance'
+                  {hasAnalytics && dashboardView === 'analytics'
+                    ? (isSecurity
+                        ? 'Shift throughput & gate clearance performance'
+                        : 'Truck dispatch clearance & billing overview')
                     : 'What would you like to do today?'}
                 </p>
               </div>
@@ -178,13 +180,13 @@ export function DashboardPage() {
                   <span>{new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })}</span>
                 </div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-text-secondary mt-1.5 pr-1">
-                  {isSecurity ? 'Gate Operations' : user?.role || 'Active Session'}
+                  {isSecurity ? 'Gate Operations' : isSeller ? 'Seller Dispatch' : user?.role || 'Active Session'}
                 </span>
               </div>
             </div>
 
             {/* Segmented Control Bar (for Roles with Analytics) */}
-            {SHOW_SECURITY_ANALYTICS_DASHBOARD && isSecurity && (
+            {hasAnalytics && (
               <div
                 ref={segmentedControlRef}
                 className="sticky top-[calc(env(safe-area-inset-top,0.5rem)+0.5rem)] z-20 mb-6 bg-white/95 dark:bg-surface/95 backdrop-blur-md p-1.5 rounded-[20px] border border-slate-900/10 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.35)] grid grid-cols-2 gap-1.5 scroll-mt-[calc(env(safe-area-inset-top,1rem)+1rem)] transition-all"
@@ -211,7 +213,7 @@ export function DashboardPage() {
                   aria-label="Show analytics"
                 >
                   <ChartTabIcon className="w-4 h-4" />
-                  <span>Gate Analytics</span>
+                  <span>{isSecurity ? 'Gate Analytics' : 'Dispatch Analytics'}</span>
                 </button>
               </div>
             )}
@@ -228,7 +230,7 @@ export function DashboardPage() {
             ) : isAdmin ? (
               <ManagerDashboard />
             ) : isSeller ? (
-              <SellerDashboard />
+              <SellerDashboard viewMode={dashboardView} />
             ) : (
               <CustomerDashboard />
             )}
