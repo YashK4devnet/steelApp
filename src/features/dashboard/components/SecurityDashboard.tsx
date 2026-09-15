@@ -1,10 +1,7 @@
-import React, { useState, useRef, useLayoutEffect, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { TruckIcon, ClipboardIcon, ShieldIcon } from './Icons';
 import { SecurityGateAnalyticsCard } from './SecurityGateAnalyticsCard';
-
-// Feature flag: Hide the developmental gate analytics dashboard for now
-const SHOW_GATE_ANALYTICS = false;
 
 interface SecurityDashboardProps {
   viewMode?: 'actions' | 'analytics';
@@ -72,76 +69,31 @@ function SecurityActionGrid() {
 }
 
 export function SecurityDashboard({ viewMode = 'actions' }: SecurityDashboardProps) {
-  if (!SHOW_GATE_ANALYTICS) {
-    return (
-      <div className="w-full">
-        <SecurityActionGrid />
-      </div>
-    );
-  }
-
   const isAnalytics = viewMode === 'analytics';
-  const actionsRef = useRef<HTMLDivElement>(null);
-  const analyticsRef = useRef<HTMLDivElement>(null);
-  const [actionsHeight, setActionsHeight] = useState<number | undefined>(undefined);
-
-  useLayoutEffect(() => {
-    if (actionsRef.current) {
-      const h = actionsRef.current.offsetHeight;
-      if (h > 0) {
-        setActionsHeight(h);
-      }
-    }
-  }, []);
+  const prevModeRef = useRef<'actions' | 'analytics'>(viewMode);
+  const [slideDirection, setSlideDirection] = useState<'right' | 'left'>('right');
 
   useEffect(() => {
-    if (!actionsRef.current || typeof ResizeObserver === 'undefined') return;
-    const obs = new ResizeObserver(() => {
-      if (actionsRef.current) {
-        const h = actionsRef.current.offsetHeight;
-        if (h > 0) setActionsHeight(h);
+    if (prevModeRef.current !== viewMode) {
+      if (viewMode === 'analytics') {
+        setSlideDirection('right');
+      } else {
+        setSlideDirection('left');
       }
-    });
-    obs.observe(actionsRef.current);
-    return () => obs.disconnect();
-  }, []);
+      prevModeRef.current = viewMode;
+    }
+  }, [viewMode]);
 
   return (
     <div 
-      className="overflow-hidden w-full relative"
-      style={{
-        maxHeight: !isAnalytics && actionsHeight ? `${actionsHeight}px` : undefined,
-      }}
+      key={viewMode}
+      className={`w-full ${slideDirection === 'right' ? 'animate-slide-in-right' : 'animate-slide-in-left'}`}
     >
-      {/* Pre-rendered 2-Panel Side-Sliding Track */}
-      <div 
-        className="flex w-[200%] transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)] will-change-transform items-start"
-        style={{
-          transform: isAnalytics ? 'translate3d(-50%, 0, 0)' : 'translate3d(0%, 0, 0)',
-        }}
-      >
-        {/* Panel 1: Quick Actions (2-Column Grid) */}
-        <div 
-          ref={actionsRef}
-          className={`w-1/2 shrink-0 pr-1.5 transition-opacity duration-250 ${
-            !isAnalytics ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          aria-hidden={isAnalytics}
-        >
-          <SecurityActionGrid />
-        </div>
-
-        {/* Panel 2: Gate Analytics (Charts) */}
-        <div 
-          ref={analyticsRef}
-          className={`w-1/2 shrink-0 pl-1.5 transition-opacity duration-250 ${
-            isAnalytics ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
-          aria-hidden={!isAnalytics}
-        >
-          <SecurityGateAnalyticsCard />
-        </div>
-      </div>
+      {isAnalytics ? (
+        <SecurityGateAnalyticsCard />
+      ) : (
+        <SecurityActionGrid />
+      )}
     </div>
   );
 }

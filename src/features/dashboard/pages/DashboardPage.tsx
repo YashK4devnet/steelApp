@@ -185,18 +185,17 @@ export function DashboardPage() {
 
             {/* Segmented Control Bar (for Roles with Analytics) */}
             {SHOW_SECURITY_ANALYTICS_DASHBOARD && isSecurity && (
-              <div 
+              <div
                 ref={segmentedControlRef}
                 className="sticky top-[calc(env(safe-area-inset-top,0.5rem)+0.5rem)] z-20 mb-6 bg-white/95 dark:bg-surface/95 backdrop-blur-md p-1.5 rounded-[20px] border border-slate-900/10 dark:border-white/10 shadow-[0_4px_16px_rgba(15,23,42,0.06)] dark:shadow-[0_4px_16px_rgba(0,0,0,0.35)] grid grid-cols-2 gap-1.5 scroll-mt-[calc(env(safe-area-inset-top,1rem)+1rem)] transition-all"
               >
                 <button
                   type="button"
                   onClick={() => handleSwitchView('actions')}
-                  className={`min-h-[44px] py-2.5 sm:py-3 px-3 rounded-[15px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] ${
-                    dashboardView === 'actions'
-                      ? 'bg-primary text-white shadow-[0_2px_8px_rgba(10,46,99,0.25)] dark:bg-blue-600'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                  }`}
+                  className={`min-h-[44px] py-2.5 sm:py-3 px-3 rounded-[15px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] ${dashboardView === 'actions'
+                    ? 'bg-primary text-white shadow-[0_2px_8px_rgba(10,46,99,0.25)] dark:bg-blue-600'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    }`}
                   aria-label="Show actions"
                 >
                   <LightningIcon className="w-4 h-4" />
@@ -205,11 +204,10 @@ export function DashboardPage() {
                 <button
                   type="button"
                   onClick={() => handleSwitchView('analytics')}
-                  className={`min-h-[44px] py-2.5 sm:py-3 px-3 rounded-[15px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] ${
-                    dashboardView === 'analytics'
-                      ? 'bg-primary text-white shadow-[0_2px_8px_rgba(10,46,99,0.25)] dark:bg-blue-600'
-                      : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/40'
-                  }`}
+                  className={`min-h-[44px] py-2.5 sm:py-3 px-3 rounded-[15px] text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-[0.98] ${dashboardView === 'analytics'
+                    ? 'bg-primary text-white shadow-[0_2px_8px_rgba(10,46,99,0.25)] dark:bg-blue-600'
+                    : 'text-text-secondary hover:text-text-primary hover:bg-slate-50 dark:hover:bg-slate-800/40'
+                    }`}
                   aria-label="Show analytics"
                 >
                   <ChartTabIcon className="w-4 h-4" />
@@ -217,7 +215,7 @@ export function DashboardPage() {
                 </button>
               </div>
             )}
-            
+
             {/* Role Content */}
             {isTBApprover ? (
               <TBApproverDashboard />

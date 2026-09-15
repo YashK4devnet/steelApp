@@ -80,25 +80,43 @@ export function TBApproverTruckCard({
         </span>
       </div>
 
-      {/* Proposed Rate vs Asking Rate */}
-      <div className="p-3.5 rounded-[18px] bg-gradient-to-br from-slate-50 to-slate-100/60 dark:from-slate-800/50 dark:to-slate-800/20 border border-slate-900/5 dark:border-white/5 flex flex-col gap-2">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-text-secondary">
-            Proposed Rate
-          </span>
-          <div className="text-right">
-            <span className="text-[20px] font-extrabold text-primary dark:text-blue-400">
-              ₹{truckLine.proposal_rate.toLocaleString('en-IN')}
+      {/* Rate Comparison: Asking Rate vs Proposed Rate (2-Column Grid matching Truck Type layout) */}
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          {/* Asking Rate */}
+          <div className="p-3 rounded-[16px] bg-slate-50 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+              Asking Rate
             </span>
-            <span className="text-xs font-bold text-text-secondary ml-1">
-              /{rateBaseLabel}
+            <div className="flex items-baseline gap-1 mt-1">
+              <p className="text-[16px] font-extrabold text-text-primary">
+                ₹{askingRate.toLocaleString('en-IN')}
+              </p>
+              <span className="text-[11px] font-semibold text-text-secondary">
+                /{rateBaseLabel}
+              </span>
+            </div>
+          </div>
+
+          {/* Proposed Rate */}
+          <div className="p-3 rounded-[16px] bg-slate-50 dark:bg-slate-800/40 border border-slate-900/5 dark:border-white/5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-text-secondary">
+              Proposed Rate
             </span>
+            <div className="flex items-baseline gap-1 mt-1">
+              <p className="text-[16px] font-extrabold text-primary dark:text-blue-400">
+                ₹{truckLine.proposal_rate.toLocaleString('en-IN')}
+              </p>
+              <span className="text-[11px] font-semibold text-text-secondary">
+                /{rateBaseLabel}
+              </span>
+            </div>
           </div>
         </div>
 
-        {/* Comparison Tag */}
-        <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200/60 dark:border-white/5">
-          <span className="text-text-secondary">Asking Rate: ₹{askingRate.toLocaleString('en-IN')}</span>
+        {/* Rate Variance Comparison Tag */}
+        <div className="flex items-center justify-between px-3.5 py-2 rounded-[14px] bg-slate-50/70 dark:bg-slate-800/30 border border-slate-900/5 dark:border-white/5 text-xs">
+          <span className="text-text-secondary font-medium">Rate Variance:</span>
           {isBelow && (
             <span className="font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-full text-[11px]">
               -₹{Math.abs(diff).toLocaleString('en-IN')} (Below Asking)

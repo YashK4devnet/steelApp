@@ -341,6 +341,7 @@ export function TBApproverQuoteDetailPage() {
         truckLine={selectedApproveTruck}
         rateBaseLabel={rateBaseLabel}
         defaultRequestedTruckType={quotation?.requested_truck_type}
+        askingRate={askingRate}
       />
 
       {/* Reject Confirmation Modal with Reason Input */}

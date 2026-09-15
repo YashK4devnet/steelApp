@@ -24,6 +24,7 @@ interface ApproveTruckModalProps {
   truckLine: TBApproverTruckLine | null;
   rateBaseLabel?: string;
   defaultRequestedTruckType?: string;
+  askingRate?: number;
 }
 
 export function ApproveTruckModal({
@@ -34,6 +35,7 @@ export function ApproveTruckModal({
   truckLine,
   rateBaseLabel = 'Truck',
   defaultRequestedTruckType,
+  askingRate,
 }: ApproveTruckModalProps) {
   if (!isOpen || !truckLine) return null;
 
@@ -55,6 +57,20 @@ export function ApproveTruckModal({
             for <span className="font-bold text-text-primary">{truckLine.proposed_truck_type || 'Truck'}</span>?
           </p>
           <div className="mt-3 p-2.5 rounded-[14px] bg-slate-50 dark:bg-slate-800/50 border border-slate-900/5 dark:border-white/5 text-[11px] text-text-secondary text-left flex flex-col gap-1">
+            {typeof askingRate === 'number' && askingRate > 0 && (
+              <div className="flex justify-between">
+                <span>Asking Rate:</span>
+                <span className="font-bold text-text-primary">
+                  ₹{askingRate.toLocaleString('en-IN')} / {rateBaseLabel}
+                </span>
+              </div>
+            )}
+            <div className="flex justify-between">
+              <span>Proposed Rate:</span>
+              <span className="font-bold text-primary dark:text-blue-400">
+                ₹{truckLine.proposal_rate.toLocaleString('en-IN')} / {rateBaseLabel}
+              </span>
+            </div>
             <div className="flex justify-between">
               <span>Requested Type:</span>
               <span className="font-bold text-text-primary">
